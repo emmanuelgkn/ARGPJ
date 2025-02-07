@@ -1,6 +1,6 @@
 # Algorithmes de Renforcement (et autres) Génériques pour les Jeux [ARPG]
 
-# [Auteurs]
+> # Auteurs
 
 - Simon Vie
 - Jeanne Bonnaventure
