@@ -1,0 +1,37 @@
+a faire :
+- git 
+- overleaf
+- 5 premiers chapitres du sutton à parcourir 
+- choisir 2 jeux à annoncer sur mattermost pour validation
+- reimplementer le moteur des jeux (pas le gui) (regarder sur github si des gens l'on deja fait) mais on doit quand même maitriser si on recupère du code
+- commencer à implementer algo  mcts et q learning
+- faire les tests sur morpion
+- voir jeu breaktrough?
+
+infos:
+
+- cr chaque semaine
+- commence par montecarlo tree search algo 
+- jeu le plus simple et complexe: le super tic tac toe (ultimate tic tac toe)
+- choisir 1 jeu tour par tour (exploration en longue portée) et un jeu de controle 
+- jeu tour par tour aspect plannification et l'autre plus continu
+- recherche du meilleur coup vs optimisation des actions pour arriver à un but
+
+- implementation jeu "continu": pour les actions les discretiser (action1 accelerer, action2 decelerer,...), pour les etats les discretiser par rapport à la distance à la cible
+
+
+  MCTS
+- point de vue orthogonal a la q valeur
+- vient des algo de MC: tirage aleatoire pour appproximer une valeur
+- 1ers algo on echantillone plein de parties et on joue au hasard et on remonte le gain jusqu'a l'état du jeu où on est puis on prends l'action qui a le meilleur gain par rapport a ce qu'on a simulé
+- problème pour des jeus style echec trop de possibilités dur d'obtenir un echantillonnage interessant, rapport très faible entre echantillonnage et nombre de partie possible?
+- modif de l'algo mc, on explore plus souvent les regions qui nous interessent i.e les regions qui nous apportent le plus de gain
+- algo d'ucb, on explore avec plus de puissance les branches qu'on estime plus interessantes
+- strategie d'exploration des noeuds en fonction de cette strategie 
+- rien de reutilisable dans cet algo pas de transfert d'information entre différentes parties
+- sur mcts pas de modele
+
+- ne pas tenter de transposer ce qu'on fait sur coding game, trop de restrictions ca sera la deuxieme partie
+
+- faire des modules python, des algos generiques pas en fonction du jeu, on leur donne juste les differents etats et actions possibles
+- rollout voir jeu breaktrough
