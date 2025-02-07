@@ -1,4 +1,4 @@
-# Algorithmes de Renforcement (et autres) Génériques pour les Jeux [ARGPJ]
+# Algorithmes de Renforcement (et autres) Génériques Pour les Jeux [ARGPJ]
 
 # Auteurs
 
