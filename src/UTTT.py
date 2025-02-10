@@ -39,7 +39,7 @@ class UTTT:
         self.boards = [TTT() for _ in range(9)]
         self.global_board = TTT()
         self.last_player = None
-        self.next_board = -1
+        self.current_board = -1
 
     def get_state(self):
         """retourne l'etat du jeu, la liste de toutes les cases du jeu
@@ -99,7 +99,7 @@ class UTTT:
                 self.global_board.board[board] = player
             
             #envoie le prochain jouer sur la board appropriee si cette board est encore jouable (pas de win ni drawn)
-            if self.global_board[cell].check_win() == 0 and not self.global_board[cell].check_drawn():
+            if self.boards[cell].check_win() == 0 and not self.boards[cell].check_drawn():
                 self.current_board = cell  
             else:
                 self.current_board = -1  
