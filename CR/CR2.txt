@@ -1,0 +1,32 @@
+Reunion du 14/02/2025
+
+classe jeu abstraite pour que mcts soit generique
+
+tester q learning sur petit tic tac toe
+pas interessant l'histoire des symetries
+
+si on donne le tic tact toe global ajouter des informations ex: combien de croix alignées
+tabulaire pour UTTT pas tres utile,passer a autre chose 
+
+
+UTT espace d'action mesure mais espace combinaoitre tres grand  VS voiture pb orthogonale pas bcp de combinatoire
+on discretise l'espace d'etat, on est a tel endroit a telle vitesse  -> resultats vont dependre de la discretisation
+
+mcts on peut s'arreter avant que l'arbre soit plein
+dans mcts quand on creer un noeud ca depends de ce qu'on a fait avant, si on tient pas compte qu'on peut tomber sur meme etat avec un historique different ca marche
+
+
+lire jusqu'a page 138
+chap 4 très important , base de ce que fait le rl , algos "pas très important", c'est les idees 
+
+chap 5 si on a compris et implemente, pas la peine de rester dessus 
+
+chapitre 6 très important, pas trop de diff entre les algos c'est les idees qui sont importantes
+
+q learning: on s'en fiche d'estimer depuis debut car moyenne peut evoluer on va prendre en compte que ce qui s'est passe recement , ca ressemble à un gradient gradient
+
+implementer q-learning sur math progresing
+heuristic pour math progressing plus j'approche du check point plus je freine 
+
+les rewards ne doivent etre accordee qu'a l'etat que l'on souhaite atteindre sinon on risque d'oriente l'apprentissage vers quelque chose de faux. Ex: echecs si on accorde une reward lorsque l'agent est à possiblement 5 coups d'un echec et mat, l'agent peut optimiser les recompenses de cet etat la sans chercher à remporter la partie qui est son objectif principal. Contraindre l'apprentissage peut le degrader si l'expertise n'est pas parfaite.
+
