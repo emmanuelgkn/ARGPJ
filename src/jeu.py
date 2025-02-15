@@ -17,3 +17,6 @@ class Jeu(object):
 
     def clone(self):    
         pass
+
+    def lancer_partie(self,mode):
+        pass   

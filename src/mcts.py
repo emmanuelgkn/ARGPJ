@@ -41,7 +41,9 @@ class MCTSNode:
         simulation_game = self.game.clone()
         while not simulation_game.game_over():
             move = random.choice(simulation_game.get_valid_moves())
+            # print(simulation_game.get_valid_moves())
             simulation_game.play_move(move)
+            # simulation_game.display()
         return simulation_game.check_win()
 
     def backpropagate(self, result):
