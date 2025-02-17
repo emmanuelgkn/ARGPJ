@@ -1,13 +1,17 @@
 from jeu import Jeu
+import numpy as np
 
 class TTT(Jeu):
     def __init__(self):
         self.board = [0 for _ in range(9)]
-        self.winner = 0
-        self.last_player = 1
-        self.player = 1
-        self.current_player = 1
-        
+        #tirage aleatoire du premier joueur
+        self.current_player = np.random.randint(1,3)
+        self.nb_states = 9**3
+        self.nb_actions = 9
+    
+    def reset(self):
+        self.board = [0 for _ in range(9)]
+        self.current_player = np.random.randint(1,3)
 
     def check_win(self):
         """Verifie si la board est gagnee ou non
@@ -19,10 +23,12 @@ class TTT(Jeu):
         for (a,b,c) in win_patterns:
             if self.board[a]==self.board[b]==self.board[c] and self.board[a]!=0:
                 self.winner = self.board[a]
-                if self.board[a] == self.player:
-                    return "win"
+                if self.board[a] == 1:
+                    # return "win"
+                    return 1
                 else:
-                    return "lose"
+                    # return "lose"
+                    return 2
         return 0
     
     def check_drawn(self):
@@ -58,43 +64,18 @@ class TTT(Jeu):
         return self.check_win() != 0 or self.check_drawn()
     
     def play_move(self,move):
+        print(self.current_player, move)
         """joue un move
         Args:
             move (int): le move a jouer
         """
-        # self.current_player = player
-        # if self.current_player == self.last_player:
-        #     return False
-        
-        # if self.board[move] != 0:
-        #     return False   
 
-        # if self.current_player == 2:
-        #     self.board[move] = self.current_player
-        #     self.last_player = self.current_player
-        #     self.current_player = 1
-        #     return True
-        
-        # else:
-        #     # self.current_player = 1
-        #     self.board[np.random.choice(self.get_valid_moves())] = self.current_player 
-        #     self.last_player = self.current_player
-        #     self.current_player = 2
+        if self.board[move]==0:
+            self.board[move] = self.current_player
+            self.current_player = 1 if self.current_player == 2 else 2
 
-        #     return True        
-
-        if self.current_player == 2:
-            if self.board[move] != 0:
-                return False
-            self.board[move] = self.current_player 
-            self.current_player = 1
-        else:
-            if self.board[move] != 0:
-                return False
-            self.board[move] = self.current_player 
-            self.current_player = 2
-        return True
-        # self.display()
+    def get_state(self):
+        return tuple(self.board)
 
     def display(self):
         """affiche la board
