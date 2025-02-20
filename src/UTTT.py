@@ -2,79 +2,81 @@ from jeu import Jeu
 import numpy as np
 
 class TTT(Jeu):
+    
     def __init__(self):
         self.board = [0 for _ in range(9)]
-        #tirage aleatoire du premier joueur
         self.current_player = np.random.randint(1,3)
-        self.nb_states = 9**3
         self.nb_actions = 9
-    
+ 
     def reset(self):
         self.board = [0 for _ in range(9)]
         self.current_player = np.random.randint(1,3)
+        return tuple(self.board)
 
-    def check_win(self):
-        """Verifie si la board est gagnee ou non
 
-        Returns:
-            int: si il y a un vainqueur on le renvoie sinon 0 
+    def check_win(self,state):
+        """Verifie si la board est gagnee ou non 
+ 
         """
         win_patterns = [(0,1,2),(3,4,5),(6,7,8),(0,3,6),(1,4,7),(2,5,8),(0,4,8),(2,4,6)]
         for (a,b,c) in win_patterns:
-            if self.board[a]==self.board[b]==self.board[c] and self.board[a]!=0:
-                self.winner = self.board[a]
-                if self.board[a] == 1:
+            if state[a]==state[b]==state[c] and state[a]!=0:
+                self.winner = state[a]
+                if state[a] == 1:
                     # return "win"
                     return 1
                 else:
                     # return "lose"
-                    return 2
+                    return 0
         return 0
     
-    def check_drawn(self):
+    def check_drawn(self,state):
         """verifie si il a une egalite
 
         Returns:
             bool: true si il y a egalite
         """
-        if 0 not in self.board and self.check_win()==0:
+        if 0 not in state and self.check_win(state)==0:
             return True
         return False  
     
-    def get_valid_moves(self):
+    def get_valid_moves(self,state):
         """retourne les moves valides pour la board, si il y a egalite aucun move n'est valide
 
         Returns:
             list: liste des moves valides
         """
-        # if not self.check_drawn():
-        #     return [] 
-
-        # j'ai enlevé car condition non utile
-        # la fonction retourne vide si il n'y pas de 0
-        # de toute facon
-        return [i for i in range(9) if self.board[i]==0]
+        return [i for i in range(9) if state[i]==0]
     
-    def game_over(self):
+    def is_terminal_state(self,state):
         """verifie si la partie est terminee
 
         Returns:
             bool: true si la partie est terminee
         """
-        return self.check_win() != 0 or self.check_drawn()
+        return self.check_win(state) != 0 or self.check_drawn(state)
     
-    def play_move(self,move):
-        print(self.current_player, move)
-        """joue un move
+    def play_move(self, move):
+        """met à jour la board si le move que tente de faire le joueur courant et valide et passe la main à l'autre joueur
         Args:
             move (int): le move a jouer
         """
 
-        if self.board[move]==0:
+        if move not in self.get_valid_moves(self.board):
+            return self.get_state()
+        if self.board[move] == 0:
             self.board[move] = self.current_player
             self.current_player = 1 if self.current_player == 2 else 2
+        return self.get_state()
+    
+    def simulate_move(self,state, move):
+        """simule le move sans modifier la board, utile pour egreedy"""
+        potential_next_state = self.board.copy()
+        potential_next_state[move] = self.current_player
+        return tuple(potential_next_state)
 
     def get_state(self):
+        """renvoie l'etat du jeu sous forme de tuple, utile pour value function"""
         return tuple(self.board)
 
     def display(self):
