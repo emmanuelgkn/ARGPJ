@@ -2,7 +2,7 @@
 
 Produire des graphiques mettant en évidence les performances du mcts
 
-### IMORTANT
+### IMPORTANT
 
 - Commencer à coder le [Mad pod racing](https://www.codingame.com/multiplayer/bot-programming/mad-pod-racing)
 - Commencer à implémenter le q-learning sur [Mad pod racing](https://www.codingame.com/multiplayer/bot-programming/mad-pod-racing)
