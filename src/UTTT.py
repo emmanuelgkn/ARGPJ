@@ -1,18 +1,23 @@
 from jeu import Jeu
 import numpy as np
+import random
 
 class TTT(Jeu):
     def __init__(self):
         self.board = [0 for _ in range(9)]
-        #tirage aleatoire du premier joueur
-        self.current_player = np.random.randint(1,3)
+        self.winner = 0
+        self.player = 1
+        self.current_player = random.choice([1,2])
         self.nb_states = 9**3
         self.nb_actions = 9
-    
+        
     def reset(self):
         self.board = [0 for _ in range(9)]
         self.current_player = np.random.randint(1,3)
 
+    def getWinner(self):
+        return self.winner
+    
     def check_win(self):
         """Verifie si la board est gagnee ou non
 
@@ -23,12 +28,11 @@ class TTT(Jeu):
         for (a,b,c) in win_patterns:
             if self.board[a]==self.board[b]==self.board[c] and self.board[a]!=0:
                 self.winner = self.board[a]
-                if self.board[a] == 1:
-                    # return "win"
+                if self.board[a] == self.player:
                     return 1
                 else:
-                    # return "lose"
                     return 2
+
         return 0
     
     def check_drawn(self):
@@ -63,7 +67,26 @@ class TTT(Jeu):
         """
         return self.check_win() != 0 or self.check_drawn()
     
+    
     def play_move(self,move):
+        """joue un move
+        Args:
+            move (int): le move a jouer
+        """
+
+        if self.current_player == 1:
+            if self.board[move] != 0:
+                return False
+            self.board[move] = self.current_player 
+            self.current_player = 2
+        elif self.current_player == 2:
+            if self.board[move] != 0:
+                return False
+            self.board[move] = self.current_player 
+            self.current_player = 1
+        return True
+
+    def playmove2(self,move):
         print(self.current_player, move)
         """joue un move
         Args:
@@ -87,7 +110,6 @@ class TTT(Jeu):
         """Retourne une copie du jeu."""
         clone = TTT()
         clone.board = self.board.copy()
-        clone.last_player = self.last_player
         return clone
     
 

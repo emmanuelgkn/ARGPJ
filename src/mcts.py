@@ -18,7 +18,7 @@ class MCTSNode:
         """Retourne True si tous les coups valides ont été explorés."""
         return len(self.children) == len(self.game.get_valid_moves())
 
-    def best_child(self, exploration_weight=1.4):
+    def best_child(self, exploration_weight=1):
         """Retourne le meilleur enfant en utilisant la formule UCT."""
         return max(self.children, key=lambda child: 
                    (child.wins / (child.visits + 1e-6)) + 
@@ -39,18 +39,29 @@ class MCTSNode:
     def simulate(self):
         """Simule une partie complète en jouant aléatoirement jusqu'à un état terminal."""
         simulation_game = self.game.clone()
+        current_player = simulation_game.current_player  # Stocke le joueur initial
+
         while not simulation_game.game_over():
             move = random.choice(simulation_game.get_valid_moves())
-            # print(simulation_game.get_valid_moves())
             simulation_game.play_move(move)
-            # simulation_game.display()
-        return simulation_game.check_win()
+
+        if simulation_game.check_drawn():
+            # print("Draw")
+            return "draw"
+        elif simulation_game.check_win() == 1:
+            return "win"
+        else:
+            return "loss"
 
     def backpropagate(self, result):
         """Met à jour les statistiques du nœud et de ses ancêtres."""
         self.visits += 1
         if result == "win":  
             self.wins += 1
+        elif result == "loss":
+            self.wins -= 1  # Pénaliser une défaite
+        # Match nul = pas de modification du score
+
         if self.parent:
             self.parent.backpropagate(result)
 
