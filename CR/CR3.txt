@@ -1,0 +1,11 @@
+Reunion du 21/02/2024
+
+pas de epsilon greedy en tabulaire
+faire second jeu madpod racing
+
+mcts baisser constante d'exploration
+
+faire s'affonter nos deux agents
+
+laisser UTTT trop de problème de combinatoire
+
