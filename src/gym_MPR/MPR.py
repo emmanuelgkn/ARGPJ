@@ -1,9 +1,10 @@
-import gym
+import gymnasium
 # from gym.envs.classic_control import rendering
 import numpy as np
 import math
-from gym.envs.registration import register
+from gymnasium.envs.registration import register
 import pygame
+from gymnasium import spaces
 
 
 WIDTH = 1280
@@ -11,8 +12,8 @@ HEIGHT = 720
 
 
 #Mat Pod Racing Environnement
-class MPR(gym.Env):
-    metadata = {"render.modes": ["human"], "render_fps":24}
+class MPR(gymnasium.Env):
+    metadata = {"render_modes": ["human"], "render_fps":24}
 
     def __init__(self, render_enabled = False):
         self.checkpoints = [(4*(WIDTH/5), 3*(HEIGHT/4)), (WIDTH/5, HEIGHT/4), (WIDTH/5, 3*(HEIGHT/4)), (4*(WIDTH/5), HEIGHT/4)]
@@ -29,8 +30,15 @@ class MPR(gym.Env):
         self.power = 0.7
         self.turnSpeed = 0.04
         self.angle = math.radians(-90)
-        self.actions = 9
-        self.states = 4*4*8
+        # self.actions = 9
+        # self.states = 4*4*8
+
+        self.action_space = spaces.Discrete(9)
+        self.observation_space = gymnasium.spaces.Tuple((
+            gymnasium.spaces.Discrete(4), 
+            gymnasium.spaces.Discrete(9), 
+            gymnasium.spaces.Discrete(4)   
+        ))
 
         self.render_enabled = render_enabled
         self.screen = None
