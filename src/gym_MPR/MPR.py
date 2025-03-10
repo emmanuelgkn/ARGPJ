@@ -1,8 +1,9 @@
 import gym
-from gym.envs.classic_control import rendering
+# from gym.envs.classic_control import rendering
 import numpy as np
 import math
 from gym.envs.registration import register
+import pygame
 
 
 WIDTH = 1280
@@ -11,9 +12,9 @@ HEIGHT = 720
 
 #Mat Pod Racing Environnement
 class MPR(gym.Env):
-    metadata = {"render.modes": ["human"]}
+    metadata = {"render.modes": ["human"], "render_fps":24}
 
-    def __init__(self):
+    def __init__(self, render_enabled = False):
         self.checkpoints = [(4*(WIDTH/5), 3*(HEIGHT/4)), (WIDTH/5, HEIGHT/4), (WIDTH/5, 3*(HEIGHT/4)), (4*(WIDTH/5), HEIGHT/4)]
         self.next_checkpoint = 0
         self.nb_round = 3
@@ -29,6 +30,11 @@ class MPR(gym.Env):
         self.turnSpeed = 0.04
         self.angle = math.radians(-90)
         self.actions = 9
+        self.states = 4*4*8
+
+        self.render_enabled = render_enabled
+        self.screen = None
+        self.clock = None
 
     def step(self, action):
     
@@ -62,14 +68,14 @@ class MPR(gym.Env):
 
         self.velX *= self.drag
         self.velY *= self.drag
-        self.angle += self.angularVel
+        self.angle = (self.angle+ self.angularVel)%(2*np.pi)
         self.angularVel *= self.angularDrag
 
         #on met -1 pour encourager l'agent à atteindre vite les checkpoints
         reward = -1
         terminated = False
 
-        if self.through_checkpoint(self.next_checkpoints):
+        if self.through_checkpoint(self.next_checkpoint):
             reward = 1
             self.next_checkpoint = (self.next_checkpoint + 1)% len(self.checkpoints)
 
@@ -131,12 +137,14 @@ class MPR(gym.Env):
 
     
     def through_checkpoint(self, cp):
-        if np.abs(self.pos[0]-cp[0])<50 and np.abs(self.pos[1]- cp[1])<50:
+        cp_x,cp_y = self.checkpoints[cp][0], self.checkpoints[cp][1] 
+        if np.abs(self.pos[0]-cp_x)<50 and np.abs(self.pos[1]- cp_y)<50:
             return True
     
     def discretized_distance(self,cp):
-        diag = np.sqrt(WIDTH**2, HEIGHT**2)
-        distance = np.sqrt( (self.pos[0]-cp[0])**2 + (self.pos[1]-cp[1])**2 )
+        diag = np.sqrt(WIDTH**2 + HEIGHT**2)
+        cp_x,cp_y = self.checkpoints[cp][0], self.checkpoints[cp][1] 
+        distance = np.sqrt( (self.pos[0]-cp_x)**2 + (self.pos[1]-cp_y)**2 )
 
         tres_proche = 0.1*diag
         proche = 0.3*diag
@@ -151,11 +159,42 @@ class MPR(gym.Env):
         else:
             return 3
 
-    def discretized_vel(vel):
+    def discretized_vel(self,vel):
+        #discretise la vitesse en 0,1,2 ou 3
         return round((vel+10)*(3/20))
     
+    def discretized_angle(self,angle):
+        #discretize entre 0 et 7
+        return int((angle /(2*np.pi))*8) % 8
+    
+
+    def render(self):
+        if self.render_enabled: 
+            if self.screen is None:
+                pygame.init()
+                self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+                self.clock = pygame.time.Clock()
+
+            self.screen.fill("black")  # Fond noir
+            for cp in self.checkpoints:
+                pygame.draw.circle(self.screen, (255, 0, 0), (int(cp[0]), int(cp[1])), 20)
+
+            pygame.draw.circle(self.screen, (0, 255, 0), (int(self.pos[0]), int(self.pos[1])), 10)
+
+            pygame.draw.line(self.screen, (0, 255, 255),
+                             (int(self.pos[0]), int(self.pos[1])),
+                             (int(self.pos[0] + 20 * math.cos(self.angle)),
+                              int(self.pos[1] + 20 * math.sin(self.angle))), 3)
+
+            pygame.display.flip() 
+            self.clock.tick(self.metadata['render_fps']) 
+
+
 
 register(
     id='MatPodRacer-v0',
     entry_point='gym_MPR.MPR:MPR'
 )
+
+
+
