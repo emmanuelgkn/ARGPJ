@@ -28,7 +28,6 @@ class MPR(gym.Env):
         self.power = 0.7
         self.turnSpeed = 0.04
         self.angle = math.radians(-90)
-
         self.actions = 9
 
     def step(self, action):
@@ -124,13 +123,11 @@ class MPR(gym.Env):
 
     def getState(self):
 
-        state = []
+        #un etat est decrit comme la distance au prochain checkpoint, son angle et sa vitesse actuelle (moyenne de la vitesse sur l'axe x et y)
         discrete_distance = self.discretized_distance(self.next_checkpoint)
         angle = self.angle
-        d_velX = self.discretized_vel(self.velX)
-        d_velY = self.discretized_vel(self.velY)
-
-        return state, discrete_distance, angle,d_velX, d_velY
+        vel = self.discretized_vel((self.velX+self.velY)/2)
+        return discrete_distance, angle,vel
 
     
     def through_checkpoint(self, cp):
