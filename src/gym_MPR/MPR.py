@@ -11,7 +11,7 @@ WIDTH = 1280
 HEIGHT = 720
 
 
-#Mat Pod Racing Environnement
+#Mad Pod Racing Environnement
 class MPR(gymnasium.Env):
     metadata = {"render_modes": ["human"], "render_fps":24}
 

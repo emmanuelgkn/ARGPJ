@@ -218,7 +218,8 @@ def tauxReussiteMctsTTTU(niter=10):
 
     return tauxmcts, tauxrandom, tauxdraw
 
-
+def somme_n_premiers(n):
+    return n*(n+1)/2
 
 
 if __name__ == "__main__":
@@ -229,6 +230,7 @@ if __name__ == "__main__":
     # print("ticTacToeUltimate")
     # ticTacToeUltimate("mcts")
     # print("ticTacToeUltimate")
-    # tauxReussiteMctsTTTU(1)
+    # tauxReussiteMctsTTTU(1) 8.62s
+    # print(somme_n_premiers(100)) -> 5050
     # contructionGraph(tauxReussiteMctsTTTU,10)
     pass
