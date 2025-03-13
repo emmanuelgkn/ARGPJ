@@ -92,7 +92,7 @@ class MPR(gymnasium.Env):
             terminated = True
         state = self.getState()
 
-        return state, reward, terminated, None
+        return state, reward, terminated, False, {}
     
 
     def reset(self):
@@ -139,7 +139,7 @@ class MPR(gymnasium.Env):
 
         #un etat est decrit comme la distance au prochain checkpoint, son angle et sa vitesse actuelle (moyenne de la vitesse sur l'axe x et y)
         discrete_distance = self.discretized_distance(self.next_checkpoint)
-        angle = self.angle
+        angle = self.discretized_angle(self.angle)
         vel = self.discretized_vel((self.velX+self.velY)/2)
         return discrete_distance, angle,vel
 
@@ -183,7 +183,7 @@ class MPR(gymnasium.Env):
                 self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
                 self.clock = pygame.time.Clock()
 
-            self.screen.fill("black")  # Fond noir
+            self.screen.fill("black")  # Fond noir pour effacer position precedentes
             for cp in self.checkpoints:
                 pygame.draw.circle(self.screen, (255, 0, 0), (int(cp[0]), int(cp[1])), 20)
 
