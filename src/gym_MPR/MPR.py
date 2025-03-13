@@ -72,24 +72,30 @@ class MPR(gymnasium.Env):
         ##A CHECKER PAS D'ERREUR ENTRE WIDTH ET HEIGHT
         self.pos[0] = max(0, min(self.pos[0]+self.velX, WIDTH))
         self.pos[1] = max(0, min(self.pos[1]+self.velY, HEIGHT))
-        self.pos[1] = self.velY
 
         self.velX *= self.drag
+
         self.velY *= self.drag
         self.angle = (self.angle+ self.angularVel)%(2*np.pi)
         self.angularVel *= self.angularDrag
 
-        #on met -1 pour encourager l'agent à atteindre vite les checkpoints
-        reward = -1
+        #on met -.1 pour encourager l'agent à atteindre vite les checkpoints
+        # reward = -(4- self.discretized_vel((self.velX+self.velY)/2))
+        # reward = -.001*(4- self.discretized_vel((self.next_checkpoint)))
+        reward =0
+        if self.getState()[0]>1: 
+            reward = -0.1
         terminated = False
 
         if self.through_checkpoint(self.next_checkpoint):
-            reward = 1
+            reward = 50
             self.next_checkpoint = (self.next_checkpoint + 1)% len(self.checkpoints)
+            self.checkpoints_counter[self.next_checkpoint]+=1
 
         if self.checkpoints_counter == [self.nb_round]*len(self.checkpoints):
             reward = 100
             terminated = True
+
         state = self.getState()
 
         return state, reward, terminated, False, {}
@@ -99,35 +105,31 @@ class MPR(gymnasium.Env):
         self.next_checkpoint = 0
         self.checkpoints_counter = [0]*len(self.checkpoints)
         self.pos = [self.checkpoints[0][0], self.checkpoints[0][1]]
+
         self.velX = 0
         self.velY = 0
-        self.drag = 0.9
-        self.angularVel = 0.0
-        self.angularDrag = 0.6
-        self.power = 0.7
-        self.turnSpeed = 0.04
         self.angle = math.radians(-90)
         return self.getState()
 
     def acc(self):
-            self.velX += math.sin(self.angle) * self.power
-            self.velY += math.cos(self.angle) * self.power
+            self.velX += math.cos(self.angle) * self.power
+            self.velY += math.sin(self.angle) * self.power
 
-            if (self.velX > 10):
-                self.velX = 10
 
-            if (self.velY > 10):
-                self.velY = 10
+            if (self.velX > 20):
+                self.velX = 20
+
+            if (self.velY > 20):
+                self.velY = 20
 
     def decc(self):
-        self.velX -= math.sin(self.angle) * self.power
-        self.velY -= math.cos(self.angle) * self.power
+        self.velX -= math.cos(self.angle) * self.power
+        self.velY -= math.sin(self.angle) * self.power
+        if (self.velX < -20):
+            self.velX = -20
 
-        if (self.velX < -10):
-            self.velX = -10
-
-        if (self.velY < -10):
-            self.velY = -10
+        if (self.velY < -20):
+            self.velY = -20
 
     def right(self):
         self.angularVel += self.turnSpeed
@@ -169,7 +171,7 @@ class MPR(gymnasium.Env):
 
     def discretized_vel(self,vel):
         #discretise la vitesse en 0,1,2 ou 3
-        return round((vel+10)*(3/20))
+        return round((vel+20)*(3/40))
     
     def discretized_angle(self,angle):
         #discretize entre 0 et 7
@@ -185,7 +187,7 @@ class MPR(gymnasium.Env):
 
             self.screen.fill("black")  # Fond noir pour effacer position precedentes
             for cp in self.checkpoints:
-                pygame.draw.circle(self.screen, (255, 0, 0), (int(cp[0]), int(cp[1])), 20)
+                pygame.draw.circle(self.screen, (255, 0, 0), (int(cp[0]), int(cp[1])), 50)
 
             pygame.draw.circle(self.screen, (0, 255, 0), (int(self.pos[0]), int(self.pos[1])), 10)
 
@@ -193,6 +195,7 @@ class MPR(gymnasium.Env):
                              (int(self.pos[0]), int(self.pos[1])),
                              (int(self.pos[0] + 20 * math.cos(self.angle)),
                               int(self.pos[1] + 20 * math.sin(self.angle))), 3)
+
 
             pygame.display.flip() 
             self.clock.tick(self.metadata['render_fps']) 
