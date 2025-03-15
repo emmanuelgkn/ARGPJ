@@ -101,7 +101,7 @@ class MPR(gymnasium.Env):
         return state, reward, terminated, False, {}
     
 
-    def reset(self):
+    def reset(self,seed=None,options=None):
         self.next_checkpoint = 0
         self.checkpoints_counter = [0]*len(self.checkpoints)
         self.pos = [self.checkpoints[0][0], self.checkpoints[0][1]]
