@@ -46,6 +46,10 @@ on aura:
 
 Solution (proposée par GPT):
 
+Solution plus élaborée où on ralenti en fonction de notre distance  
+par rapport au checkpoint et de notre angle par rapport à ce dernier  
+pour mieux aborder les virages
+
 ```py
 import sys
 import math
