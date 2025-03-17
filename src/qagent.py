@@ -36,6 +36,8 @@ class Qagent:
     def test(self):
         l_x = []
         l_y=[]
+        b_x= [b.getCoord()[0] for b in self.env.board.checkpoints]
+        b_y= [b.getCoord()[1] for b in self.env.board.checkpoints]
         x,y,cp_x,cp_y,dist,angle = self.env.reset()
         state = self.discretized_state((dist,angle))
         for j in range(self.max_steps):
@@ -50,6 +52,7 @@ class Qagent:
 
         plt.figure()
         plt.scatter(l_x,l_y)
+        plt.scatter(b_x,b_y, c = 'red')
         plt.show()
 
     def epsilon_greedy(self,state):
