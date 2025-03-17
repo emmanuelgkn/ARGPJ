@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 
 WIDTH = 16000
 HEIGHT = 9000
-CP_WIDTH = 10
-TIMEOUT =50000
+CP_WIDTH = 600
+TIMEOUT =100
 class Point():
     def __init__(self,x,y):
         self.x =x
@@ -150,6 +150,9 @@ class Board():
         angle = self.pod.getAngle(next_cp)
 
         return x,y,next_cp_x,next_cp_y,dist,angle
+    
+    def getInfos(self):
+        return HEIGHT, WIDTH
 
 
 

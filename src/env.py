@@ -11,7 +11,8 @@ class MPR_env():
         self.board = Board(3,3)
         self.terminated = False
         self.HEIGHT,self.WIDTH = self.board.getInfos()
-        
+        #self.action_space = #un tuple tq premier coord entre 0 et WIDTH, une seconde entre 0 et HEIGHT, une troisieme entre 0 et 100
+        #self.observation_space = #un tuple ...
 
 
         
