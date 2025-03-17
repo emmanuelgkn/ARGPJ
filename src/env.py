@@ -17,7 +17,7 @@ class MPR_env():
 
         
     def step(self,  thrust):
-        next_cp = self.board.checkpoints[self.board.next_checkpoint].getCoord()
+        next_cp = self.board.checkpoints[self.board.next_checkpoint]
         x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust)
 
         #si rien de specifique ne s'est produit 

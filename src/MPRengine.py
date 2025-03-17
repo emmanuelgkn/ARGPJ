@@ -15,10 +15,7 @@ class Point():
         self.y=y
     
     def distance(self, p)-> float:
-        print('----')
-        print(self.x, self.y)
-        print(p.x, p.y)
-        print('----')
+
         return math.sqrt((abs(self.x- p.x))**2 + (abs(self.y-p.y)))
 
     def getCoord(self):
@@ -172,7 +169,7 @@ def main():
     b_y= [b.getCoord()[1] for b in board.checkpoints]
     while not board.terminated:
         x,y,next_cp_x,next_cp_y,dist,angle = board.play(board.checkpoints[board.next_checkpoint], 1)
-        print(x,y,next_cp_x,next_cp_y,dist,angle)
+        # print(x,y,next_cp_x,next_cp_y,dist,angle)
         l_x.append(x)
         l_y.append(y)
     

@@ -1,6 +1,6 @@
 import numpy as np
 from env import MPR_env
-
+import matplotlib.pyplot as plt
 #variables pour discretiser la distance est discretisé en 4 valeurs, etc..
 d_dist = 4
 d_angle = 8
@@ -27,27 +27,34 @@ class Qagent:
             for j in range(self.max_steps):
                 action = self.epsilon_greedy(state)
                 x,y,next_cp_x,next_cp_y,dist,angle,reward,terminated = self.env.step(action*d_thrust)
-                print(reward)
                 next_state = self.discretized_state((dist,angle))
-                self.update_q_table(state[0], state[1],action,next_state,reward)
+                self.update_q_table(state,action-1,next_state,reward)
                 if terminated:
                     break
                 state = next_state
                     
     def test(self):
-        state = self.env.reset()
-        for j in range(self.max_step):
-            action =  np.argmax(self.q_table[state])
-            x,y,next_cp_x,next_cp_y,dist,angle,reward,terminated = self.env.step(action)
+        l_x = []
+        l_y=[]
+        x,y,cp_x,cp_y,dist,angle = self.env.reset()
+        state = self.discretized_state((dist,angle))
+        for j in range(self.max_steps):
+            action = self.epsilon_greedy(state)
+            x,y,next_cp_x,next_cp_y,dist,angle,reward,terminated = self.env.step(action*d_thrust)
+            l_x.append(x)
+            l_y.append(y)
             next_state= self.discretized_state((dist,angle))
             if terminated:
                 break
             state = next_state
 
+        plt.figure()
+        plt.scatter(l_x,l_y)
+        plt.show()
+
     def epsilon_greedy(self,state):
         if np.random.random() < self.epsilon:
             return np.random.randint(0,d_thrust)
-        print(state)
         return np.argmax(self.qtable[state[0], state[1], :])
     
     def update_q_table(self, state, action, next_state, reward):
@@ -60,15 +67,15 @@ class Qagent:
         if dist> self.max_dist:
             dist= self.max_dist
         
-        new_dist = round(dist/self.max_dist * d_dist)
-        new_angle = round(angle/360 * d_angle)
+        new_dist = round(dist/self.max_dist * d_dist)-1
+        new_angle = round(angle/360 * d_angle)-1
         return new_dist, new_angle
 
 
 
 def main():
-    agent = Qagent(MPR_env(),500,10000)
+    agent = Qagent(MPR_env(),5000,10000)
 
     agent.train()
-
+    agent.test()
 main()
