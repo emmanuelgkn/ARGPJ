@@ -16,9 +16,9 @@ class MPR_env():
 
 
         
-    def step(self, x_target, y_target, thrust):
-
-        x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(x_target, y_target,thrust)
+    def step(self,  thrust):
+        next_cp = self.board.checkpoints[self.board.next_checkpoint].getCoord()
+        x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust)
 
         #si rien de specifique ne s'est produit 
         reward =-1
@@ -46,7 +46,7 @@ class MPR_env():
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         cp_x, cp_y = next_cp.getCoord()
         dist = self.board.pod.distance(next_cp)
-        angle = self.board.pod.angle()
+        angle = self.board.pod.angle
 
         return x,y,cp_x,cp_y,dist,angle
 

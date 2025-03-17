@@ -15,6 +15,10 @@ class Point():
         self.y=y
     
     def distance(self, p)-> float:
+        print('----')
+        print(self.x, self.y)
+        print(p.x, p.y)
+        print('----')
         return math.sqrt((abs(self.x- p.x))**2 + (abs(self.y-p.y)))
 
     def getCoord(self):
@@ -178,6 +182,6 @@ def main():
     plt.show()
 
 
-main()
+# main()
 
 
