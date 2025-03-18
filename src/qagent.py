@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 d_dist = 4
 d_angle = 8
 d_thrust = 20
+n_actions = d_thrust
+n_etats = d_dist*d_angle
 
 class Qagent:
     def __init__(self, env, episodes, max_steps,alpha = .6, epsilon = .3, gamma = 1):
@@ -73,6 +75,9 @@ class Qagent:
         new_dist = round(dist/self.max_dist * d_dist)-1
         new_angle = round(angle/360 * d_angle)-1
         return new_dist, new_angle
+    
+    def get_qtable(self):
+        return self.qtable
 
 
 
@@ -81,4 +86,9 @@ def main():
 
     agent.train()
     agent.test()
+
+    # qtable = agent.get_qtable()
+    # print(qtable.shape)
+    # plt.imshow(qtable[:,:,1])
+    plt.colorbar()
 main()
