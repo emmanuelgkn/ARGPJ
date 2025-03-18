@@ -90,5 +90,5 @@ def main():
     # qtable = agent.get_qtable()
     # print(qtable.shape)
     # plt.imshow(qtable[:,:,1])
-    plt.colorbar()
+    # plt.colorbar()
 main()
