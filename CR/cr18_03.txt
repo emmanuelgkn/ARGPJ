@@ -1,0 +1,40 @@
+reunion 6
+
+verifier si meme trajectoire coding game et notre moteur
+
+agent doit voir action posssible et etat possible
+
+surcouche env qui discretise
+
+tout ce qui est discretisation dans mprenv
+
+rajouter angle
+
+etat vitesse angle , tenter d'evaluer un vecteur vitesse entre deux positions
+
+
+etta angle par rapport au cehckpoin, distance , notre vitesse, 
+
+bonne discretisation pour devant 5 niveau entre 90 et -90 et un ou deux etats pour si le checkpoint est derriere
+
+
+voir pour un checkpoint recompense inversement proportionnelle a la distance au checkpoint
+
+
+graph vitesse moyenne et plotter les trajectoires
+
+max nombre action: 5
+rajouter la vitesse dans les etats
+
+regarder q table pour observer apprentissage
+
+q table en deux dimensions
+
+environnement rends numero d'action et d'etats
+
+baisser le gamma
+
+jouer sur le alpha, à augmenter 
+
+
+discretisation faire attention a largeur du checkpoint
