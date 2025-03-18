@@ -133,6 +133,7 @@ class Board():
 
     def updateToNextCheckpoint(self):
         if self.pod.distance(self.checkpoints[self.next_checkpoint])<CP_WIDTH/2:
+            self.pod.timeout = TIMEOUT
             self.checkpoint_cp[self.next_checkpoint]+=1
             self.next_checkpoint = (self.next_checkpoint +1)% self.nb_cp
     
