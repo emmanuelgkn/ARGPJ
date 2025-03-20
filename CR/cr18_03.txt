@@ -1,6 +1,6 @@
 reunion 6
 
-verifier si meme trajectoire coding game et notre moteur
+verifier si meme trajectoire coding game et notre moteur OK
 
 agent doit voir action posssible et etat possible
 
@@ -18,7 +18,7 @@ etta angle par rapport au cehckpoin, distance , notre vitesse,
 bonne discretisation pour devant 5 niveau entre 90 et -90 et un ou deux etats pour si le checkpoint est derriere
 
 
-voir pour un checkpoint recompense inversement proportionnelle a la distance au checkpoint
+voir pour un checkpoint recompense inversement proportionnelle a la distance au checkpoint OK
 
 
 graph vitesse moyenne et plotter les trajectoires

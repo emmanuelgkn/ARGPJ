@@ -20,20 +20,24 @@ class MPR_env():
         x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust)
 
         #si rien de specifique ne s'est produit 
-        reward =-.1
+        reward =  -(1 - 1/(1 +dist) ) 
 
-        #si on a passé un checkpoint
+        #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
                 reward = -200
                 self.terminated = True
-                
 
             #arret fin de course
             else:
                 reward= 200
                 self.terminated = True
+
+        #passage d'un checkpoint:
+        if dist<600:
+            reward = 50
+
         return x,y,next_cp_x,next_cp_y,dist,angle,reward, self.terminated
     
 
