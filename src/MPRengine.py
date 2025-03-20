@@ -9,6 +9,13 @@ WIDTH = 16000
 HEIGHT = 9000
 CP_WIDTH = 600
 TIMEOUT =100
+
+class Collision():
+    def __init__(self,x,y,t):
+        self.x = x
+        self.y = y
+        self.t = t
+
 class Point():
     def __init__(self,x,y):
         self.x =x
@@ -20,7 +27,13 @@ class Point():
 
     def getCoord(self):
         return self.x, self.y   
+    
+    
+
+    
+
 class Pod(Point):
+
     def __init__(self, x, y,angle):
         super().__init__(x, y)
         self.angle = angle
@@ -30,10 +43,7 @@ class Pod(Point):
 
 
         self.timeout = TIMEOUT
-
-
-        
-        
+ 
     def getAngle(self,p: Point)->float:
         """ calcul difference d'angle entre le pod et un point. in/out entre 0 et 359
         0 : est, 90 sud, 180: ouest, 270: nord
@@ -47,7 +57,6 @@ class Pod(Point):
         if (dy<0):
             angle= 360 -angle
         return angle
-
     
     def diffAngle(self,p : Point)->float:
         """indique dans quelle direction et de combien tourner pour faire face à p 
@@ -70,7 +79,6 @@ class Pod(Point):
         else:
             return -left
 
-
     def rotate(self,p : Point):
         angle = self.diffAngle(p)
 
@@ -83,21 +91,20 @@ class Pod(Point):
         self.angle%= 360
 
     def boost(self,thrust: int):
-        rad = self.angle*np.pi /180
+        rad = math.radians(self.angle)
         self.vx += np.cos(rad)*thrust
         self.vy += np.sin(rad)*thrust
 
-    def move(self):
-        self.x += self.vx
-        self.y += self.vy
+    def move(self, t = 1):
+        self.x += self.vx * t
+        self.y += self.vy * t
 
     def end(self):
         self.x= round(self.x)
         self.y = round(self.y)
-        self.vx = self.roundV(self.vx* 0.85)
-        self.vy = self.roundV(self.vy*0.85)
+        self.vx = self.roundV(self.vx * 0.85)
+        self.vy = self.roundV(self.vy * 0.85)
         self.timeout-=1
-
 
     def play(self,p: Point,thrust: int):
         self.rotate(p)
@@ -110,11 +117,99 @@ class Pod(Point):
             return np.floor(v)
         else:
             return np.ceil(v)
+        
+    def closest(self, p : Point):
+        """ Trouve le point le plus proche de `self` sur la ligne passant par `a` et `b`. """
+        x1, y1 = self.getCoord()
+        x2, y2 = p.getCoord()
+
+
+        da = y2 - y1
+        db = x1 - x2
+        c1 = da * x1 + db * x2
+        c2 = -db * self.x + da * self.y
+        det = da * da + db * db
+
+        if det != 0:
+            cx = (da * c1 - db * c2) / det
+            cy = (da * c2 + db * c1) / det
+        else:
+            # Le point est déjà sur la ligne
+            cx = self.x
+            cy = self.y
+
+        return Point(cx, cy)
+    
+    def Collision(self, p: Point):
+        """Détecte une Collision entre le pod et un point."""
+        # Carré de la distance
+        dist = self.distance2(p)
+
+        # Somme des rayons au carré
+        sr = (self.r + p.r) ** 2
+
+        # Vérification d'une Collision immédiate
+        if dist < sr:
+            return Collision(self, p, 0.0)
+
+        # Si les unités ont la même vitesse, il n'y aura jamais de Collision
+        if self.vx == p.vx and self.vy == p.vy:
+            return None
+
+        # Passage dans le référentiel de `u` (qui devient immobile à (0,0))
+        x = self.x - p.x
+        y = self.y - p.y
+        myp = Point(x, y)
+        vx = self.vx - p.vx
+        vy = self.vy - p.vy
+        up = Point(0, 0)
+
+        # Trouver le point le plus proche sur la ligne décrite par le vecteur vitesse
+        pt = up.closest(myp, Point(x + vx, y + vy))
+
+        # Carré de la distance entre `u` et ce point
+        pdist = up.distance2(pt)
+
+        # Carré de la distance entre `self` et ce point
+        mypdist = myp.distance2(pt)
+
+        # Vérification de la possibilité d'une Collision
+        if pdist < sr:
+            # Norme de la vitesse
+            length = math.sqrt(vx * vx + vy * vy)
+
+            # Déplacement en arrière pour trouver le point d'impact
+            backdist = math.sqrt(sr - pdist)
+            pt.x = pt.x - backdist * (vx / length)
+            pt.y = pt.y - backdist * (vy / length)
+
+            # Si on s'éloigne, il n'y a pas de Collision
+            if myp.distance2(pt) > mypdist:
+                return None
+
+            # Distance au point d'impact
+            pdist = pt.distance(myp)
+
+            # Si l'impact est trop loin pour ce tour, pas de Collision
+            if pdist > length:
+                return None
+
+            # Temps nécessaire pour atteindre le point d'impact
+            t = pdist / length
+
+            return Collision(self, pt, t)
+
+        return None
+
+
+
 
 class CheckPoint(Point):
     def __init__(self, x, y, id):
         super().__init__(x, y)
         self.id = id
+
+
 
 class Board():
     def __init__(self,nb_cp, nb_round):
@@ -155,9 +250,6 @@ class Board():
     
     def getInfos(self):
         return HEIGHT, WIDTH
-
-
-
 
 
 
