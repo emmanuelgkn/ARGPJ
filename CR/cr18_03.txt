@@ -2,20 +2,20 @@ reunion 6
 
 verifier si meme trajectoire coding game et notre moteur OK
 
-agent doit voir action posssible et etat possible
+agent doit voir action posssible et etat possible OK 
 
-surcouche env qui discretise
+surcouche env qui discretise OK
 
-tout ce qui est discretisation dans mprenv
+tout ce qui est discretisation dans mprenv OK
 
-rajouter angle
+rajouter angle OK
 
-etat vitesse angle , tenter d'evaluer un vecteur vitesse entre deux positions
+etat vitesse angle , tenter d'evaluer un vecteur vitesse entre deux positions OK
 
 
-etta angle par rapport au cehckpoin, distance , notre vitesse, 
+etta angle par rapport au cehckpoin, distance , notre vitesse, OK
 
-bonne discretisation pour devant 5 niveau entre 90 et -90 et un ou deux etats pour si le checkpoint est derriere
+bonne discretisation pour devant 5 niveau entre 90 et -90 et un ou deux etats pour si le checkpoint est derriere OK
 
 
 voir pour un checkpoint recompense inversement proportionnelle a la distance au checkpoint OK
@@ -23,12 +23,12 @@ voir pour un checkpoint recompense inversement proportionnelle a la distance au 
 
 graph vitesse moyenne et plotter les trajectoires
 
-max nombre action: 5
-rajouter la vitesse dans les etats
+max nombre action: 5 OK
+rajouter la vitesse dans les etats OK
 
 regarder q table pour observer apprentissage
 
-q table en deux dimensions
+q table en deux dimensions OK
 
 environnement rends numero d'action et d'etats
 
