@@ -6,7 +6,7 @@ from datetime import datetime
 import csv
 
 class Qagent:
-    def __init__(self, env, episodes, max_steps,alpha = .5, epsilon = .3, gamma = 1):
+    def __init__(self, env, episodes, max_steps,alpha = .7, epsilon = .3, gamma = 0.95):
         self.env= env
         self.episodes = episodes
         self.max_steps = max_steps
@@ -26,7 +26,7 @@ class Qagent:
                 state = next_state
                 if terminated:
                     break
-            self.test()
+            # self.test()
 
     def test(self):
         state = self.env.reset()
@@ -39,6 +39,8 @@ class Qagent:
             if terminated:
                 break
         self.rewards.append
+        self.env.show_traj()
+        self.env.plot_vitesse()
 
     def epsilon_greedy(self,state):
         if np.random.random() < self.epsilon:
@@ -61,9 +63,9 @@ class Qagent:
 
 
 def main():
-    env = MPR_env(discretisation=[7,4,3], nb_action=4)
+    env = MPR_env(discretisation=[5,4,3], nb_action=5)
     agent = Qagent(env,5000,1000)
 
     agent.train()
     agent.test()
-# main()
+main()
