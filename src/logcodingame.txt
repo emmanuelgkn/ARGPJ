@@ -1,0 +1,1160 @@
+Sortie d'erreur :
+x: 14226 y: 3446
+001
+290
+Sortie d'erreur :
+x: 14134 y: 3485
+002
+290
+Sortie d'erreur :
+x: 13964 y: 3557
+003
+290
+Sortie d'erreur :
+x: 13728 y: 3657
+004
+290
+Sortie d'erreur :
+x: 13436 y: 3781
+005
+290
+Sortie d'erreur :
+x: 13096 y: 3925
+006
+290
+Sortie d'erreur :
+x: 12715 y: 4086
+007
+290
+Sortie d'erreur :
+x: 12300 y: 4261
+008
+290
+Sortie d'erreur :
+x: 11856 y: 4448
+009
+290
+Sortie d'erreur :
+x: 11387 y: 4646
+010
+290
+Sortie d'erreur :
+x: 10897 y: 4853
+011
+290
+Sortie d'erreur :
+x: 10389 y: 5068
+012
+290
+Sortie d'erreur :
+x: 9866 y: 5289
+013
+290
+Sortie d'erreur :
+x: 9330 y: 5516
+014
+290
+Sortie d'erreur :
+x: 8783 y: 5748
+015
+290
+Sortie d'erreur :
+x: 8227 y: 5984
+016
+290
+Sortie d'erreur :
+x: 7663 y: 6223
+017
+290
+Sortie d'erreur :
+x: 7092 y: 6465
+018
+290
+Sortie d'erreur :
+x: 6515 y: 6710
+019
+290
+Sortie d'erreur :
+x: 5933 y: 6958
+020
+290
+Sortie d'erreur :
+x: 5347 y: 7208
+021
+290
+Sortie d'erreur :
+x: 4758 y: 7460
+022
+290
+Sortie d'erreur :
+x: 4166 y: 7714
+023
+290
+Sortie d'erreur :
+x: 3564 y: 7940
+024
+290
+Sortie d'erreur :
+x: 2955 y: 8111
+025
+290
+Sortie d'erreur :
+x: 2352 y: 8206
+026
+290
+Sortie d'erreur :
+x: 1773 y: 8211
+027
+290
+Sortie d'erreur :
+x: 1242 y: 8123
+028
+290
+Sortie d'erreur :
+x: 781 y: 7949
+029
+290
+Sortie d'erreur :
+x: 411 y: 7704
+030
+290
+Sortie d'erreur :
+x: 147 y: 7411
+031
+290
+Sortie d'erreur :
+x: -2 y: 7095
+032
+290
+Sortie d'erreur :
+x: -36 y: 6787
+033
+290
+Sortie d'erreur :
+x: 28 y: 6489
+034
+290
+Sortie d'erreur :
+x: 176 y: 6201
+035
+290
+Sortie d'erreur :
+x: 395 y: 5923
+036
+290
+Sortie d'erreur :
+x: 676 y: 5656
+037
+290
+Sortie d'erreur :
+x: 1009 y: 5398
+038
+290
+Sortie d'erreur :
+x: 1387 y: 5149
+039
+290
+Sortie d'erreur :
+x: 1804 y: 4909
+040
+290
+Sortie d'erreur :
+x: 2254 y: 4678
+041
+290
+Sortie d'erreur :
+x: 2732 y: 4456
+042
+290
+Sortie d'erreur :
+x: 3235 y: 4242
+043
+290
+Sortie d'erreur :
+x: 3759 y: 4036
+044
+290
+Sortie d'erreur :
+x: 4301 y: 3837
+045
+290
+Sortie d'erreur :
+x: 4858 y: 3645
+046
+290
+Sortie d'erreur :
+x: 5428 y: 3459
+047
+290
+Sortie d'erreur :
+x: 6010 y: 3280
+048
+290
+Sortie d'erreur :
+x: 6602 y: 3107
+049
+290
+Sortie d'erreur :
+x: 7202 y: 2940
+050
+290
+Sortie d'erreur :
+x: 7809 y: 2778
+051
+290
+Sortie d'erreur :
+x: 8423 y: 2622
+052
+290
+Sortie d'erreur :
+x: 9043 y: 2472
+053
+290
+Sortie d'erreur :
+x: 9669 y: 2329
+054
+290
+Sortie d'erreur :
+x: 10299 y: 2193
+055
+290
+Sortie d'erreur :
+x: 10933 y: 2066
+056
+290
+Sortie d'erreur :
+x: 11572 y: 1950
+057
+290
+Sortie d'erreur :
+x: 12211 y: 1875
+058
+290
+Sortie d'erreur :
+x: 12839 y: 1864
+059
+290
+Sortie d'erreur :
+x: 13438 y: 1931
+060
+290
+Sortie d'erreur :
+x: 13985 y: 2080
+061
+290
+Sortie d'erreur :
+x: 14458 y: 2306
+062
+290
+Sortie d'erreur :
+x: 14836 y: 2594
+063
+290
+Sortie d'erreur :
+x: 15104 y: 2923
+064
+290
+Sortie d'erreur :
+x: 15255 y: 3267
+065
+290
+Sortie d'erreur :
+x: 15291 y: 3597
+066
+290
+Sortie d'erreur :
+x: 15226 y: 3907
+067
+290
+Sortie d'erreur :
+x: 15074 y: 4194
+068
+290
+Sortie d'erreur :
+x: 14847 y: 4456
+069
+290
+Sortie d'erreur :
+x: 14555 y: 4692
+070
+290
+Sortie d'erreur :
+x: 14207 y: 4901
+071
+290
+Sortie d'erreur :
+x: 13812 y: 5082
+072
+290
+Sortie d'erreur :
+x: 13377 y: 5233
+073
+290
+Sortie d'erreur :
+x: 12908 y: 5353
+074
+290
+Sortie d'erreur :
+x: 12411 y: 5440
+075
+290
+Sortie d'erreur :
+x: 11892 y: 5490
+076
+290
+Sortie d'erreur :
+x: 11358 y: 5496
+077
+290
+Sortie d'erreur :
+x: 10823 y: 5442
+078
+290
+Sortie d'erreur :
+x: 10309 y: 5316
+079
+290
+Sortie d'erreur :
+x: 9840 y: 5114
+080
+290
+Sortie d'erreur :
+x: 9441 y: 4843
+081
+290
+Sortie d'erreur :
+x: 9133 y: 4518
+082
+290
+Sortie d'erreur :
+x: 8930 y: 4161
+083
+290
+Sortie d'erreur :
+x: 8838 y: 3799
+084
+290
+Sortie d'erreur :
+x: 8856 y: 3460
+085
+290
+Sortie d'erreur :
+x: 8971 y: 3164
+086
+290
+Sortie d'erreur :
+x: 9168 y: 2910
+087
+290
+Sortie d'erreur :
+x: 9435 y: 2696
+088
+290
+Sortie d'erreur :
+x: 9761 y: 2521
+089
+290
+Sortie d'erreur :
+x: 10136 y: 2383
+090
+290
+Sortie d'erreur :
+x: 10554 y: 2282
+091
+290
+Sortie d'erreur :
+x: 11007 y: 2216
+092
+290
+Sortie d'erreur :
+x: 11488 y: 2186
+093
+290
+Sortie d'erreur :
+x: 11991 y: 2192
+094
+290
+Sortie d'erreur :
+x: 12511 y: 2233
+095
+290
+Sortie d'erreur :
+x: 13041 y: 2312
+096
+290
+Sortie d'erreur :
+x: 13573 y: 2437
+097
+290
+Sortie d'erreur :
+x: 14086 y: 2621
+098
+290
+Sortie d'erreur :
+x: 14555 y: 2871
+099
+290
+Sortie d'erreur :
+x: 14957 y: 3183
+100
+290
+Sortie d'erreur :
+x: 15271 y: 3544
+101
+290
+Sortie d'erreur :
+x: 15481 y: 3933
+102
+290
+Sortie d'erreur :
+x: 15580 y: 4325
+103
+290
+Sortie d'erreur :
+x: 15570 y: 4691
+104
+290
+Sortie d'erreur :
+x: 15465 y: 5028
+105
+290
+Sortie d'erreur :
+x: 15280 y: 5337
+106
+290
+Sortie d'erreur :
+x: 15025 y: 5621
+107
+290
+Sortie d'erreur :
+x: 14711 y: 5881
+108
+290
+Sortie d'erreur :
+x: 14347 y: 6120
+109
+290
+Sortie d'erreur :
+x: 13939 y: 6338
+110
+290
+Sortie d'erreur :
+x: 13494 y: 6537
+111
+290
+Sortie d'erreur :
+x: 13017 y: 6719
+112
+290
+Sortie d'erreur :
+x: 12513 y: 6885
+113
+290
+Sortie d'erreur :
+x: 11986 y: 7036
+114
+290
+Sortie d'erreur :
+x: 11438 y: 7172
+115
+290
+Sortie d'erreur :
+x: 10873 y: 7295
+116
+290
+Sortie d'erreur :
+x: 10294 y: 7406
+117
+290
+Sortie d'erreur :
+x: 9703 y: 7506
+118
+290
+Sortie d'erreur :
+x: 9101 y: 7596
+119
+290
+Sortie d'erreur :
+x: 8490 y: 7676
+120
+290
+Sortie d'erreur :
+x: 7871 y: 7746
+121
+290
+Sortie d'erreur :
+x: 7245 y: 7806
+122
+290
+Sortie d'erreur :
+x: 6613 y: 7857
+123
+290
+Sortie d'erreur :
+x: 5976 y: 7896
+124
+290
+Sortie d'erreur :
+x: 5335 y: 7924
+125
+290
+Sortie d'erreur :
+x: 4691 y: 7937
+126
+290
+Sortie d'erreur :
+x: 4047 y: 7927
+127
+290
+Sortie d'erreur :
+x: 3413 y: 7869
+128
+290
+Sortie d'erreur :
+x: 2808 y: 7746
+129
+290
+Sortie d'erreur :
+x: 2253 y: 7551
+130
+290
+Sortie d'erreur :
+x: 1772 y: 7286
+131
+290
+Sortie d'erreur :
+x: 1384 y: 6963
+132
+290
+Sortie d'erreur :
+x: 1105 y: 6602
+133
+290
+Sortie d'erreur :
+x: 942 y: 6229
+134
+290
+Sortie d'erreur :
+x: 895 y: 5872
+135
+290
+Sortie d'erreur :
+x: 950 y: 5536
+136
+290
+Sortie d'erreur :
+x: 1092 y: 5220
+137
+290
+Sortie d'erreur :
+x: 1308 y: 4924
+138
+290
+Sortie d'erreur :
+x: 1587 y: 4646
+139
+290
+Sortie d'erreur :
+x: 1921 y: 4386
+140
+290
+Sortie d'erreur :
+x: 2301 y: 4143
+141
+290
+Sortie d'erreur :
+x: 2722 y: 3915
+142
+290
+Sortie d'erreur :
+x: 3177 y: 3702
+143
+290
+Sortie d'erreur :
+x: 3661 y: 3502
+144
+290
+Sortie d'erreur :
+x: 4170 y: 3314
+145
+290
+Sortie d'erreur :
+x: 4701 y: 3138
+146
+290
+Sortie d'erreur :
+x: 5250 y: 2973
+147
+290
+Sortie d'erreur :
+x: 5815 y: 2819
+148
+290
+Sortie d'erreur :
+x: 6394 y: 2676
+149
+290
+Sortie d'erreur :
+x: 6985 y: 2543
+150
+290
+Sortie d'erreur :
+x: 7586 y: 2419
+151
+290
+Sortie d'erreur :
+x: 8197 y: 2304
+152
+290
+Sortie d'erreur :
+x: 8815 y: 2199
+153
+290
+Sortie d'erreur :
+x: 9439 y: 2103
+154
+290
+Sortie d'erreur :
+x: 10069 y: 2017
+155
+290
+Sortie d'erreur :
+x: 10704 y: 1943
+156
+290
+Sortie d'erreur :
+x: 11343 y: 1884
+157
+290
+Sortie d'erreur :
+x: 11985 y: 1849
+158
+290
+Sortie d'erreur :
+x: 12620 y: 1863
+159
+290
+Sortie d'erreur :
+x: 13230 y: 1945
+160
+290
+Sortie d'erreur :
+x: 13794 y: 2103
+161
+290
+Sortie d'erreur :
+x: 14290 y: 2335
+162
+290
+Sortie d'erreur :
+x: 14696 y: 2630
+163
+290
+Sortie d'erreur :
+x: 14997 y: 2970
+164
+290
+Sortie d'erreur :
+x: 15182 y: 3329
+165
+290
+Sortie d'erreur :
+x: 15250 y: 3680
+166
+290
+Sortie d'erreur :
+x: 15212 y: 4006
+167
+290
+Sortie d'erreur :
+x: 15082 y: 4305
+168
+290
+Sortie d'erreur :
+x: 14873 y: 4575
+169
+290
+Sortie d'erreur :
+x: 14597 y: 4815
+170
+290
+Sortie d'erreur :
+x: 14263 y: 5023
+171
+290
+Sortie d'erreur :
+x: 13880 y: 5200
+172
+290
+Sortie d'erreur :
+x: 13455 y: 5345
+173
+290
+Sortie d'erreur :
+x: 12995 y: 5455
+174
+290
+Sortie d'erreur :
+x: 12506 y: 5530
+175
+290
+Sortie d'erreur :
+x: 11995 y: 5566
+176
+290
+Sortie d'erreur :
+x: 11469 y: 5557
+177
+290
+Sortie d'erreur :
+x: 10940 y: 5493
+178
+290
+Sortie d'erreur :
+x: 10430 y: 5359
+179
+290
+Sortie d'erreur :
+x: 9964 y: 5152
+180
+290
+Sortie d'erreur :
+x: 9566 y: 4876
+181
+290
+Sortie d'erreur :
+x: 9257 y: 4546
+182
+290
+Sortie d'erreur :
+x: 9052 y: 4184
+183
+290
+Sortie d'erreur :
+x: 8958 y: 3816
+184
+290
+Sortie d'erreur :
+x: 8972 y: 3471
+185
+290
+Sortie d'erreur :
+x: 9084 y: 3169
+186
+290
+Sortie d'erreur :
+x: 9278 y: 2908
+187
+290
+Sortie d'erreur :
+x: 9542 y: 2689
+188
+290
+Sortie d'erreur :
+x: 9866 y: 2510
+189
+290
+Sortie d'erreur :
+x: 10240 y: 2370
+190
+290
+Sortie d'erreur :
+x: 10657 y: 2267
+191
+290
+Sortie d'erreur :
+x: 11109 y: 2201
+192
+290
+Sortie d'erreur :
+x: 11588 y: 2172
+193
+290
+Sortie d'erreur :
+x: 12090 y: 2180
+194
+290
+Sortie d'erreur :
+x: 12608 y: 2225
+195
+290
+Sortie d'erreur :
+x: 13136 y: 2311
+196
+290
+Sortie d'erreur :
+x: 13663 y: 2446
+197
+290
+Sortie d'erreur :
+x: 14166 y: 2643
+198
+290
+Sortie d'erreur :
+x: 14620 y: 2906
+199
+290
+Sortie d'erreur :
+x: 15002 y: 3229
+200
+290
+Sortie d'erreur :
+x: 15293 y: 3597
+201
+290
+Sortie d'erreur :
+x: 15478 y: 3988
+202
+290
+Sortie d'erreur :
+x: 15552 y: 4376
+203
+290
+Sortie d'erreur :
+x: 15518 y: 4733
+204
+290
+Sortie d'erreur :
+x: 15393 y: 5062
+205
+290
+Sortie d'erreur :
+x: 15191 y: 5364
+206
+290
+Sortie d'erreur :
+x: 14922 y: 5641
+207
+290
+Sortie d'erreur :
+x: 14596 y: 5895
+208
+290
+Sortie d'erreur :
+x: 14221 y: 6129
+209
+290
+Sortie d'erreur :
+x: 13803 y: 6343
+210
+290
+Sortie d'erreur :
+x: 13349 y: 6539
+211
+290
+Sortie d'erreur :
+x: 12865 y: 6718
+212
+290
+Sortie d'erreur :
+x: 12355 y: 6882
+213
+290
+Sortie d'erreur :
+x: 11823 y: 7032
+214
+290
+Sortie d'erreur :
+x: 11271 y: 7169
+215
+290
+Sortie d'erreur :
+x: 10703 y: 7294
+216
+290
+Sortie d'erreur :
+x: 10121 y: 7406
+217
+290
+Sortie d'erreur :
+x: 9527 y: 7507
+218
+290
+Sortie d'erreur :
+x: 8923 y: 7598
+219
+290
+Sortie d'erreur :
+x: 8310 y: 7679
+220
+290
+Sortie d'erreur :
+x: 7690 y: 7750
+221
+290
+Sortie d'erreur :
+x: 7064 y: 7811
+222
+290
+Sortie d'erreur :
+x: 6432 y: 7861
+223
+290
+Sortie d'erreur :
+x: 5795 y: 7900
+224
+290
+Sortie d'erreur :
+x: 5154 y: 7927
+225
+290
+Sortie d'erreur :
+x: 4511 y: 7937
+226
+290
+Sortie d'erreur :
+x: 3874 y: 7903
+227
+290
+Sortie d'erreur :
+x: 3260 y: 7807
+228
+290
+Sortie d'erreur :
+x: 2689 y: 7639
+229
+290
+Sortie d'erreur :
+x: 2184 y: 7398
+230
+290
+Sortie d'erreur :
+x: 1768 y: 7095
+231
+290
+Sortie d'erreur :
+x: 1457 y: 6747
+232
+290
+Sortie d'erreur :
+x: 1261 y: 6379
+233
+290
+Sortie d'erreur :
+x: 1182 y: 6017
+234
+290
+Sortie d'erreur :
+x: 1210 y: 5675
+235
+290
+Sortie d'erreur :
+x: 1328 y: 5353
+236
+290
+Sortie d'erreur :
+x: 1522 y: 5049
+237
+290
+Sortie d'erreur :
+x: 1783 y: 4763
+238
+290
+Sortie d'erreur :
+x: 2100 y: 4494
+239
+290
+Sortie d'erreur :
+x: 2466 y: 4241
+240
+290
+Sortie d'erreur :
+x: 2874 y: 4004
+241
+290
+Sortie d'erreur :
+x: 3319 y: 3781
+242
+290
+Sortie d'erreur :
+x: 3794 y: 3572
+243
+290
+Sortie d'erreur :
+x: 4295 y: 3376
+244
+290
+Sortie d'erreur :
+x: 4819 y: 3192
+245
+290
+Sortie d'erreur :
+x: 5363 y: 3019
+246
+290
+Sortie d'erreur :
+x: 5924 y: 2858
+247
+290
+Sortie d'erreur :
+x: 6499 y: 2707
+248
+290
+Sortie d'erreur :
+x: 7086 y: 2566
+249
+290
+Sortie d'erreur :
+x: 7684 y: 2435
+250
+290
+Sortie d'erreur :
+x: 8291 y: 2314
+251
+290
+Sortie d'erreur :
+x: 8907 y: 2202
+252
+290
+Sortie d'erreur :
+x: 9530 y: 2100
+253
+290
+Sortie d'erreur :
+x: 10159 y: 2009
+254
+290
+Sortie d'erreur :
+x: 10793 y: 1931
+255
+290
+Sortie d'erreur :
+x: 11431 y: 1869
+256
+290
+Sortie d'erreur :
+x: 12067 y: 1852
+257
+290
+Sortie d'erreur :
+x: 12685 y: 1900
+258
+290
+Sortie d'erreur :
+x: 13265 y: 2023
+259
+290
+Sortie d'erreur :
+x: 13785 y: 2223
+260
+290
+Sortie d'erreur :
+x: 14222 y: 2493
+261
+290
+Sortie d'erreur :
+x: 14558 y: 2816
+262
+290
+Sortie d'erreur :
+x: 14781 y: 3168
+263
+290
+Sortie d'erreur :
+x: 14887 y: 3522
+264
+290
+Sortie d'erreur :
+x: 14882 y: 3857
+265
+290
+Sortie d'erreur :
+x: 14782 y: 4168
+266
+290
+Sortie d'erreur :
+x: 14599 y: 4453
+267
+290
+Sortie d'erreur :
+x: 14345 y: 4709
+268
+290
+Sortie d'erreur :
+x: 14030 y: 4935
+269
+290
+Sortie d'erreur :
+x: 13663 y: 5129
+270
+290
+Sortie d'erreur :
+x: 13252 y: 5289
+271
+290
+Sortie d'erreur :
+x: 12804 y: 5415
+272
+290
+Sortie d'erreur :
+x: 12325 y: 5503
+273
+290
+Sortie d'erreur :
+x: 11822 y: 5549
+274
+290
+Sortie d'erreur :
+x: 11304 y: 5545
+275
+290
+Sortie d'erreur :
+x: 10789 y: 5477
+276
+290
+Sortie d'erreur :
+x: 10300 y: 5334
+277
+290
+Sortie d'erreur :
+x: 9862 y: 5116
+278
+290
+Sortie d'erreur :
+x: 9498 y: 4831
+279
+290
+Sortie d'erreur :
+x: 9228 y: 4498
+280
+290
+Sortie d'erreur :
+x: 9064 y: 4139
+281
+290
+Sortie d'erreur :
+x: 9010 y: 3783
+282
+290
+Sortie d'erreur :
+x: 9062 y: 3458
+283
+290
+Sortie d'erreur :
+x: 9206 y: 3173
+284
+290
+Sortie d'erreur :
+x: 9428 y: 2927
+285
+290
+Sortie d'erreur :
+x: 9716 y: 2720
+286
+290
+Sortie d'erreur :
+x: 10060 y: 2551
+287
+290
+Sortie d'erreur :
+x: 10451 y: 2419
+288
+290
+Sortie d'erreur :
+x: 10882 y: 2323
+289
+290
+Sortie d'erreur :
+x: 11346 y: 2263
+290
+290
