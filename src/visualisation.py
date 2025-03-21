@@ -5,12 +5,13 @@ import pandas as pd
 
 def fig_discretisation():
     #0 distance 1 angle 3 thurst
-    differentes_discretisations = [(3,4,5), (10,18,20), (20,36,50),(40,72,100)]
+    # differentes_discretisations = [([3,4,5], 4), ([10,18,20], 10), ([20,36,50], 20)]
+    differentes_discretisations = [([3,4,5], 4)]
 
-    for i ,(d_dist,d_angle,d_thrust) in enumerate(differentes_discretisations):
-        agent = Qagent(MPR_env(),episodes = 5000,max_steps=10000,alpha=.5,epsilon=.3,gamma=.1,d_dist=d_dist, d_angle=d_angle,d_thrust=d_thrust)
+    for i ,discretisation in enumerate(differentes_discretisations):
+        agent = Qagent(MPR_env(*discretisation),episodes = 10000,max_steps=10000,alpha=.5,epsilon=.3,gamma=.1)
         agent.train()
-        agent.save_rewards(f"figure/log/discretisation{i}.csv")
+        agent.save_rewards(f"figure/log/discretisation{i}_2.csv")
 
     
     plt.figure(figsize=(20,10))
@@ -25,7 +26,7 @@ def fig_discretisation():
         plt.plot(df_mean.iloc[:, 0], df_mean.iloc[:, 1],label=f"{discret}")
 
     plt.legend()
-    plt.savefig("fig_differentes_discret")
+    plt.savefig("fig_differentes_discret2")
 
 def fig_epsilon():
 
@@ -54,4 +55,4 @@ def fig_epsilon():
 
 
 
-fig_epsilon()
+fig_discretisation()

@@ -6,7 +6,7 @@ from datetime import datetime
 import csv
 
 class Qagent:
-    def __init__(self, env, episodes, max_steps,alpha = .5, epsilon = .3, gamma = 1, d_dist =300,d_angle=36, d_thrust=30):
+    def __init__(self, env, episodes, max_steps,alpha = .5, epsilon = .3, gamma = 1):
         self.env= env
         # self.d_dist = d_dist
         # self.d_angle = d_angle
@@ -36,17 +36,19 @@ class Qagent:
                 if terminated:
                     # print(j)
                     break
-            # self.test()
+            self.test()
 
     def test(self):
         state = self.env.reset()
+        cum_reward = 0
         for j in range(self.max_steps):
             action = self.epsilon_greedy(state)
             next_state,reward,terminated = self.env.step(action)
             state = next_state
+            cum_reward+= reward
             if terminated:
                 break
-                    
+        self.rewards.append
     # def test(self):
     #     x,y,cp_x,cp_y,dist,angle = self.env.reset()
     #     b_x= [b.getCoord()[0] for b in self.env.board.checkpoints]
@@ -96,7 +98,7 @@ class Qagent:
         return new_dist, new_angle
     
     def save_rewards(self, filename):
-        commentaire = f"# {datetime.today()}\n# Qlearning:episodes {self.episodes}, max_steps: {self.max_steps}, alpha: {self.alpha}, epsilon: {self.epsilon}, gamma: {self.gamma}, d_dist: {self.d_dist}, d_angle: {self.d_angle}, d_thrust: {self.d_thrust} "
+        commentaire = f"# {datetime.today()}\n# Qlearning:episodes {self.episodes}, max_steps: {self.max_steps}, alpha: {self.alpha}, epsilon: {self.epsilon}, gamma: {self.gamma}, d_dist: {self.env.discretisation[1]}, d_angle: {self.env.discretisation[0]}, d_thrust: {self.env.nb_action} "
         with open(filename, mode="a", newline="") as file:
             file.write(commentaire)
             writer = csv.writer(file)
@@ -112,4 +114,4 @@ def main():
 
     agent.train()
     agent.test()
-main()
+# main()

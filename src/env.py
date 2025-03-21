@@ -29,7 +29,6 @@ class MPR_env():
         # step de discretisation pour les angles devant auquel on ajoute 2 pour les 2 etat possible si angle derriere
         
 
-
         
     def step(self,  action):
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
