@@ -63,8 +63,8 @@ class Qagent:
 
 
 def main():
-    env = MPR_env(discretisation=[5,4,3], nb_action=5)
-    agent = Qagent(env,5000,1000)
+    env = MPR_env(discretisation=[5,4,5], nb_action=5)
+    agent = Qagent(env,500,1000)
 
     agent.train()
     agent.test()
