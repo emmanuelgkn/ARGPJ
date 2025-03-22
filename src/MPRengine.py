@@ -10,12 +10,6 @@ HEIGHT = 9000
 CP_WIDTH = 600
 TIMEOUT =100
 
-class Collision():
-    def __init__(self,x,y,t):
-        self.x = x
-        self.y = y
-        self.t = t
-
 class Point():
     def __init__(self,x,y):
         self.x =x
@@ -39,24 +33,33 @@ class Pod(Point):
         self.angle = angle
         self.vx = 0
         self.vy = 0
-        self.angle =0
-
+        self.angle = 0
 
         self.timeout = TIMEOUT
  
+    # def getAngle(self,p: Point)->float:
+    #     """ calcul difference d'angle entre le pod et un point. in/out entre 0 et 359
+    #     0 : est, 90 sud, 180: ouest, 270: nord
+    #     """
+    #     dist = self.distance(p)
+    #     dx= (p.x -self.x)/(dist + 1e-4)
+    #     dy = (p.y - self.y)/(dist + 1e-4)
+
+    #     angle = np.arccos(dx)*180/np.pi
+
+    #     if (dy<0):
+    #         angle= 360 -angle
+    #     return angle
+
     def getAngle(self,p: Point)->float:
-        """ calcul difference d'angle entre le pod et un point. in/out entre 0 et 359
-        0 : est, 90 sud, 180: ouest, 270: nord
         """
-        dist = self.distance(p)
-        dx= (p.x -self.x)/(dist + 1e-4)
-        dy = (p.y - self.y)/(dist + 1e-4)
-
-        angle = np.arccos(dx)*180/np.pi
-
-        if (dy<0):
-            angle= 360 -angle
-        return angle
+        Calcule l'angle en degrés entre deux points (x1, y1) et (x2, y2).
+        Retourne un angle entre 0° et 360°.
+        """
+        x1, y1 = self.getCoord()
+        x2, y2 = p.getCoord()
+        angle = np.arctan2(y2 - y1, x2 - x1) * 180 / np.pi
+        return angle % 360  # Pour avoir toujours un angle positif
     
     def diffAngle(self,p : Point)->float:
         """indique dans quelle direction et de combien tourner pour faire face à p 
@@ -139,67 +142,6 @@ class Pod(Point):
             cy = self.y
 
         return Point(cx, cy)
-    
-    def Collision(self, p: Point):
-        """Détecte une Collision entre le pod et un point."""
-        # Carré de la distance
-        dist = self.distance2(p)
-
-        # Somme des rayons au carré
-        sr = (self.r + p.r) ** 2
-
-        # Vérification d'une Collision immédiate
-        if dist < sr:
-            return Collision(self, p, 0.0)
-
-        # Si les unités ont la même vitesse, il n'y aura jamais de Collision
-        if self.vx == p.vx and self.vy == p.vy:
-            return None
-
-        # Passage dans le référentiel de `u` (qui devient immobile à (0,0))
-        x = self.x - p.x
-        y = self.y - p.y
-        myp = Point(x, y)
-        vx = self.vx - p.vx
-        vy = self.vy - p.vy
-        up = Point(0, 0)
-
-        # Trouver le point le plus proche sur la ligne décrite par le vecteur vitesse
-        pt = up.closest(myp, Point(x + vx, y + vy))
-
-        # Carré de la distance entre `u` et ce point
-        pdist = up.distance2(pt)
-
-        # Carré de la distance entre `self` et ce point
-        mypdist = myp.distance2(pt)
-
-        # Vérification de la possibilité d'une Collision
-        if pdist < sr:
-            # Norme de la vitesse
-            length = math.sqrt(vx * vx + vy * vy)
-
-            # Déplacement en arrière pour trouver le point d'impact
-            backdist = math.sqrt(sr - pdist)
-            pt.x = pt.x - backdist * (vx / length)
-            pt.y = pt.y - backdist * (vy / length)
-
-            # Si on s'éloigne, il n'y a pas de Collision
-            if myp.distance2(pt) > mypdist:
-                return None
-
-            # Distance au point d'impact
-            pdist = pt.distance(myp)
-
-            # Si l'impact est trop loin pour ce tour, pas de Collision
-            if pdist > length:
-                return None
-
-            # Temps nécessaire pour atteindre le point d'impact
-            t = pdist / length
-
-            return Collision(self, pt, t)
-
-        return None
 
 
 
@@ -218,21 +160,34 @@ class Board():
         self.nb_cp = nb_cp
         self.checkpoints = []
         self.checkpoint_cp = [0]*nb_cp
+
+        
         for i in range(nb_cp):
             cp = CheckPoint(np.random.randint(WIDTH), np.random.randint(HEIGHT),i)
             self.checkpoints.append(cp)
         self.next_checkpoint = 0
         first_cp_x, first_cp_y = self.checkpoints[self.next_checkpoint].getCoord()
 
-        self.pod = Pod(first_cp_x, first_cp_y , 0, )
+        self.next_checkpoint = 0
+        first_cp_x, first_cp_y = self.checkpoints[self.next_checkpoint].getCoord()
+
+        self.pod = Pod(first_cp_x, first_cp_y , 0 )
+        x, y = self.pod.getCoord()
+
+        x2, y2 = self.checkpoints[self.next_checkpoint+1].getCoord()
+        self.pod.angle = np.arctan2(y2 - y, x2 - x) * 180 / np.pi
+
+        
 
     def updateToNextCheckpoint(self):
-        if self.pod.distance(self.checkpoints[self.next_checkpoint])<CP_WIDTH/2:
+        if self.pod.distance(self.checkpoints[self.next_checkpoint])<CP_WIDTH:
             self.pod.timeout = TIMEOUT
             self.checkpoint_cp[self.next_checkpoint]+=1
             self.next_checkpoint = (self.next_checkpoint +1)% self.nb_cp
     
     def checkTerminated(self):
+        # print(self.checkpoint_cp)
+        # print([self.nb_round]*self.nb_cp)
         if self.checkpoint_cp == [self.nb_round]*self.nb_cp or self.pod.timeout<0:
             self.terminated = True
     
@@ -246,6 +201,8 @@ class Board():
         dist = self.pod.distance(next_cp)
         angle = self.pod.getAngle(next_cp)
 
+        # print(self.pod.timeout)
+
         return x,y,next_cp_x,next_cp_y,dist,angle
     
     def getInfos(self):
@@ -254,24 +211,24 @@ class Board():
 
 
 def main():
-    board = Board(3,1)
+    board = Board(2,3)
     l_x = []
     l_y=[]
 
     b_x= [b.getCoord()[0] for b in board.checkpoints]
     b_y= [b.getCoord()[1] for b in board.checkpoints]
     while not board.terminated:
-        x,y,next_cp_x,next_cp_y,dist,angle = board.play(board.checkpoints[board.next_checkpoint], 1)
+        x,y,next_cp_x,next_cp_y,dist,angle = board.play(board.checkpoints[board.next_checkpoint], 100)
         # print(x,y,next_cp_x,next_cp_y,dist,angle)
         l_x.append(x)
         l_y.append(y)
     
     plt.figure()
-    plt.scatter(l_x,l_y)
-    plt.scatter(b_x,b_y, c = 'red')
+    plt.scatter(l_x,l_y,c  = np.arange(len(l_x)), s = 3)
+    plt.scatter(b_x,b_y, c = 'red', s=600)
     plt.show()
 
 
-# main()
+main()
 
 
