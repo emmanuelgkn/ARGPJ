@@ -154,17 +154,24 @@ class CheckPoint(Point):
 
 
 class Board():
-    def __init__(self,nb_cp, nb_round):
+    def __init__(self,nb_cp, nb_round,custom=False):
         self.terminated = False
         self.nb_round = nb_round
         self.nb_cp = nb_cp
         self.checkpoints = []
         self.checkpoint_cp = [0]*nb_cp
 
-        
-        for i in range(nb_cp):
-            cp = CheckPoint(np.random.randint(WIDTH), np.random.randint(HEIGHT),i)
-            self.checkpoints.append(cp)
+        if custom:
+            self.checkpoints.append(CheckPoint(14010, 2995,0))
+            self.checkpoints.append(CheckPoint(4004, 7791,1)) #7791
+            self.checkpoints.append(CheckPoint(12007, 1982,2))
+            self.checkpoints.append(CheckPoint(10700, 5025,3))
+        else:
+            for i in range(nb_cp):
+                cp = CheckPoint(np.random.randint(WIDTH), np.random.randint(HEIGHT),i)
+                self.checkpoints.append(cp)
+
+
         self.next_checkpoint = 0
         first_cp_x, first_cp_y = self.checkpoints[self.next_checkpoint].getCoord()
 
@@ -229,6 +236,6 @@ def main():
     plt.show()
 
 
-main()
+# main()
 
 

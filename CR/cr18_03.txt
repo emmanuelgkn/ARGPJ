@@ -21,7 +21,7 @@ bonne discretisation pour devant 5 niveau entre 90 et -90 et un ou deux etats po
 voir pour un checkpoint recompense inversement proportionnelle a la distance au checkpoint OK
 
 
-graph vitesse moyenne et plotter les trajectoires
+graph vitesse moyenne et plotter les trajectoires OK
 
 max nombre action: 5 OK
 rajouter la vitesse dans les etats OK

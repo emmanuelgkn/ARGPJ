@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation : list, nb_action=5):
+    def __init__(self, discretisation : list, nb_action=5,nb_cp = 4,nb_round = 3,custom=True):
 
-        self.board = Board(3,3)
+        self.board = Board(nb_cp,nb_round,custom)
         self.terminated = False
         height, width = self.board.getInfos()
         
@@ -65,7 +65,7 @@ class MPR_env():
     
 
     def reset(self,seed=None,options=None):
-        self.board = Board(nb_cp=3,nb_round=3)
+        self.board = Board(nb_cp=4,nb_round=3)
         self.terminated = False
         self.traj = []
         self.vitesse = []
@@ -125,6 +125,8 @@ class MPR_env():
         b_y= [b.getCoord()[1] for b in self.board.checkpoints]
         x,y = zip(*self.traj)
         plt.figure()
+        plt.gca().invert_yaxis() 
+
         plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
         plt.scatter(b_x,b_y, c = 'red', s=600)
 

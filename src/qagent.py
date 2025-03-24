@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from datetime import datetime
 import csv
+import time
 
 class Qagent:
     def __init__(self, env, episodes, max_steps,alpha = .7, epsilon = .3, gamma = 0.95):
@@ -31,13 +32,20 @@ class Qagent:
     def test(self):
         state = self.env.reset()
         cum_reward = 0
+        start_time = time.time()
+        pas = 0
         for j in range(self.max_steps):
             action = self.epsilon_greedy(state)
             next_state,reward,terminated = self.env.step(action)
             state = next_state
             cum_reward+= reward
+            pas += 1
             if terminated:
                 break
+        end_time = time.time()
+        print(f"Temps de l'agent en course : {(end_time - start_time):.2f} secondes")
+        print(f"nb pas du de l'agent en course : {pas} ")
+
         self.rewards.append
         self.env.show_traj()
         self.env.plot_vitesse()
@@ -68,4 +76,4 @@ def main():
 
     agent.train()
     agent.test()
-main()
+# main()
