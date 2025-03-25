@@ -25,9 +25,10 @@ class Qagent:
                 next_state,reward,terminated = self.env.step(action)
                 self.update_q_table(state,action,next_state,reward)
                 state = next_state
+
                 if terminated:
                     break
-                
+            # print(max(self.env.vitesse))
             # self.test()
 
     def test(self):
@@ -36,7 +37,7 @@ class Qagent:
         start_time = time.time()
         pas = 0
         for j in range(self.max_steps):
-            action = self.epsilon_greedy(state)
+            action = np.argmax(self.qtable[state])
             next_state,reward,terminated = self.env.step(action)
             state = next_state
             cum_reward+= reward
@@ -72,8 +73,8 @@ class Qagent:
 
 
 def main():
-    env = MPR_env(discretisation=[5,4,5], nb_action=5, custom=True)
-    agent = Qagent(env,500,1000)
+    env = MPR_env(discretisation=[5,4,3], nb_action=5, custom=False)
+    agent = Qagent(env,2000,1000)
 
     agent.train()
     agent.test()

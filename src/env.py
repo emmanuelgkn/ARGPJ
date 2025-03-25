@@ -38,15 +38,18 @@ class MPR_env():
         thrust = self.convert_action(action)
         x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust)
         self.traj.append([x,y])
-        self.vitesse.append(self.discretized_speed(x,y))
+        # self.vitesse.append(self.discretized_speed(x,y))
+        self.vitesse.append(np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2))
 
         #si rien de specifique ne s'est produit 
-        reward =  -.01*(self.discretisation[2] -self.discretized_speed(x,y))
+        # reward =  -.01*(self.discretisation[2] -self.discretized_speed(x,y))
+        reward = - (self.discretisation[2] -self.discretized_speed(x,y) )
+    
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -200
+                reward = -20
                 self.terminated = True
 
             #arret fin de course
@@ -54,9 +57,7 @@ class MPR_env():
                 reward= 100
                 self.terminated = True
 
-        #passage d'un checkpoint:
-        if dist<600:
-            reward = 50
+
 
         next_state =self.discretized_state(angle, dist, x,y)
 
@@ -87,23 +88,31 @@ class MPR_env():
                 if angle <  (i+1)* (180/self.discretisation[0]):
                     return i
         if angle < 270:
-            return self.discretisation[0]
+            res = self.discretisation[0]
         else:
-            return self.discretisation[0] +1
+            res = self.discretisation[0] +1
+
+        assert res < self.discretisation[0]+2
+        return res
         
     def discretized_distance(self, dist):
         if dist> self.max_dist:
             dist= self.max_dist
-        return round(dist/self.max_dist * (self.discretisation[1]-1))
+        
+        res = round(dist/self.max_dist * (self.discretisation[1]-1))
+        assert res < self.discretisation[1]
+        return res
     
     def discretized_speed(self, x,y):
 
         vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
         #discretisation logarithmique 
-        bins = np.logspace(np.log10(1e-3), np.log10(500), num=self.discretisation[2]+1)
+        bins = np.logspace(np.log(1), np.log(500), num=self.discretisation[2]+1)
         #discretisation lineaire
         # bins = np.arange(0,500, round(500/self.discretisation[2]+1))
-        return np.digitize(vitesse, bins) - 1
+        res = np.digitize(vitesse, bins) - 1
+        assert res < self.discretisation[2]
+        return res
     
 
     def discretized_state(self, angle, dist, x, y):
@@ -116,7 +125,8 @@ class MPR_env():
 
     def convert_action(self, action):
         mapping = {0:0,1:30,2:50,3:80,4:100}
-        return action* (100/self.nb_action)
+        # mapping = {0:0,1:50,2:100}
+        return mapping[action]
 
 
     def show_traj(self):
@@ -125,8 +135,9 @@ class MPR_env():
         b_y= [b.getCoord()[1] for b in self.board.checkpoints]
         x,y = zip(*self.traj)
         plt.figure()
+        plt.xlim(0,16000)
+        plt.ylim(0,9000)
         plt.gca().invert_yaxis() 
-
         plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
         plt.scatter(b_x,b_y, c = 'red', s=600)
 
@@ -137,6 +148,5 @@ class MPR_env():
         plt.scatter(np.arange(len(self.vitesse)),self.vitesse)
         plt.xlabel("nb step")
         plt.ylabel("vitesse")
-        plt.ylim(0,5)
         plt.title("evolution de la vitesse en test")
         plt.show()
