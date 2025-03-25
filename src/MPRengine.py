@@ -160,7 +160,6 @@ class Board():
         self.nb_cp = nb_cp
         self.checkpoints = []
         self.checkpoint_cp = [0]*nb_cp
-
         if custom:
             self.checkpoints.append(CheckPoint(14010, 2995,0))
             self.checkpoints.append(CheckPoint(4004, 7791,1)) #7791
@@ -193,8 +192,6 @@ class Board():
             self.next_checkpoint = (self.next_checkpoint +1)% self.nb_cp
     
     def checkTerminated(self):
-        # print(self.checkpoint_cp)
-        # print([self.nb_round]*self.nb_cp)
         if self.checkpoint_cp == [self.nb_round]*self.nb_cp or self.pod.timeout<0:
             self.terminated = True
     
@@ -208,7 +205,6 @@ class Board():
         dist = self.pod.distance(next_cp)
         angle = self.pod.getAngle(next_cp)
 
-        # print(self.pod.timeout)
 
         return x,y,next_cp_x,next_cp_y,dist,angle
     

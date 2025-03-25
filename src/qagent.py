@@ -27,6 +27,7 @@ class Qagent:
                 state = next_state
                 if terminated:
                     break
+                
             # self.test()
 
     def test(self):
@@ -71,9 +72,9 @@ class Qagent:
 
 
 def main():
-    env = MPR_env(discretisation=[5,4,5], nb_action=5)
+    env = MPR_env(discretisation=[5,4,5], nb_action=5, custom=True)
     agent = Qagent(env,500,1000)
 
     agent.train()
     agent.test()
-# main()
+main()

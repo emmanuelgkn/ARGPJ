@@ -8,11 +8,11 @@ import matplotlib.pyplot as plt
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation : list, nb_action=5,nb_cp = 4,nb_round = 3,custom=True):
-
+    def __init__(self, discretisation : list, nb_action=5,nb_cp = 4,nb_round = 3,custom=False):
         self.board = Board(nb_cp,nb_round,custom)
         self.terminated = False
         height, width = self.board.getInfos()
+        self.custom =custom
         
         #discretisation est une liste qui donne le nombre de valeurs possible pour chaque attribut que l'on souhaite discretiser 
         #ex si etat = (angle,distance,vitesse) et angle peut prendre 7 valeurs distance 4 et vitesse 3 alors discretisation = [7,4,3]
@@ -41,8 +41,7 @@ class MPR_env():
         self.vitesse.append(self.discretized_speed(x,y))
 
         #si rien de specifique ne s'est produit 
-        reward =  -(1 - 1/(1 +dist) ) 
-
+        reward =  -.01*(self.discretisation[2] -self.discretized_speed(x,y))
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
@@ -52,7 +51,7 @@ class MPR_env():
 
             #arret fin de course
             else:
-                reward= 200
+                reward= 100
                 self.terminated = True
 
         #passage d'un checkpoint:
@@ -65,7 +64,7 @@ class MPR_env():
     
 
     def reset(self,seed=None,options=None):
-        self.board = Board(nb_cp=4,nb_round=3)
+        self.board = Board(nb_cp=4,nb_round=3,custom =self.custom)
         self.terminated = False
         self.traj = []
         self.vitesse = []
@@ -99,11 +98,11 @@ class MPR_env():
     
     def discretized_speed(self, x,y):
 
-        vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
+        vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
         #discretisation logarithmique 
-        # bins = np.logspace(np.log10(1e-3), np.log10(450), num=self.discretisation[2]+1)
+        bins = np.logspace(np.log10(1e-3), np.log10(500), num=self.discretisation[2]+1)
         #discretisation lineaire
-        bins = np.arange(0,500, round(500/self.discretisation[2]+1))
+        # bins = np.arange(0,500, round(500/self.discretisation[2]+1))
         return np.digitize(vitesse, bins) - 1
     
 
@@ -116,6 +115,7 @@ class MPR_env():
         return index
 
     def convert_action(self, action):
+        mapping = {0:0,1:30,2:50,3:80,4:100}
         return action* (100/self.nb_action)
 
 
