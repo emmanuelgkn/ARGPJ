@@ -104,7 +104,7 @@ class MPR_env():
         #option2
         # bins = np.logspace(np.log10(1), np.log10(self.max_dist), num=self.discretisation[1])
         # res = np.digitize(dist, bins) - 1
-        
+
         #option3
         if dist< self.max_dist/32:
             res = 0
@@ -137,6 +137,7 @@ class MPR_env():
 
     def discretized_state(self, angle, dist, x, y):
         state = (self.discretized_angle(angle), self.discretized_distance(dist), self.discretized_speed(x,y))
+        print(state)
         self.past_pos = (x,y)
         index = state[0]*(self.discretisation[1] * self.discretisation[2]) + state[1]*self.discretisation[2] + state[2]
 
