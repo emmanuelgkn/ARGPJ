@@ -93,6 +93,8 @@ class Pod(Point):
         self.angle+=angle
         self.angle%= 360
 
+
+
     def boost(self,thrust: int):
         rad = math.radians(self.angle)
         self.vx += np.cos(rad)*thrust

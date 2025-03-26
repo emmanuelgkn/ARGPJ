@@ -42,9 +42,7 @@ class MPR_env():
         self.vitesse.append(self.discretized_speed(x,y))
 
         #si rien de specifique ne s'est produit 
-        # reward =  -.01*(self.discretisation[2] -self.discretized_speed(x,y))
         reward = - (self.discretisation[2] -self.discretized_speed(x,y) )
-    
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
@@ -85,9 +83,9 @@ class MPR_env():
         #corresponds à devant le pod. si l'angle indique l'arrière du pod il est discretisé en deux états
         if 0<= angle<= 180:
             for i in range(self.discretisation[0]):
-                if angle <  (i+1)* (180/self.discretisation[0]):
-                    return i
-        if angle < 270:
+                if angle <=  (i+1)* (180/self.discretisation[0]):
+                    res = i
+        elif angle < 270:
             res = self.discretisation[0]
         else:
             res = self.discretisation[0] +1
@@ -106,11 +104,20 @@ class MPR_env():
         # res = np.digitize(dist, bins) - 1
 
         #option3
-        if dist< self.max_dist/32:
+        # if dist< 1000:
+        #     res = 0
+        # elif dist<2000:
+        #     res = 1
+        # elif dist<4500:
+        #     res = 2
+        # else:
+        #     res = 3
+
+        if dist< 1000:
             res = 0
-        elif dist<self.max_dist/16:
+        elif dist<2000:
             res = 1
-        elif dist<self.max_dist/8:
+        elif dist<8000:
             res = 2
         else:
             res = 3
@@ -129,7 +136,7 @@ class MPR_env():
         # return res
         if vitesse<100:
             return 0
-        if vitesse<300:
+        elif vitesse<300:
             return 1
         else:
             return 2
@@ -137,7 +144,6 @@ class MPR_env():
 
     def discretized_state(self, angle, dist, x, y):
         state = (self.discretized_angle(angle), self.discretized_distance(dist), self.discretized_speed(x,y))
-        print(state)
         self.past_pos = (x,y)
         index = state[0]*(self.discretisation[1] * self.discretisation[2]) + state[1]*self.discretisation[2] + state[2]
 
@@ -166,7 +172,7 @@ class MPR_env():
 
     def plot_vitesse(self):
         plt.figure()
-        plt.scatter(np.arange(len(self.vitesse)),self.vitesse)
+        plt.plot(np.arange(len(self.vitesse)),self.vitesse)
         plt.xlabel("nb step")
         plt.ylabel("vitesse")
         plt.title("evolution de la vitesse en test")

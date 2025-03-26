@@ -30,6 +30,7 @@ class Qagent:
                     break
             # print(max(self.env.vitesse))
             # self.test()
+            self.epsilon*= 0.995
 
     def test(self):
         state = self.env.reset()
@@ -79,9 +80,9 @@ class Qagent:
 
 
 def main():
-    #discretisation = []
+    #discretisation = [(angle,distance,vitesse)]
     env = MPR_env(discretisation=[5,4,3], nb_action=3, custom=False)
-    agent = Qagent(env,1000,1000)
+    agent = Qagent(env,20000,1000)
 
     agent.train()
     agent.test()
