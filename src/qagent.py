@@ -70,12 +70,20 @@ class Qagent:
             for i, reward in enumerate(self.rewards):
                 writer.writerow([i, reward])
 
+    def qtable_file(self, filename):
+        with open(filename, 'w') as f:
+            f.write("qtable = [\n")
+            for row in self.qtable:
+                f.write(f"    {repr(row)},\n")
+            f.write("]\n")
 
 
 def main():
-    env = MPR_env(discretisation=[5,4,3], nb_action=5, custom=False)
-    agent = Qagent(env,2000,1000)
+    #discretisation = []
+    env = MPR_env(discretisation=[5,4,3], nb_action=3, custom=False)
+    agent = Qagent(env,1000,1000)
 
     agent.train()
     agent.test()
+    agent.qtable_file("qtable1.txt")
 main()

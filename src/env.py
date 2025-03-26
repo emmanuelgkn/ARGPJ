@@ -39,7 +39,7 @@ class MPR_env():
         x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust)
         self.traj.append([x,y])
         # self.vitesse.append(self.discretized_speed(x,y))
-        self.vitesse.append(np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2))
+        self.vitesse.append(self.discretized_speed(x,y))
 
         #si rien de specifique ne s'est produit 
         # reward =  -.01*(self.discretisation[2] -self.discretized_speed(x,y))
@@ -98,21 +98,41 @@ class MPR_env():
     def discretized_distance(self, dist):
         if dist> self.max_dist:
             dist= self.max_dist
+        #option1
+        # res = round(dist/self.max_dist * (self.discretisation[1]-1))
+
+        #option2
+        # bins = np.logspace(np.log10(1), np.log10(self.max_dist), num=self.discretisation[1])
+        # res = np.digitize(dist, bins) - 1
         
-        res = round(dist/self.max_dist * (self.discretisation[1]-1))
+        #option3
+        if dist< self.max_dist/32:
+            res = 0
+        elif dist<self.max_dist/16:
+            res = 1
+        elif dist<self.max_dist/8:
+            res = 2
+        else:
+            res = 3
         assert res < self.discretisation[1]
         return res
     
     def discretized_speed(self, x,y):
 
         vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
-        #discretisation logarithmique 
-        bins = np.logspace(np.log(1), np.log(500), num=self.discretisation[2]+1)
-        #discretisation lineaire
-        # bins = np.arange(0,500, round(500/self.discretisation[2]+1))
-        res = np.digitize(vitesse, bins) - 1
-        assert res < self.discretisation[2]
-        return res
+        # #discretisation logarithmique 
+        # bins = np.logspace(np.log(1), np.log(500), num=self.discretisation[2]+1)
+        # # #discretisation lineaire
+        # # bins = np.arange(0,500, round(500/self.discretisation[2]+1))
+        # res = np.digitize(vitesse, bins) - 1
+        # assert res < self.discretisation[2]
+        # return res
+        if vitesse<100:
+            return 0
+        if vitesse<300:
+            return 1
+        else:
+            return 2
     
 
     def discretized_state(self, angle, dist, x, y):
@@ -124,8 +144,8 @@ class MPR_env():
         return index
 
     def convert_action(self, action):
-        mapping = {0:0,1:30,2:50,3:80,4:100}
-        # mapping = {0:0,1:50,2:100}
+        # mapping = {0:0,1:30,2:50,3:80,4:100}
+        mapping = {0:0,1:50,2:100}
         return mapping[action]
 
 
