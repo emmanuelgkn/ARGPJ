@@ -38,7 +38,7 @@ class Qagent:
 
                 if terminated:
                     break
-            self.epsilon*= 0.995
+            # self.epsilon*= 0.995
 
             if self.do_test and i%50 ==0:
                 mean_steps, mean_reward = self.test()
@@ -70,6 +70,19 @@ class Qagent:
             steps_per_test.append(pas)
             reward_per_test.append(cum_reward)
         return np.mean(steps_per_test), np.mean(reward_per_test)
+
+    def one_run(self):
+        
+        state = self.env.reset()
+        for j in range(self.max_steps):
+            action = np.argmax(self.qtable[state])
+            next_state,reward,terminated = self.env.step(action)
+            state = next_state
+            if terminated:
+                break
+
+        self.env.show_traj()
+
 
 
 
@@ -105,3 +118,12 @@ class Qagent:
                 f.write(f"    {repr(row)},\n")
             f.write("]\n")
 
+
+def main():
+    agent = Qagent(MPR_env(), do_test=False, episodes= 1000, max_steps=100)
+    agent.train()
+    agent.one_run()
+    agent.env.show_traj()
+    agent.env.plot_vitesse()
+    
+# main()
