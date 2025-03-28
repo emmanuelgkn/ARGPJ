@@ -7,7 +7,7 @@ import csv
 import time
 
 class Qagent:
-    def __init__(self, env, episodes, max_steps,alpha = .7, epsilon = .3, gamma = 0.95):
+    def __init__(self, env, episodes, max_steps,alpha = .7, epsilon = .3, gamma = 0.95, do_test = True, nb_test = 100):
         self.env= env
         self.episodes = episodes
         self.max_steps = max_steps
@@ -15,7 +15,17 @@ class Qagent:
         self.epsilon = epsilon
         self.gamma = gamma   
         self.qtable = np.zeros((self.env.nb_etat,self.env.nb_action))
+
+        #pour stocker les recompenses moyennes en fonction du nombre d'episode d'apprentissage
+        #contient des tuples des la forme (nombre d'episodes d'apprentissage, recompense moyenne à ce stade de l'apprentissage)
         self.rewards = []
+        #pareil pour le nombre de pas
+        self.steps = []
+
+        #False si l'on souhaite evaluer l'agent durant l'apprentissage
+        self.do_test = do_test
+        #nombre de test à faire par phase de test durant l'apprentissage
+        self.nb_test = nb_test
 
     def train(self):
         for i in tqdm(range(self.episodes)):
@@ -28,30 +38,40 @@ class Qagent:
 
                 if terminated:
                     break
-            # print(max(self.env.vitesse))
-            # self.test()
             self.epsilon*= 0.995
 
-    def test(self):
-        state = self.env.reset()
-        cum_reward = 0
-        start_time = time.time()
-        pas = 0
-        for j in range(self.max_steps):
-            action = np.argmax(self.qtable[state])
-            next_state,reward,terminated = self.env.step(action)
-            state = next_state
-            cum_reward+= reward
-            pas += 1
-            if terminated:
-                break
-        end_time = time.time()
-        print(f"Temps de l'agent en course : {(end_time - start_time):.2f} secondes")
-        print(f"nb pas du de l'agent en course : {pas} ")
+            if self.do_test and i%50 ==0:
+                mean_steps, mean_reward = self.test()
+                self.steps.append((i,mean_steps))
+                self.rewards.append((i,mean_reward))
 
-        self.rewards.append
-        self.env.show_traj()
-        self.env.plot_vitesse()
+
+
+    def test(self):
+
+        steps_per_test = []
+        reward_per_test = []
+        
+        for i in range(self.nb_test):
+            state = self.env.reset()
+            pas = 0
+            cum_reward = 0
+            for j in range(self.max_steps):
+                action = np.argmax(self.qtable[state])
+                next_state,reward,terminated = self.env.step(action)
+                state = next_state
+                cum_reward+= reward
+                pas += 1
+                if terminated:
+                    pas = j
+                    break
+            if pas ==0:
+                pas = self.max_steps
+            steps_per_test.append(pas)
+            reward_per_test.append(cum_reward)
+        return np.mean(steps_per_test), np.mean(reward_per_test)
+
+
 
     def epsilon_greedy(self,state):
         if np.random.random() < self.epsilon:
@@ -63,13 +83,20 @@ class Qagent:
         self.qtable[state, action] += self.alpha*(reward + self.gamma*next_q - self.qtable[state,action])
 
     def save_rewards(self, filename):
-        commentaire = f"# {datetime.today()}\n# Qlearning:episodes {self.episodes}, max_steps: {self.max_steps}, alpha: {self.alpha}, epsilon: {self.epsilon}, gamma: {self.gamma}, d_dist: {self.env.discretisation[1]}, d_angle: {self.env.discretisation[0]}, d_thrust: {self.env.nb_action} "
+        commentaire = f"# {datetime.today()}\n# Qlearning:episodes {self.episodes}, max_steps: {self.max_steps}, alpha: {self.alpha}, epsilon: {self.epsilon}, gamma: {self.gamma}"
         with open(filename, mode="a", newline="") as file:
             file.write(commentaire)
             writer = csv.writer(file)
-            writer.writerow(["Episode", "Reward"]) 
-            for i, reward in enumerate(self.rewards):
+            for i, reward in self.rewards:
                 writer.writerow([i, reward])
+
+    def save_steps(self, filename):
+        commentaire = f"# {datetime.today()}\n# Qlearning:episodes {self.episodes}, max_steps: {self.max_steps}, alpha: {self.alpha}, epsilon: {self.epsilon}, gamma: {self.gamma}"
+        with open(filename, mode="a", newline="") as file:
+            file.write(commentaire)
+            writer = csv.writer(file)
+            for i, step in self.steps:
+                writer.writerow([i, step])
 
     def qtable_file(self, filename):
         with open(filename, 'w') as f:
@@ -78,13 +105,3 @@ class Qagent:
                 f.write(f"    {repr(row)},\n")
             f.write("]\n")
 
-
-def main():
-    #discretisation = [(angle,distance,vitesse)]
-    env = MPR_env(discretisation=[5,4,3], nb_action=3, custom=False)
-    agent = Qagent(env,20000,1000)
-
-    agent.train()
-    agent.test()
-    agent.qtable_file("qtable1.txt")
-main()

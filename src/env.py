@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation : list, nb_action=5,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [5,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
         self.board = Board(nb_cp,nb_round,custom)
         self.terminated = False
         height, width = self.board.getInfos()
@@ -42,7 +42,7 @@ class MPR_env():
         self.vitesse.append(self.discretized_speed(x,y))
 
         #si rien de specifique ne s'est produit 
-        reward = - (self.discretisation[2] -self.discretized_speed(x,y) )
+        reward = - 0.1*(self.discretisation[2] -self.discretized_speed(x,y) )
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout

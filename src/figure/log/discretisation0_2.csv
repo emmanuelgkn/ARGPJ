@@ -1,2 +1,0 @@
-# 2025-03-21 12:54:51.280443
-# Qlearning:episodes 10000, max_steps: 10000, alpha: 0.5, epsilon: 0.3, gamma: 0.1, d_dist: 4, d_angle: 3, d_thrust: 4 Episode,Reward
