@@ -120,10 +120,10 @@ class Qagent:
 
 
 def main():
-    agent = Qagent(MPR_env(), do_test=False, episodes= 1000, max_steps=100)
+    agent = Qagent(MPR_env(custom=True), do_test=False, episodes= 1000, max_steps=100)
     agent.train()
     agent.one_run()
     # agent.env.show_traj()
     agent.env.plot_vitesse()
     
-main()
+# main()
