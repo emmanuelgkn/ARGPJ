@@ -1,7 +1,7 @@
 import numpy as np
 from env import MPR_env
 import matplotlib.pyplot as plt
-from tqdm import tqdm
+from tqdm import tqdm # type: ignore
 from datetime import datetime
 import csv
 import time
@@ -22,7 +22,7 @@ class Qagent:
         print(self.device)
 
         # Taille de l'état et des actions
-        self.state_dim = 3  # Par exemple, nombre de features de l'état
+        self.state_dim = 4  # Par exemple, nombre de features de l'état
         self.action_dim = 9
 
         # Modèle Q
