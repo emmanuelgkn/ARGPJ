@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation = [5,4,3] , nb_action=9,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [5,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
         self.board = Board(nb_cp,nb_round,custom)
         self.terminated = False
         height, width = self.board.getInfos()
@@ -37,7 +37,8 @@ class MPR_env():
     def step(self,  action):
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         target_x, target_y, thrust = self.convert_action(action,*next_cp.getCoord())
-        x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(Point(target_x,target_y),thrust)
+        # x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(Point(target_x,target_y),thrust)
+        x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust)
         self.traj.append([x,y])
         # self.vitesse.append(self.discretized_speed(x,y))
         self.vitesse.append(self.discretized_speed(x,y))
@@ -59,9 +60,15 @@ class MPR_env():
 
 
         next_state =self.discretized_state(angle, dist, x,y)
-        next_state_matrix = [self.discretized_angle(angle),
-                            self.discretized_distance(dist),
-                            self.discretized_speed(x,y)]
+        # dans le cas discret
+        # next_state_matrix = [self.discretized_angle(angle),
+        #                     self.discretized_distance(dist),
+        #                     self.discretized_speed(x,y)]
+
+        # dans le cas continu
+        next_state_matrix = [angle,
+                            dist,
+                            x,y]
 
         return next_state,next_state_matrix,reward, self.terminated
     
@@ -79,9 +86,15 @@ class MPR_env():
         dist = self.board.pod.distance(next_cp)
         angle = self.board.pod.angle
 
-        state_matrix = [self.discretized_angle(angle),
-                        self.discretized_distance(dist),
-                        self.discretized_speed(x,y)]
+        # dans le cas discret
+        # state_matrix = [self.discretized_angle(angle),
+        #                 self.discretized_distance(dist),
+        #                 self.discretized_speed(x,y)]
+
+        # dans le cas continu
+        state_matrix = [angle,
+                        dist,
+                        x,y]
 
         return self.discretized_state(angle,dist, x, y), state_matrix
     
@@ -160,23 +173,24 @@ class MPR_env():
 
     def convert_action(self, action,x_target, y_target):
         # mapping = {0:0,1:30,2:50,3:80,4:100}
-        thrust = action //3
-        angle_action = action % 3
+        # thrust = action //3
+        # angle_action = action % 3
         mapping_thrust = {0:0,1:50,2:100}
-        current_x, current_y = self.board.pod.getCoord()
-        angle = math.degrees(math.atan2(y_target - current_y, x_target - current_x))
-        if angle_action == 0:  
-            new_angle = angle - 18
-        elif angle_action == 1: 
-            new_angle = angle
-        elif angle_action == 2: 
-            new_angle = angle + 18
+        # current_x, current_y = self.board.pod.getCoord()
+        # angle = math.degrees(math.atan2(y_target - current_y, x_target - current_x))
+        # if angle_action == 0:  
+        #     new_angle = angle - 18
+        # elif angle_action == 1: 
+        #     new_angle = angle
+        # elif angle_action == 2: 
+        #     new_angle = angle + 18
     
-        new_angle_rad = math.radians(new_angle)
+        # new_angle_rad = math.radians(new_angle)
     
-        new_x = current_x + math.cos(new_angle_rad)
-        new_y = current_y + math.sin(new_angle_rad)
-        return new_x, new_y,mapping_thrust[thrust]
+        # new_x = current_x + math.cos(new_angle_rad)
+        # new_y = current_y + math.sin(new_angle_rad)
+        # new_x, new_y,
+        return mapping_thrust[action]
 
     
 
