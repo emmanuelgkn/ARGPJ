@@ -18,7 +18,7 @@ class Qagent:
         self.alpha = alpha
         self.epsilon = epsilon
         self.gamma = gamma   
-        self.device = "cpu" # torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = "cuda" # torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(self.device)
 
         # Taille de l'état et des actions
@@ -171,7 +171,7 @@ def main():
     agent.train()
     agent.saveWeights()
     agent.one_run()
-    # agent.env.show_traj()
+    agent.env.show_traj()
     agent.env.plot_vitesse()
     
-# main()
+main()
