@@ -59,8 +59,11 @@ class MPR_env():
 
 
         next_state =self.discretized_state(angle, dist, x,y)
+        next_state_matrix = [self.discretized_angle(angle),
+                            self.discretized_distance(dist),
+                            self.discretized_speed(x,y)]
 
-        return next_state,reward, self.terminated
+        return next_state,next_state_matrix,reward, self.terminated
     
 
     def reset(self,seed=None,options=None):
@@ -76,7 +79,11 @@ class MPR_env():
         dist = self.board.pod.distance(next_cp)
         angle = self.board.pod.angle
 
-        return self.discretized_state(angle,dist, x, y)
+        state_matrix = [self.discretized_angle(angle),
+                        self.discretized_distance(dist),
+                        self.discretized_speed(x,y)]
+
+        return self.discretized_state(angle,dist, x, y), state_matrix
     
 
     def discretized_angle(self, angle):

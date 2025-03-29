@@ -29,10 +29,10 @@ class Qagent:
 
     def train(self):
         for i in tqdm(range(self.episodes)):
-            state = self.env.reset()
+            state,_ = self.env.reset()
             for j in range(self.max_steps):
                 action = self.epsilon_greedy(state)
-                next_state,reward,terminated = self.env.step(action)
+                next_state,_,reward,terminated = self.env.step(action)
                 self.update_q_table(state,action,next_state,reward)
                 state = next_state
 
@@ -53,12 +53,12 @@ class Qagent:
         reward_per_test = []
         
         for i in range(self.nb_test):
-            state = self.env.reset()
+            state,_ = self.env.reset()
             pas = 0
             cum_reward = 0
             for j in range(self.max_steps):
                 action = np.argmax(self.qtable[state])
-                next_state,reward,terminated = self.env.step(action)
+                next_state,_,reward,terminated = self.env.step(action)
                 state = next_state
                 cum_reward+= reward
                 pas += 1
@@ -73,10 +73,10 @@ class Qagent:
 
     def one_run(self):
         
-        state = self.env.reset()
+        state,_ = self.env.reset()
         for j in range(self.max_steps):
             action = np.argmax(self.qtable[state])
-            next_state,reward,terminated = self.env.step(action)
+            next_state,_,reward,terminated = self.env.step(action)
             state = next_state
             if terminated:
                 break
@@ -123,7 +123,7 @@ def main():
     agent = Qagent(MPR_env(), do_test=False, episodes= 1000, max_steps=100)
     agent.train()
     agent.one_run()
-    agent.env.show_traj()
+    # agent.env.show_traj()
     agent.env.plot_vitesse()
     
-# main()
+main()
