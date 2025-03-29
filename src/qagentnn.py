@@ -159,10 +159,10 @@ class Qagent:
             f.write("]\n")
 
     def saveWeights(self):
-        torch.save(self.model, 'wights_qagent.pth')
+        torch.save(self.model.state_dict(), 'weights_qagent.pth')
 
     def loadWeights(self):
-        self.model.load_state_dict(torch.load('wights_qagent.pth'))
+        self.model.load_state_dict(torch.load('weights_qagent.pth'))
         self.model.eval() #le mets en mode évaluation pour optimiser les prédictions
 
 
@@ -174,4 +174,4 @@ def main():
     # agent.env.show_traj()
     agent.env.plot_vitesse()
     
-main()
+# main()
