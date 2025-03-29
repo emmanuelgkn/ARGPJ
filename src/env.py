@@ -191,6 +191,7 @@ class MPR_env():
         plt.gca().invert_yaxis() 
         plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
         plt.scatter(b_x,b_y, c = 'red', s=600)
+        plt.savefig("../Graphiques/figuretraj.png")
 
         plt.show()
 
@@ -202,4 +203,5 @@ class MPR_env():
         plt.xlabel("nb step")
         plt.ylabel("vitesse")
         plt.title("evolution de la vitesse en test")
+        plt.savefig("../Graphiques/figurevitesse.png")
         plt.show()

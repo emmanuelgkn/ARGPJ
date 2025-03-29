@@ -5,7 +5,7 @@ import torch.optim as optim
 import numpy as np
 
 # Vérifier si un GPU est dispo
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = "cpu"#torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class QNetwork(nn.Module):
     def __init__(self, state_dim, action_dim):

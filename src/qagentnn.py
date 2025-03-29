@@ -18,14 +18,15 @@ class Qagent:
         self.alpha = alpha
         self.epsilon = epsilon
         self.gamma = gamma   
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = "cpu" # torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(self.device)
 
         # Taille de l'état et des actions
         self.state_dim = 3  # Par exemple, nombre de features de l'état
         self.action_dim = 9
 
         # Modèle Q
-        self.model = QNetwork(self.state_dim, self.action_dim)
+        self.model = QNetwork(self.state_dim, self.action_dim).to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
         self.loss_fn = nn.MSELoss()
 
@@ -157,12 +158,20 @@ class Qagent:
                 f.write(f"    {repr(row)},\n")
             f.write("]\n")
 
+    def saveWeights(self):
+        torch.save(self.model, 'wights_qagent.pth')
+
+    def loadWeights(self):
+        self.model.load_state_dict(torch.load('wights_qagent.pth'))
+        self.model.eval() #le mets en mode évaluation pour optimiser les prédictions
+
 
 def main():
     agent = Qagent(MPR_env(), do_test=False, episodes= 1000, max_steps=100)
     agent.train()
+    agent.saveWeights()
     agent.one_run()
-    agent.env.show_traj()
+    # agent.env.show_traj()
     agent.env.plot_vitesse()
     
 main()
