@@ -23,7 +23,7 @@ class Qagent:
 
         # Taille de l'état et des actions
         self.state_dim = 4  # Par exemple, nombre de features de l'état
-        self.action_dim = 9
+        self.action_dim = 3
 
         # Modèle Q
         self.model = QNetwork(self.state_dim, self.action_dim).to(self.device)
