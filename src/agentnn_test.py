@@ -17,7 +17,7 @@ from reseau import QNetwork
 env = MPR_env(discretisation=[5,4,5], nb_action=5,nb_cp=4,nb_round=3,custom=True)
 agent = Qagent(env,500,1000)
 
-agent.model.load_state_dict(torch.load('weights_qagent.pth', weights_only=True))
+agent.model.load_state_dict(torch.load('weights_qagent.pth', weights_only=True,map_location=torch.device('cpu')))
 
 agent.one_run()
 
