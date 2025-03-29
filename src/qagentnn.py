@@ -50,29 +50,35 @@ class Qagent:
 
 
 
-    # def test(self):
+    def test(self):
 
-    #     steps_per_test = []
-    #     reward_per_test = []
+        steps_per_test = []
+        reward_per_test = []
         
-    #     for i in range(self.nb_test):
-    #         state, stateM = self.env.reset()
-    #         pas = 0
-    #         cum_reward = 0
-    #         for j in range(self.max_steps):
-    #             action = np.argmax(self.qtable[state])
-    #             next_state,reward,terminated = self.env.step(action)
-    #             state = next_state
-    #             cum_reward+= reward
-    #             pas += 1
-    #             if terminated:
-    #                 pas = j
-    #                 break
-    #         if pas ==0:
-    #             pas = self.max_steps
-    #         steps_per_test.append(pas)
-    #         reward_per_test.append(cum_reward)
-    #     return np.mean(steps_per_test), np.mean(reward_per_test)
+        for i in range(self.nb_test):
+            state, stateM = self.env.reset()
+            # Convertir l'état en tenseur et l'envoyer sur GPU
+            state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device).unsqueeze(0)
+
+            # Tester toutes les actions (one-hot encoding) sur GPU
+            actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
+            q_values = torch.cat([self.model(state_tensor, a.unsqueeze(0)) for a in actions])
+            pas = 0
+            cum_reward = 0
+            for j in range(self.max_steps):
+                action = torch.argmax(q_values).item()
+                next_state,_,reward,terminated = self.env.step(action)
+                state = next_state
+                cum_reward+= reward
+                pas += 1
+                if terminated:
+                    pas = j
+                    break
+            if pas ==0:
+                pas = self.max_steps
+            steps_per_test.append(pas)
+            reward_per_test.append(cum_reward)
+        return np.mean(steps_per_test), np.mean(reward_per_test)
 
     def one_run(self):
         
