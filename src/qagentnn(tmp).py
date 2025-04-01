@@ -16,7 +16,18 @@ from collections import deque
 import random
 
 class Qagent:
-    def __init__(self, env, episodes, max_steps,alpha = .7, epsilon = .3, gamma = 0.95, do_test = True, nb_test = 100, batch_size = 1000, target_update_freq = 100,memory_size=10000):
+    def __init__(self, 
+                 env, 
+                 episodes, 
+                 max_steps,alpha = .7, 
+                 epsilon = .3, 
+                 gamma = 0.95, 
+                 do_test = True, 
+                 nb_test = 100, 
+                 batch_size = 1000, 
+                 target_update_freq = 100,
+                 memory_size=10000):
+        
         self.env= env
         self.episodes = episodes
         self.batch_size = batch_size
@@ -54,19 +65,24 @@ class Qagent:
         batch = random.sample(self.memory, self.batch_size)
         state_batch, action_batch, reward_batch, next_state_batch, done_batch = zip(*batch)
 
+        # Encodage one-hot des actions
+
         # Conversion en tenseurs
         state_batch = torch.FloatTensor(state_batch).to(self.device)
-        action_batch = torch.LongTensor(action_batch).unsqueeze(1).to(self.device)
+        action_batch = torch.LongTensor(action_batch).to(self.device)
         reward_batch = torch.FloatTensor(reward_batch).to(self.device)
         next_state_batch = torch.FloatTensor(next_state_batch).to(self.device)
         done_batch = torch.FloatTensor(done_batch).to(self.device)
+        
+        action_one_hot = torch.nn.functional.one_hot(action_batch, num_classes=self.action_dim).float()
+        
 
         # Calcul des Q-values actuelles
-        q_values = self.policy_net(state_batch, action_batch).squeeze()
+        q_values = self.policy_net(state_batch, action_one_hot).squeeze()
 
         # Calcul des Q-values cibles avec le Target Net
         with torch.no_grad():
-            max_next_q_values = self.target_net(next_state_batch, action_batch).max(1)[0]
+            max_next_q_values = self.target_net(next_state_batch, action_one_hot).max(1)[0]
             target_q_values = reward_batch + self.gamma * max_next_q_values * (1 - done_batch)
 
         # Calcul de la perte et mise à jour du réseau
@@ -145,7 +161,7 @@ class Qagent:
 
         # Convertir l'état en tenseur et l'envoyer sur GPU
         state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device).unsqueeze(0)
-
+        
         # Tester toutes les actions (one-hot encoding) sur GPU
         actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
         q_values = torch.cat([self.policy_net(state_tensor, a.unsqueeze(0)) for a in actions])
@@ -234,7 +250,7 @@ class Qagent:
 def main():
     agent = Qagent(MPR_env(), do_test=False, episodes= 1000, max_steps=100)
     agent.train()
-    agent.saveWeights()
+    # agent.saveWeights()
     agent.one_run()
     agent.env.show_traj()
     agent.env.plot_vitesse()

@@ -19,9 +19,6 @@ class QNetwork(nn.Module):
         state = state.to(device)
         action = action.to(device)
 
-        # print("state", state)
-        # print("action", action)
-
         x = torch.cat([state.squeeze(0), action.squeeze(0)], dim=-1)  # Concaténation de l'état et de l'action
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
