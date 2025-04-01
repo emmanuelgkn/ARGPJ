@@ -255,4 +255,4 @@ def main():
     agent.env.show_traj()
     agent.env.plot_vitesse()
     
-main() 
+# main() 
