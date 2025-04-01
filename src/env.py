@@ -208,7 +208,7 @@ class MPR_env():
         plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
         plt.scatter(b_x,b_y, c = 'red', s=600)
         # plt.title("Trajectoire sans NN")
-        # plt.savefig("../Graphiques/trajssdirection.png")
+        # plt.savefig("../Graphiques/tmp.png")
         plt.show()
 
     
