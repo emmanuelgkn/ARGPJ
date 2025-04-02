@@ -127,7 +127,7 @@ class Qagent:
             # Diminution progressive de epsilon
             self.epsilon = max(0.01, self.epsilon * 0.995)
 
-            return episode_rewards
+        return episode_rewards
 
 
 
@@ -260,14 +260,14 @@ def main():
 
     plt.figure()
     plt.plot(rewards_pereps)
-    plt.xlabel('Episodes')
-    plt.ylabel('cumul Rewards')
-    plt.title('Rewards per Episode')
-    plt.savefig('../Graphiques/rewards_per_episode.png')
+    # plt.xlabel('Episodes')
+    # plt.ylabel('cumul Rewards')
+    # plt.title('Rewards per Episode DQN')
+    # plt.savefig('../Graphiques/rewards_per_episode.png')
 
-    agent.saveWeights()
+    # agent.saveWeights()
     agent.one_run()
     agent.env.show_traj()
     agent.env.plot_vitesse()
     
-# main() 
+main() 

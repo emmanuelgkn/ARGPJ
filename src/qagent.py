@@ -1,7 +1,7 @@
 import numpy as np
 from env import MPR_env
 import matplotlib.pyplot as plt
-from tqdm import tqdm
+from tqdm import tqdm # type: ignore
 from datetime import datetime
 import csv
 import time
@@ -28,6 +28,8 @@ class Qagent:
         self.nb_test = nb_test
 
     def train(self):
+        rewards_perepisode = []
+        cum_reward = 0
         for i in tqdm(range(self.episodes)):
             state,_ = self.env.reset()
             for j in range(self.max_steps):
@@ -35,15 +37,21 @@ class Qagent:
                 next_state,_,reward,terminated = self.env.step(action)
                 self.update_q_table(state,action,next_state,reward)
                 state = next_state
+                cum_reward += reward
 
                 if terminated:
                     break
+
+            rewards_perepisode.append(cum_reward)
             # self.epsilon*= 0.995
+        
 
             if self.do_test and i%50 ==0:
                 mean_steps, mean_reward = self.test()
                 self.steps.append((i,mean_steps))
                 self.rewards.append((i,mean_reward))
+
+        return rewards_perepisode
 
 
 
@@ -121,7 +129,15 @@ class Qagent:
 
 def main():
     agent = Qagent(MPR_env(custom=True), do_test=False, episodes= 1000, max_steps=100)
-    agent.train()
+    rewards_perepisode = agent.train()
+
+    plt.figure()
+    plt.plot(rewards_perepisode)
+    # plt.xlabel('Episodes')
+    # plt.ylabel('cumul Rewards')
+    # plt.title('Rewards per Episode qtable (en entrainement)')
+    # plt.savefig('../Graphiques/rewards_per_episode_qlearning.png')
+
     agent.one_run()
     # agent.env.show_traj()
     agent.env.plot_vitesse()
