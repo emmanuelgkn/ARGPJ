@@ -29,8 +29,9 @@ class Qagent:
 
     def train(self):
         rewards_perepisode = []
-        cum_reward = 0
         for i in tqdm(range(self.episodes)):
+            cum_reward = 0
+
             state,_ = self.env.reset()
             for j in range(self.max_steps):
                 action = self.epsilon_greedy(state)
@@ -133,13 +134,13 @@ def main():
 
     plt.figure()
     plt.plot(rewards_perepisode)
-    # plt.xlabel('Episodes')
-    # plt.ylabel('cumul Rewards')
-    # plt.title('Rewards per Episode qtable (en entrainement)')
-    # plt.savefig('../Graphiques/rewards_per_episode_qlearning.png')
+    plt.xlabel('Episodes')
+    plt.ylabel('cumul Rewards')
+    plt.title('Rewards per Episode qtable (en entrainement)')
+    plt.savefig('../Graphiques/rewards_per_episode_qlearning.png')
 
     agent.one_run()
     # agent.env.show_traj()
     agent.env.plot_vitesse()
     
-# main()
+main()

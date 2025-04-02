@@ -26,7 +26,7 @@ class Qagent:
                  do_test = True, 
                  nb_test = 100, 
                  batch_size = 1000, 
-                 target_update_freq = 100,
+                 target_update_freq = 10,
                  memory_size=10000):
         
         self.env= env
