@@ -19,5 +19,9 @@ agent = Qagent(env,500,1000)
 
 agent.policy_net.load_state_dict(torch.load('weights_qagent.pth', weights_only=True,map_location=torch.device('cpu')))
 
-agent.one_run()
+# agent.one_run()
 
+moy_steps_per_test, moy_reward_per_test = agent.test()
+
+print(moy_steps_per_test)
+print(moy_reward_per_test)

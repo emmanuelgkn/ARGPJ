@@ -19,7 +19,8 @@ class Qagent:
     def __init__(self, 
                  env, 
                  episodes, 
-                 max_steps,alpha = .7, 
+                 max_steps,
+                 alpha = .7, 
                  epsilon = .3, 
                  gamma = 0.95, 
                  do_test = True, 
@@ -29,6 +30,7 @@ class Qagent:
                  memory_size=10000):
         
         self.env= env
+        self.nb_test = nb_test
         self.episodes = episodes
         self.batch_size = batch_size
         self.target_update_freq = target_update_freq
@@ -94,6 +96,7 @@ class Qagent:
 
 
     def train(self):
+        episode_rewards = []
         for episode in tqdm(range(self.episodes)):
             state, stateM = self.env.reset()
             episode_reward = 0
@@ -119,14 +122,16 @@ class Qagent:
                 self.steps_done += 1
                 if terminated:
                     break
+            episode_rewards.append(episode_reward)
 
             # Diminution progressive de epsilon
             self.epsilon = max(0.01, self.epsilon * 0.995)
 
+            return episode_rewards
+
 
 
     def test(self):
-
         steps_per_test = []
         reward_per_test = []
         
@@ -154,6 +159,8 @@ class Qagent:
             steps_per_test.append(pas)
             reward_per_test.append(cum_reward)
         return np.mean(steps_per_test), np.mean(reward_per_test)
+
+
 
     def one_run(self):
         
@@ -215,7 +222,7 @@ class Qagent:
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-
+ 
     def save_rewards(self, filename):
         commentaire = f"# {datetime.today()}\n# Qlearning:episodes {self.episodes}, max_steps: {self.max_steps}, alpha: {self.alpha}, epsilon: {self.epsilon}, gamma: {self.gamma}"
         with open(filename, mode="a", newline="") as file:
@@ -249,7 +256,15 @@ class Qagent:
 
 def main():
     agent = Qagent(MPR_env(), do_test=False, episodes= 1000, max_steps=100)
-    agent.train()
+    rewards_pereps = agent.train()
+
+    plt.figure()
+    plt.plot(rewards_pereps)
+    plt.xlabel('Episodes')
+    plt.ylabel('cumul Rewards')
+    plt.title('Rewards per Episode')
+    plt.savefig('../Graphiques/rewards_per_episode.png')
+
     agent.saveWeights()
     agent.one_run()
     agent.env.show_traj()
