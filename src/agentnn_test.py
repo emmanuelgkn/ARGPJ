@@ -14,14 +14,14 @@ from reseau import QNetwork
 #     model.load_state_dict(torch.load('weights_qagent.pth'))
 #     model.eval()
 
-env = MPR_env(custom=False)
+env = MPR_env(custom=True)
 agent = Qagent(env,500,1000)
 
-agent.policy_net.load_state_dict(torch.load('weights_qagent.pth', weights_only=True,map_location=torch.device('cpu')))
+agent.policy_net.load_state_dict(torch.load('weights_qagent.pth', weights_only=True,map_location=torch.device('cuda')))
 
-# agent.one_run()
+agent.one_run()
+ 
+# moy_steps_per_test, moy_reward_per_test = agent.test()
 
-moy_steps_per_test, moy_reward_per_test = agent.test()
-
-print(moy_steps_per_test)
-print(moy_reward_per_test)
+# print(moy_steps_per_test)
+# print(moy_reward_per_test)

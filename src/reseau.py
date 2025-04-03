@@ -10,20 +10,19 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class QNetwork(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(QNetwork, self).__init__()
-        self.fc1 = nn.Linear(state_dim + action_dim, 128)  # Concaténation de s et a
+        self.fc1 = nn.Linear(state_dim, 128)  # Concaténation de s et a
         self.fc2 = nn.Linear(128, 128)
-        self.fc3 = nn.Linear(128, 1)  # Prédit une seule Q-value
+        self.fc3 = nn.Linear(128, action_dim)  # Prédit une seule Q-value
 
-    def forward(self, state, action):
+    def forward(self, state):
         # Envoyer les tenseurs sur le GPU
         state = state.to(device)
-        action = action.to(device)
 
-        x = torch.cat([state.squeeze(0), action.squeeze(0)], dim=-1)  # Concaténation de l'état et de l'action
+        x = state  # Concaténation de l'état et de l'action
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
-        q_value = self.fc3(x)
-        return q_value
+        q_values = self.fc3(x)
+        return q_values
 
 # # Exemple d'utilisation :
 # state_dim = 4  # Exemple : un état de dimension 4

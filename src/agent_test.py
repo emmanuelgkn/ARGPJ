@@ -95,7 +95,7 @@ qtable = [
     [-17.13364395, -17.3202561 ,   6.88144175],
 ]
 
-env = MPR_env(custom=True)
+env = MPR_env(custom=False)
 agent = Qagent(env,500,1000)
 agent.qtable = qtable
 

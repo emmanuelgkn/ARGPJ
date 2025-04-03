@@ -21,12 +21,12 @@ class Qagent:
                  episodes, 
                  max_steps,
                  alpha = .7, 
-                 epsilon = .3, 
+                 epsilon = 1, 
                  gamma = 0.95, 
                  do_test = True, 
                  nb_test = 100, 
-                 batch_size = 1000, 
-                 target_update_freq = 10,
+                 batch_size = 64, 
+                 target_update_freq = 1000,
                  memory_size=10000):
         
         self.env= env
@@ -52,7 +52,7 @@ class Qagent:
         self.target_net.eval()  # Le target net n'est pas mis à jour directement par le gradient
 
         self.optimizer = optim.Adam(self.policy_net.parameters(), lr=1e-3)
-        self.loss_fn = nn.MSELoss()
+        self.loss_fn = nn.SmoothL1Loss()
 
         # Buffer d'expérience
         self.memory = deque(maxlen=memory_size)
@@ -76,30 +76,36 @@ class Qagent:
         next_state_batch = torch.FloatTensor(next_state_batch).to(self.device)
         done_batch = torch.FloatTensor(done_batch).to(self.device)
         
-        action_one_hot = torch.nn.functional.one_hot(action_batch, num_classes=self.action_dim).float()
-        
-
-        # Calcul des Q-values actuelles
-        q_values = self.policy_net(state_batch, action_one_hot).squeeze()
+        # reward_batch = reward_batch / 100  # Divisez les récompenses par une constante
+        # Calcul des Q-values actuelles pour les actions prises
+        q_values = self.policy_net(state_batch).gather(1, action_batch.unsqueeze(1)).squeeze()
 
         # Calcul des Q-values cibles avec le Target Net
         with torch.no_grad():
-            max_next_q_values = self.target_net(next_state_batch, action_one_hot).max(1)[0]
+            next_q_values = self.policy_net(next_state_batch)
+            max_next_q_values = next_q_values.max(1)[0]
             target_q_values = reward_batch + self.gamma * max_next_q_values * (1 - done_batch)
-
+            
+            # print(done_batch)
         # Calcul de la perte et mise à jour du réseau
         loss = self.loss_fn(q_values, target_q_values)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
 
+        # print(loss.item())
+
+        return loss.item()
 
 
     def train(self):
+
         episode_rewards = []
+        losses = []
         for episode in tqdm(range(self.episodes)):
             state, stateM = self.env.reset()
             episode_reward = 0
+            cuml = 0
 
             for step in range(self.max_steps):
                 action = self.epsilon_greedy(stateM)
@@ -108,26 +114,31 @@ class Qagent:
                 # Ajouter la transition dans le buffer
                 self.memory.append((stateM, action, reward, next_stateM, terminated))
 
-                state = next_state
                 episode_reward += reward
 
                 # Optimisation par batch si assez d'échantillons
                 if len(self.memory) >= self.batch_size:
-                    self.optimize_model()
-
+                    l = self.optimize_model()
+                    cuml += l
+                    # print(cuml)
                 # Mise à jour périodique du target network
                 if self.steps_done % self.target_update_freq == 0:
                     self.target_net.load_state_dict(self.policy_net.state_dict())
 
                 self.steps_done += 1
+                stateM = next_stateM
+
                 if terminated:
+                    print('oui')
                     break
+            
+            # print(episode_reward)
             episode_rewards.append(episode_reward)
-
+            losses.append(cuml)
             # Diminution progressive de epsilon
-            self.epsilon = max(0.01, self.epsilon * 0.995)
+            # self.epsilon = max(0.01, self.epsilon * 0.999)
 
-        return episode_rewards
+        return episode_rewards, losses
 
 
 
@@ -168,15 +179,21 @@ class Qagent:
 
         # Convertir l'état en tenseur et l'envoyer sur GPU
         state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device).unsqueeze(0)
-        
-        # Tester toutes les actions (one-hot encoding) sur GPU
-        actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
-        q_values = torch.cat([self.policy_net(state_tensor, a.unsqueeze(0)) for a in actions])
-
         for j in range(self.max_steps):
+                
+            
+            # Calculer les Q-values pour toutes les actions
+            q_values = self.policy_net(state_tensor)
+
+            # Choisir l'action avec la plus grande Q-value
             action = torch.argmax(q_values).item()
             next_state,next_stateM,reward,terminated = self.env.step(action)
-            # stateM = next_stateM
+
+            stateM = next_stateM
+
+            state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device).unsqueeze(0)
+
+
             if terminated:
                 break
 
@@ -190,9 +207,8 @@ class Qagent:
         # Convertir l'état en tenseur et l'envoyer sur GPU
         state_tensor = torch.tensor(state, dtype=torch.float32, device=self.device).unsqueeze(0)
 
-        # Tester toutes les actions (one-hot encoding) sur GPU
-        actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
-        q_values = torch.cat([self.policy_net(state_tensor, a.unsqueeze(0)) for a in actions])
+        # Calculer les Q-values pour toutes les actions
+        q_values = self.policy_net(state_tensor)
 
         # Choisir l'action avec la plus grande Q-value
         return torch.argmax(q_values).item()
@@ -256,18 +272,25 @@ class Qagent:
 
 def main():
     agent = Qagent(MPR_env(), do_test=False, episodes= 1000, max_steps=100)
-    rewards_pereps = agent.train()
+    rewards_pereps, cuml = agent.train()
 
     plt.figure()
     plt.plot(rewards_pereps)
-    # plt.xlabel('Episodes')
-    # plt.ylabel('cumul Rewards')
-    # plt.title('Rewards per Episode DQN')
-    # plt.savefig('../Graphiques/rewards_per_episode.png')
+    plt.xlabel('Episodes')
+    plt.ylabel('cumul Rewards')
+    plt.title('Rewards per Episode DQN')
+    plt.savefig('../Graphiques/rewards_per_episode.png')
 
-    # agent.saveWeights()
+    plt.figure()
+    plt.plot(cuml)
+    plt.xlabel('Episodes')
+    plt.ylabel('cumul loss')
+    plt.title('loss per Episode DQN')
+    plt.savefig('../Graphiques/lossperepisode.png')
+
+    agent.saveWeights()
     agent.one_run()
     agent.env.show_traj()
     agent.env.plot_vitesse()
     
-main() 
+# main() 
