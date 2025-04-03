@@ -14,10 +14,10 @@ from reseau import QNetwork
 #     model.load_state_dict(torch.load('weights_qagent.pth'))
 #     model.eval()
 
-env = MPR_env(custom=True)
+env = MPR_env(custom=False)
 agent = Qagent(env,500,1000)
 
-agent.policy_net.load_state_dict(torch.load('weights_qagent.pth', weights_only=True,map_location=torch.device('cuda')))
+agent.model.load_state_dict(torch.load('weights_qagent.pth', weights_only=True,map_location=torch.device('cuda')))
 
 agent.one_run()
  
