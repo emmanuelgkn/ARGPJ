@@ -22,9 +22,6 @@ class Point():
     def getCoord(self):
         return self.x, self.y   
     
-    
-
-    
 
 class Pod(Point):
 
@@ -36,20 +33,7 @@ class Pod(Point):
         self.angle = 0
 
         self.timeout = TIMEOUT
- 
-    # def getAngle(self,p: Point)->float:
-    #     """ calcul difference d'angle entre le pod et un point. in/out entre 0 et 359
-    #     0 : est, 90 sud, 180: ouest, 270: nord
-    #     """
-    #     dist = self.distance(p)
-    #     dx= (p.x -self.x)/(dist + 1e-4)
-    #     dy = (p.y - self.y)/(dist + 1e-4)
 
-    #     angle = np.arccos(dx)*180/np.pi
-
-    #     if (dy<0):
-    #         angle= 360 -angle
-    #     return angle
 
     def getAngle(self,p: Point)->float:
         """
@@ -123,36 +107,33 @@ class Pod(Point):
         else:
             return np.ceil(v)
         
-    def closest(self, p : Point):
-        """ Trouve le point le plus proche de `self` sur la ligne passant par `a` et `b`. """
-        x1, y1 = self.getCoord()
-        x2, y2 = p.getCoord()
+    # def closest(self, p : Point):
+    #     """ Trouve le point le plus proche de `self` sur la ligne passant par `a` et `b`. """
+    #     x1, y1 = self.getCoord()
+    #     x2, y2 = p.getCoord()
 
 
-        da = y2 - y1
-        db = x1 - x2
-        c1 = da * x1 + db * x2
-        c2 = -db * self.x + da * self.y
-        det = da * da + db * db
+    #     da = y2 - y1
+    #     db = x1 - x2
+    #     c1 = da * x1 + db * x2
+    #     c2 = -db * self.x + da * self.y
+    #     det = da * da + db * db
 
-        if det != 0:
-            cx = (da * c1 - db * c2) / det
-            cy = (da * c2 + db * c1) / det
-        else:
-            # Le point est déjà sur la ligne
-            cx = self.x
-            cy = self.y
+    #     if det != 0:
+    #         cx = (da * c1 - db * c2) / det
+    #         cy = (da * c2 + db * c1) / det
+    #     else:
+    #         # Le point est déjà sur la ligne
+    #         cx = self.x
+    #         cy = self.y
 
-        return Point(cx, cy)
-
-
+    #     return Point(cx, cy)
 
 
 class CheckPoint(Point):
     def __init__(self, x, y, id):
         super().__init__(x, y)
         self.id = id
-
 
 
 class Board():
@@ -215,25 +196,27 @@ class Board():
 
 
 
-def main():
-    board = Board(2,3)
-    l_x = []
-    l_y=[]
+# def main():
+#     board = Board(2,3)
+#     l_x = []
+#     l_y=[]
 
-    b_x= [b.getCoord()[0] for b in board.checkpoints]
-    b_y= [b.getCoord()[1] for b in board.checkpoints]
-    while not board.terminated:
-        x,y,next_cp_x,next_cp_y,dist,angle = board.play(board.checkpoints[board.next_checkpoint], 100)
-        # print(x,y,next_cp_x,next_cp_y,dist,angle)
-        l_x.append(x)
-        l_y.append(y)
+#     b_x= [b.getCoord()[0] for b in board.checkpoints]
+#     b_y= [b.getCoord()[1] for b in board.checkpoints]
+#     while not board.terminated:
+#         print(board.pod.timeout)
+#         x,y,next_cp_x,next_cp_y,dist,angle = board.play(board.checkpoints[board.next_checkpoint], 100)
+#         # print(x,y,next_cp_x,next_cp_y,dist,angle)
+#         l_x.append(x)
+#         l_y.append(y)
     
-    plt.figure()
-    plt.scatter(l_x,l_y,c  = np.arange(len(l_x)), s = 3)
-    plt.scatter(b_x,b_y, c = 'red', s=600)
-    plt.show()
+#     plt.figure()
+#     plt.scatter(l_x,l_y,c  = np.arange(len(l_x)), s = 3)
+#     plt.scatter(b_x,b_y, c = 'red', s=600)
+#     plt.show()
 
 
 # main()
+
 
 
