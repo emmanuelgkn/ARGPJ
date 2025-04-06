@@ -31,20 +31,19 @@ class Qagent:
         rewards_perepisode = []
         for i in tqdm(range(self.episodes)):
             cum_reward = 0
-
             state,_ = self.env.reset()
             for j in range(self.max_steps):
+                # print(i,j)
                 action = self.epsilon_greedy(state)
                 next_state,_,reward,terminated = self.env.step(action)
                 self.update_q_table(state,action,next_state,reward)
                 state = next_state
                 cum_reward += reward
-
                 if terminated:
                     break
 
             rewards_perepisode.append(cum_reward)
-            # self.epsilon*= 0.995
+            self.epsilon*= 0.995
         
 
             if self.do_test and i%50 ==0:
@@ -90,7 +89,6 @@ class Qagent:
             if terminated:
                 break
 
-        self.env.show_traj()
 
 
 
@@ -129,18 +127,18 @@ class Qagent:
 
 
 def main():
-    agent = Qagent(MPR_env(custom=True), do_test=False, episodes= 1000, max_steps=100)
+    agent = Qagent(MPR_env(custom=True), do_test=False, episodes= 1000, max_steps=10000)
     rewards_perepisode = agent.train()
 
-    plt.figure()
-    plt.plot(rewards_perepisode)
-    plt.xlabel('Episodes')
-    plt.ylabel('cumul Rewards')
-    plt.title('Rewards per Episode qtable (en entrainement)')
-    plt.savefig('../Graphiques/rewards_per_episode_qlearning.png')
+    # plt.figure()
+    # plt.plot(rewards_perepisode)
+    # plt.xlabel('Episodes')
+    # plt.ylabel('cumul Rewards')
+    # plt.title('Rewards per Episode qtable (en entrainement)')
+    # plt.savefig('../Graphiques/rewards_per_episode_qlearning.png')
 
     agent.one_run()
-    # agent.env.show_traj()
+    agent.env.show_traj()
     agent.env.plot_vitesse()
     
-# main()
+main()

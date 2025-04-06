@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation = [5,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [5,4,3] , nb_action=3*5,nb_cp = 4,nb_round = 3,custom=False):
         self.board = Board(nb_cp,nb_round,custom)
         self.terminated = False
         height, width = self.board.getInfos()
@@ -36,15 +36,14 @@ class MPR_env():
         
     def step(self,  action):
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
-        target_x, target_y, thrust = self.convert_action(action,*next_cp.getCoord())
-        # x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(Point(target_x,target_y),thrust)
-        x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust) # sans direction
+        target_x, target_y, thrust = self.convert_action(*self.past_pos,action,*next_cp.getCoord())
+        x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(Point(target_x,target_y),thrust)
+        # x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust) # sans direction
         self.traj.append([x,y])
-        # self.vitesse.append(self.discretized_speed(x,y))
         self.vitesse.append(self.discretized_speed(x,y))
 
         #si rien de specifique ne s'est produit 
-        reward = - 0.1*(self.discretisation[2] -self.discretized_speed(x,y) )
+        reward = - 0.1*(self.discretisation[2] -self.discretized_speed(x,y) ) -0.1*self.discretized_distance(dist)
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
@@ -117,23 +116,6 @@ class MPR_env():
     def discretized_distance(self, dist):
         if dist> self.max_dist:
             dist= self.max_dist
-        #option1
-        # res = round(dist/self.max_dist * (self.discretisation[1]-1))
-
-        #option2
-        # bins = np.logspace(np.log10(1), np.log10(self.max_dist), num=self.discretisation[1])
-        # res = np.digitize(dist, bins) - 1
-
-        #option3
-        # if dist< 1000:
-        #     res = 0
-        # elif dist<2000:
-        #     res = 1
-        # elif dist<4500:
-        #     res = 2
-        # else:
-        #     res = 3
-
         if dist< 1000:
             res = 0
         elif dist<2000:
@@ -148,13 +130,6 @@ class MPR_env():
     def discretized_speed(self, x,y):
 
         vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
-        # #discretisation logarithmique 
-        # bins = np.logspace(np.log(1), np.log(500), num=self.discretisation[2]+1)
-        # # #discretisation lineaire
-        # # bins = np.arange(0,500, round(500/self.discretisation[2]+1))
-        # res = np.digitize(vitesse, bins) - 1
-        # assert res < self.discretisation[2]
-        # return res
         if vitesse<100:
             return 0
         elif vitesse<300:
@@ -167,32 +142,22 @@ class MPR_env():
         state = (self.discretized_angle(angle), self.discretized_distance(dist), self.discretized_speed(x,y))
         self.past_pos = (x,y)
         index = state[0]*(self.discretisation[1] * self.discretisation[2]) + state[1]*self.discretisation[2] + state[2]
-
-
         return index
 
-    def convert_action(self, action,x_target, y_target):
-        # mapping = {0:0,1:30,2:50,3:80,4:100}
-        # thrust = action //3
-        # angle_action = action % 3
-        mapping_thrust = {0:0,1:50,2:100}
-        # current_x, current_y = self.board.pod.getCoord()
-        # angle = math.degrees(math.atan2(y_target - current_y, x_target - current_x))
-        # if angle_action == 0:  
-        #     new_angle = angle - 18
-        # elif angle_action == 1: 
-        #     new_angle = angle
-        # elif angle_action == 2: 
-        #     new_angle = angle + 18
+    def convert_action(self,x,y, action,x_target, y_target):
+
+        thrust = action //5
+        mapping_thrust = {0:0,1:70,2:100}
+
+        angle_action = action % 5
+        angle = math.degrees(math.atan2(y_target - y, x_target - x))
+        mapping_angle = {0:-18,1:-9,2:0,3:9,4:18}
+        new_angle = angle + mapping_angle[angle_action]
+        new_angle = math.radians(new_angle)
     
-        # new_angle_rad = math.radians(new_angle)
-    
-        # new_x = current_x + math.cos(new_angle_rad)
-        # new_y = current_y + math.sin(new_angle_rad)
-        # new_x, new_y,
-        new_x = 0
-        new_y = 0
-        return  new_x, new_y, mapping_thrust[action]
+        new_x = x + math.cos(new_angle)
+        new_y = y + math.sin(new_angle)
+        return  new_x, new_y, mapping_thrust[thrust]
 
     
 
@@ -208,7 +173,6 @@ class MPR_env():
         plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
         plt.scatter(b_x,b_y, c = 'red', s=600)
         plt.title("Trajectoire avec NN")
-        plt.savefig("../Graphiques/tmp.png")
         plt.show()
 
     
@@ -221,3 +185,8 @@ class MPR_env():
         # plt.title("evolution de la vitesse en test")
         # plt.savefig("../Graphiques/figurevitesse.png")
         plt.show()
+
+
+
+
+
