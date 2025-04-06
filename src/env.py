@@ -65,10 +65,10 @@ class MPR_env():
         #                     self.discretized_distance(dist),
         #                     self.discretized_speed(x,y)]
 
-        # dans le cas continu
+        vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
         next_state_matrix = [angle,
-                            dist,
-                            x,y]
+                        dist,
+                        vitesse]
 
         return next_state,next_state_matrix,reward, self.terminated
     
@@ -92,9 +92,10 @@ class MPR_env():
         #                 self.discretized_speed(x,y)]
 
         # dans le cas continu
+        vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
         state_matrix = [angle,
                         dist,
-                        x,y]
+                        vitesse]
 
         return self.discretized_state(angle,dist, x, y), state_matrix
     

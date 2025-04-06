@@ -9,85 +9,132 @@ from reseau import QNetwork
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from collections import deque
 
-class Qagent:
-    def __init__(self, env, episodes, max_steps,alpha = .7, epsilon = .3, gamma = 0.95, do_test = True, nb_test = 100):
-        self.env= env
-        self.episodes = episodes
-        self.max_steps = max_steps
-        self.alpha = alpha
+
+class GetInformations:
+    def __init__(self,env,nbeps,epsilon = 1,alpha=.7,gamma = 0.95,state_dim=3,action_dim=3):
+        self.triplets = []
+        self.qvalues = []
         self.epsilon = epsilon
-        self.gamma = gamma   
+        self.nbeps = nbeps
+        self.gamma = gamma
+        self.env = env
+        self.state_dim = state_dim 
+        self.action_dim = action_dim
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(self.device)
-
-        # Taille de l'état et des actions
-        self.state_dim = 4  # Par exemple, nombre de features de l'état
-        self.action_dim = 3
-
-        # Modèle Q
         self.model = QNetwork(self.state_dim, self.action_dim).to(self.device)
-        self.target = QNetwork(self.state_dim, self.action_dim).to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
-        self.loss_fn = nn.SmoothL1Loss()
+        self.max_steps = 100
+        self.alpha = alpha
+        pass
 
-    def train(self):
-        episode_rewards = []
-        for i in tqdm(range(self.episodes)):
-            episode_reward = 0
+
+    def launchSimulation(self):
+        for i in tqdm(range(self.nbeps)):
+
             state, stateM = self.env.reset()
+
             for j in range(self.max_steps):
+
                 action = self.epsilon_greedy(stateM)
                 next_state,next_stateM,reward,terminated = self.env.step(action)
-                episode_reward += reward
-                self.update_q_table(stateM,action,next_stateM,reward)
-                state = next_state
+                self.triplets.append((stateM,action,reward))
+
+                stateM = next_stateM
 
                 if terminated:
-                    print('oui')
                     break
-            episode_rewards.append(episode_reward)
-            # self.epsilon*= 0.995
 
-            # if self.do_test and i%50 ==0:
-            #     mean_steps, mean_reward = self.test()
-            #     self.steps.append((i,mean_steps))
-            #     self.rewards.append((i,mean_reward))
-        return episode_rewards
+                self.epsilon*= 0.995
 
-
-    def test(self):
-
-        steps_per_test = []
-        reward_per_test = []
+        # print("longueur: ",len(self.triplets))
+        # print(self.triplets[:10])
+    
+    def computeQvalues(self):
+        # self.triplets = [([-23.160792907540344, 0.0, 0.0], 0, -0.30000000000000004), ([336.8392070924597, 2562.213886466155, 0.0], 1, -0.30000000000000004), ([336.8453985598685, 2516.2138223926836, 0.0], 2, -0.2), ([336.8246085050306, 2385.214036517478, 0.0], 1, -0.2), ([336.8200341837714, 2228.214083071912, 0.0], 1, -0.2), ([336.80478439236856, 2049.214239653824, 0.0], 2, -0.2), ([336.7631101741998, 1805.214668675169, 0.0], 2, -0.1), ([336.6867171511283, 1506.2154560354238, 0.0], 1, -0.1), ([336.59531044896767, 1206.216398495726, 0.0], 1, -0.1), ([336.44364854051713, 906.2179649510376, 0.0], 1, -0.1)]
         
-        for i in range(self.nb_test):
-            state, stateM = self.env.reset()
-            # Convertir l'état en tenseur et l'envoyer sur GPU
-            state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device).unsqueeze(0)
+        self.qvalues = [0]*len(self.triplets)
+        T = len(self.triplets) - 1
+        R = self.triplets[T][2]
+        
+        for i, t in enumerate(reversed(self.triplets[:-1])):
+            ind = T - i - 1
+            R = self.gamma*R + t[2]
+            self.qvalues[ind] = self.qvalues[ind] + self.alpha * (R - self.qvalues[ind])
+        
+        # print(self.qvalues)
 
-            # Tester toutes les actions (one-hot encoding) sur GPU
-            actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
-            q_values = torch.cat([self.model(state_tensor, a.unsqueeze(0)) for a in actions])
-            pas = 0
-            cum_reward = 0
-            for j in range(self.max_steps):
-                action = torch.argmax(q_values).item()
-                next_state,_,reward,terminated = self.env.step(action)
-                state = next_state
-                cum_reward+= reward
-                pas += 1
-                if terminated:
-                    pas = j
-                    break
-            if pas ==0:
-                pas = self.max_steps
-            steps_per_test.append(pas)
-            reward_per_test.append(cum_reward)
-        return np.mean(steps_per_test), np.mean(reward_per_test)
+    def epsilon_greedy(self, state):
+        
+        if np.random.random() < self.epsilon:
+            return np.random.randint(0, self.env.nb_action)
+
+        # Convertir l'état en tenseur et l'envoyer sur GPU
+        # print("state dim: ", self.state_dim)
+        # print("action dim: ", self.action_dim)
+        
+
+        state_tensor = torch.tensor(state, dtype=torch.float32,device=self.device)
+
+        # Tester toutes les actions (one-hot encoding) sur GPU
+        actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
+        # print("action_dim: ", actions.shape)
+        # print("state: ",state)
+        # print("state_tensor",state_tensor)
+        # print("state_dimm:",state_tensor.shape)
+        q_values = torch.cat([self.model(state_tensor, a) for a in actions])
+
+        # Choisir l'action avec la plus grande Q-value
+        return torch.argmax(q_values).item()
+
+    
+class train:
+    def __init__(self,env,nIter,state_dim=3,action_dim=3):
+        self.nIter = nIter
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = QNetwork(self.state_dim, self.action_dim).to(self.device)
+        self.info = GetInformations(env,100)
+        self.loss_fn = nn.MSELoss()
+        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
+        pass
+
+    def run(self):
+        losses = []
+        for i in range(self.nIter):
+            self.info.launchSimulation()
+            self.info.computeQvalues()
+
+            states = [ t[0] for t in self.info.triplets]
+
+            actions = [t[1] for t in self.info.triplets]
+            action_one_hot = np.eye(self.action_dim)[actions]
+
+            state_tensor = torch.tensor(states, dtype=torch.float32, device=self.device)
+            action_tensor = torch.tensor(action_one_hot, dtype=torch.float32, device=self.device)
+            target_tensor = torch.tensor(self.info.qvalues, dtype=torch.float32, device=self.device)
+
+            q_value = self.model(state_tensor, action_tensor)
+
+            loss = self.loss_fn(q_value, target_tensor.unsqueeze(1))
+            losses.append(loss.item())
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+
+        print("fini")
+        return losses
+
+class Qagent:
+    def __init__(self, env,model):
+        self.env= env
+        self.action_dim = 3
+        self.state_dim = 3
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = model
 
     def one_run(self):
-        
         state, stateM = self.env.reset()
 
         # Convertir l'état en tenseur et l'envoyer sur GPU
@@ -96,102 +143,44 @@ class Qagent:
         # Tester toutes les actions (one-hot encoding) sur GPU
         actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
         q_values = torch.cat([self.model(state_tensor, a.unsqueeze(0)) for a in actions])
+        terminated = False
 
-        for j in range(self.max_steps):
+        while not terminated:
+
             action = torch.argmax(q_values).item()
-            next_state,next_stateM,reward,terminated = self.env.step(action)
-            # stateM = next_stateM
-            if terminated:
-                break
+            _,_,_,terminated = self.env.step(action)
 
         self.env.show_traj()
 
-
-    def epsilon_greedy(self, state):
-        if np.random.random() < self.epsilon:
-            return np.random.randint(0, self.env.nb_action)
-
-        # Convertir l'état en tenseur et l'envoyer sur GPU
-        state_tensor = torch.tensor(state, dtype=torch.float32, device=self.device).unsqueeze(0)
-
-        # Tester toutes les actions (one-hot encoding) sur GPU
-        actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
-        q_values = torch.cat([self.model(state_tensor, a.unsqueeze(0)) for a in actions])
-
-        # Choisir l'action avec la plus grande Q-value
-        return torch.argmax(q_values).item()
-
-
-    def update_q_table(self, state, action, next_state, reward):
-        # Convertir les données en tenseurs sur GPU
-        state_tensor = torch.tensor(state, dtype=torch.float32, device=self.device).unsqueeze(0)
-        next_state_tensor = torch.tensor(next_state, dtype=torch.float32, device=self.device).unsqueeze(0)
-
-        action_one_hot = torch.zeros(self.action_dim, device=self.device)
-        action_one_hot[action] = 1
-        action_tensor = action_one_hot.unsqueeze(0)
-
-        # Q-value actuelle
-        q_value = self.model(state_tensor, action_tensor)
-
-        # Calcul de la target (r + γ max Q(s', a'))
-        with torch.no_grad():
-            next_actions = torch.eye(self.action_dim, device=self.device)
-            next_q_values = torch.cat([self.model(next_state_tensor, a.unsqueeze(0)) for a in next_actions])
-            max_next_q = torch.max(next_q_values)
-            target = reward + self.gamma * max_next_q
-
-        # Perte et backpropagation
-        loss = self.loss_fn(q_value, target.unsqueeze(0).to(self.device))
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-
-    def save_rewards(self, filename):
-        commentaire = f"# {datetime.today()}\n# Qlearning:episodes {self.episodes}, max_steps: {self.max_steps}, alpha: {self.alpha}, epsilon: {self.epsilon}, gamma: {self.gamma}"
-        with open(filename, mode="a", newline="") as file:
-            file.write(commentaire)
-            writer = csv.writer(file)
-            for i, reward in self.rewards:
-                writer.writerow([i, reward])
-
-    def save_steps(self, filename):
-        commentaire = f"# {datetime.today()}\n# Qlearning:episodes {self.episodes}, max_steps: {self.max_steps}, alpha: {self.alpha}, epsilon: {self.epsilon}, gamma: {self.gamma}"
-        with open(filename, mode="a", newline="") as file:
-            file.write(commentaire)
-            writer = csv.writer(file)
-            for i, step in self.steps:
-                writer.writerow([i, step])
-
-    def qtable_file(self, filename):
-        with open(filename, 'w') as f:
-            f.write("qtable = [\n")
-            for row in self.qtable:
-                f.write(f"    {repr(row)},\n")
-            f.write("]\n")
-
-    def saveWeights(self):
-        torch.save(self.model.state_dict(), 'weights_qagent.pth')
-
-    def loadWeights(self):
-        self.model.load_state_dict(torch.load('weights_qagent.pth'))
-        self.model.eval() #le mets en mode évaluation pour optimiser les prédictions
-
-
 def main():
-    agent = Qagent(MPR_env(), do_test=False, episodes= 1000, max_steps=100)
-    rewards_pereps = agent.train()
+    # rewards_pereps = agent.train()
 
-    plt.figure()
-    plt.plot(rewards_pereps)
+    # plt.figure()
+    # plt.plot(rewards_pereps)
+    # plt.xlabel('Episodes')
+    # plt.ylabel('cumul Rewards')
+    # plt.title('Rewards per Episode DQN')
+    # plt.savefig('../Graphiques/rewards_per_episode.png')
+
+    # agent.saveWeights()
+    # agent.one_run()
+    # agent.env.show_traj()
+    # agent.env.plot_vitesse()
+
+    traine = train(MPR_env(),10)
+    losses = traine.run()
+
+    plt.plot(losses)
     plt.xlabel('Episodes')
-    plt.ylabel('cumul Rewards')
-    plt.title('Rewards per Episode DQN')
-    plt.savefig('../Graphiques/rewards_per_episode.png')
-
-    agent.saveWeights()
+    plt.ylabel('loss')
+    plt.title('loss per episodes')
+    plt.savefig('../Graphiques/loss_final')
+    agent = Qagent(MPR_env(custom=True), traine.model)
     agent.one_run()
-    agent.env.show_traj()
-    agent.env.plot_vitesse()
+
     
-# main()
+
+
+
+    
+main()
