@@ -8,11 +8,13 @@ import matplotlib.pyplot as plt
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation = [5,4,3] , nb_action=3*5,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [5,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False, chose_angle =False):
         self.board = Board(nb_cp,nb_round,custom)
         self.terminated = False
         height, width = self.board.getInfos()
         self.custom =custom
+        self.chose_angle = chose_angle
+
         
         #discretisation est une liste qui donne le nombre de valeurs possible pour chaque attribut que l'on souhaite discretiser 
         #ex si etat = (angle,distance,vitesse) et angle peut prendre 7 valeurs distance 4 et vitesse 3 alors discretisation = [7,4,3]
@@ -25,6 +27,8 @@ class MPR_env():
         self.max_dist = np.sqrt(width**2+height**2)
         
         self.nb_action = nb_action
+        if self.chose_angle:
+            self.nb_action*=5
         self.nb_etat = prod([discretisation[0]+2] + discretisation[1:])
         # le plus 2 est pas propre mais c'est pour la discretisation de l'angle on choisit 
         # step de discretisation pour les angles devant auquel on ajoute 2 pour les 2 etat possible si angle derriere
@@ -43,7 +47,9 @@ class MPR_env():
         self.vitesse.append(self.discretized_speed(x,y))
 
         #si rien de specifique ne s'est produit 
-        reward = - 0.1*(self.discretisation[2] -self.discretized_speed(x,y) ) -0.1*self.discretized_distance(dist)
+        reward = - 0.1*(self.discretisation[2] -self.discretized_speed(x,y) )
+        if self.chose_angle:
+            reward -= 0.1*self.discretized_distance(dist)
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
@@ -146,19 +152,24 @@ class MPR_env():
         return index
 
     def convert_action(self,x,y, action,x_target, y_target):
+        if self.chose_angle :
+            thrust = action //5
+            mapping_thrust = {0:0,1:70,2:100}
 
-        thrust = action //5
-        mapping_thrust = {0:0,1:70,2:100}
+            angle_action = action % 5
+            angle = math.degrees(math.atan2(y_target - y, x_target - x))
+            mapping_angle = {0:-18,1:-9,2:0,3:9,4:18}
+            new_angle = angle + mapping_angle[angle_action]
+            new_angle = math.radians(new_angle)
 
-        angle_action = action % 5
-        angle = math.degrees(math.atan2(y_target - y, x_target - x))
-        mapping_angle = {0:-18,1:-9,2:0,3:9,4:18}
-        new_angle = angle + mapping_angle[angle_action]
-        new_angle = math.radians(new_angle)
-    
-        new_x = x + math.cos(new_angle)
-        new_y = y + math.sin(new_angle)
-        return  new_x, new_y, mapping_thrust[thrust]
+            new_x = x + math.cos(new_angle)
+            new_y = y + math.sin(new_angle)
+            return  new_x, new_y, mapping_thrust[thrust]
+        
+        else:
+            mapping_thrust = {0:0,1:70,2:100}
+            return x_target,y_target, mapping_thrust[action]
+
 
     
 

@@ -32,7 +32,7 @@ def fig_epsilon():
 
     differents_eps = [0,.1,.3,.5,1]
     for i, eps in enumerate(differents_eps):
-        agent = Qagent(MPR_env(),episodes = 5000,max_steps=10000,epsilon=eps)
+        agent = Qagent(MPR_env(chose_angle=True),episodes = 5000,max_steps=10000,epsilon=eps)
         agent.train()
         agent.save_rewards(f"figure/log/eps{i}_rewards.csv")
         agent.save_steps(f"figure/log/eps{i}_steps.csv")
