@@ -109,6 +109,7 @@ class train:
     def run(self):
         losses = []
         rewards = []
+        rewards_moyens = []
 
         for i in tqdm(range(self.nIter)):
             self.info.launchSimulation(self.espilon)
@@ -119,7 +120,7 @@ class train:
 
             #################### Simulation pour récupérer les rewards #################
             terminated = False
-            i = 0
+            n = 0
             state, stateM = self.env.reset()
             # Convertir l'état en tenseur et l'envoyer sur GPU
             state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device).unsqueeze(0)
@@ -127,16 +128,15 @@ class train:
             actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
             q_values = torch.cat([self.model(state_tensor, a.unsqueeze(0)) for a in actions])
             rew_cum = 0
-            while not (terminated or i > 500):
+            while not (terminated or n > 500):
                 action = torch.argmax(q_values).item()
                 _,_,rew,terminated = self.env.step(action)
                 rew_cum += rew 
-                i += 1
-            # print("rew_cum:",rew_cum)
-            # print("i:",i)
-
-            # print("rew_cum/i: ",rew_cum/i)
+                n += 1
             rewards.append(rew_cum)
+
+            reward_moyen = sum(rewards) / len(rewards)
+            rewards_moyens.append(reward_moyen)
 
             ################ Apprentissage ##################################################
             states = [ t[0] for t in triplets]
@@ -166,7 +166,7 @@ class train:
 
 
         print("fini")
-        return losses,rewards
+        return losses,rewards_moyens,rewards
 
 class Qagent:
     def __init__(self, env,model):
@@ -215,7 +215,7 @@ def main():
     # gf.computeQvalues()
 
     traine = train(MPR_env(custom=False),1000)
-    losses,rewards = traine.run()
+    losses,rewards,r = traine.run()
 
     # traine = train(MPR_env(),10)
     # losses = traine.run()
@@ -229,10 +229,12 @@ def main():
     plt.show()
 
     plt.figure()
-    plt.plot(rewards)
+    plt.plot(r, c='#009FB7', label='reward par épisode')
+    plt.plot(rewards,c='#FE4A49', label='reward moyen cumulé')
     plt.xlabel('Episodes')
-    plt.ylabel('reward moyen')
-    plt.title('reward moyen par episodes')
+    plt.ylabel('Reward moyen cumulé')
+    plt.title('Reward moyen cumulé par episodes')
+    plt.legend()
     plt.savefig('../Graphiques/reward_final')
     plt.show()
     agent = Qagent(MPR_env(custom=False), traine.model)
