@@ -3,30 +3,7 @@ from env import MPR_env
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def fig_discretisation():
-    #0 distance 1 angle 3 thurst
-    # differentes_discretisations = [([3,4,5], 4), ([10,18,20], 10), ([20,36,50], 20)]
-    differentes_discretisations = [([3,4,5], 4)]
-
-    for i ,discretisation in enumerate(differentes_discretisations):
-        agent = Qagent(MPR_env(*discretisation),episodes = 10000,max_steps=10000,alpha=.5,epsilon=.3,gamma=.1)
-        agent.train()
-        agent.save_rewards(f"figure/log/discretisation{i}_2.csv")
-
-    
-    plt.figure(figsize=(20,10))
-    plt.title("Evolution de la récompense selon différentes discrétisations durant l'apprentissage")
-    plt.xlabel("nb_episodes")
-    plt.ylabel("récompense cumulée")
-    for i, discret in enumerate(differentes_discretisations):
-        df = pd.read_csv(f"figure/log/discretisation{i}.csv", comment="#") 
-        df["Batch"] = df.index // 100  
-        df_mean = df.groupby("Batch").mean()  
-
-        plt.plot(df_mean.iloc[:, 0], df_mean.iloc[:, 1],label=f"{discret}")
-
-    plt.legend()
-    plt.savefig("fig_differentes_discret2")
+PATH_FIGURE = "../figure"
 
 def fig_epsilon():
 
@@ -59,7 +36,44 @@ def fig_epsilon():
     plt.legend()
     plt.savefig("figure/fig_differentes_eps_steps")
 
+def comparatif():
+    
+    #Agent choisit uniquement thrust
+    agent1 = Qagent(MPR_env(),episodes=5000, max_steps=2000, do_test=True)
 
+    #Agent choisit thrust et cible
+    agent2 = Qagent(MPR_env(chose_angle=True),episodes=5000, max_steps=2000, do_test=True)
+
+    agent1.train()
+    agent2.train()
+    
+    agent1.save_rewards('figure/log/agent1_rewards')
+    agent1.save_steps('figure/log/agent1_steps')
+
+    agent2.save_rewards('figure/log/agent2_rewards')
+    agent2.save_steps('figure/log/agent2_steps')
+
+    plt.figure(figsize=(15,8))
+    plt.title("Comparatif de la récompense entre 2 agents")
+    plt.xlabel("nombre d'épisodes d'apprentissage")
+    plt.ylabel("récompense cumulée moyenne sur 100 test")
+    df1 = pd.read_csv('figure/log/agent1_rewards', comment="#")
+    plt.plot(df1.iloc[:, 0], df1.iloc[:, 1],label=f"Agent1 :Pas de choix de direction")
+    df2 = pd.read_csv('figure/log/agent2_rewards', comment="#")
+    plt.plot(df2.iloc[:, 0], df2.iloc[:, 1],label=f"Agent2 :Choix de la direction")
+    plt.legend()
+    plt.savefig("figure/comp_choix_dir_rewards")
+
+    plt.figure(figsize=(15,8))
+    plt.title("Comparatif du nombre de pas entre 2 agents")
+    plt.xlabel("nombre d'épisodes d'apprentissage")
+    plt.ylabel("nombre de pas moyen sur 100 test")
+    df1 = pd.read_csv('figure/log/agent1_steps', comment="#")
+    plt.plot(df1.iloc[:, 0], df1.iloc[:, 1],label=f"Agent1 :Pas de choix de direction")
+    df2 = pd.read_csv('figure/log/agent2_steps', comment="#")
+    plt.plot(df2.iloc[:, 0], df2.iloc[:, 1],label=f"Agent2 :Choix de la direction")
+    plt.legend()
+    plt.savefig("figure/comp_choix_dir_steps")
 
 
 

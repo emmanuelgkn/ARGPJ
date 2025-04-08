@@ -65,10 +65,7 @@ class MPR_env():
 
 
         next_state =self.discretized_state(angle, dist, x,y)
-        # dans le cas discret
-        # next_state_matrix = [self.discretized_angle(angle),
-        #                     self.discretized_distance(dist),
-        #                     self.discretized_speed(x,y)]
+
 
         vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
         next_state_matrix = [angle,
