@@ -1,0 +1,9 @@
+	
+MPR_env plusieurs agent (liste de pod, change fct terminated, gerer l'elimination d'un pode, changer fonction terminated)
+Agent heuristique nouvelle classe qui appelle l'heuristique stock position reward
+qagent faire plusieurs episodes par backward forward
+visualisation rajouter agentnn et heuristique pour comparer perf tracer reward moyenne nombre de step après entrainement
+pour les q agent tracer nb step et reward durant l'apprentissage en fonction du nombre d'episodes 
+rajouer fonction export param dans qnn
+test sans classe de qnn
+
