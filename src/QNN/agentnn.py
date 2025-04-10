@@ -7,12 +7,9 @@ if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
 import numpy as np
-from envnn import MPR_envnn
+from env_nn import MPR_env_NN
 import matplotlib.pyplot as plt
 from tqdm import tqdm # type: ignore
-from datetime import datetime
-import csv
-import time
 from reseau import QNetwork
 import torch
 import torch.nn as nn
@@ -45,17 +42,17 @@ class GetInformations:
         self.triplets = []
         for i in range(self.nbeps):
 
-            state, stateM = self.env.reset()
+            state = self.env.reset()
             current_triplets = []
             terminated = False
             n = 0
             while not (terminated or n > self.max_steps):
 
-                action = self.epsilon_greedy(stateM,epsilon)
-                next_state,next_stateM,reward,terminated = self.env.step(action)
-                current_triplets.append((stateM,action,reward))
+                action = self.epsilon_greedy(state,epsilon)
+                next_state,reward,terminated = self.env.step(action)
+                current_triplets.append((state,action,reward))
 
-                stateM = next_stateM
+                state= next_state
                 n += 1
 
             self.triplets.append(current_triplets)
@@ -81,35 +78,38 @@ class GetInformations:
         
         # print("len q_values: ",len(self.qvalues))
 
-    def epsilon_greedy(self, state,epsilon):
+    def epsilon_greedy(self, state, epsilon):
         
         if np.random.random() < epsilon:
             return np.random.randint(0, self.env.nb_action)
-
-
-        # Convertir l'état en tenseur et l'envoyer sur GPU
-        # print("state dim: ", self.state_dim)
-        # print("action dim: ", self.action_dim)
         
-        
-        # Convertir l'état en tenseur et l'envoyer sur GPU
-        # print("state dim: ", self.state_dim)
-        # print("action dim: ", self.action_dim)
-        
+        state_tensor = torch.tensor(state, dtype=torch.float32, device=self.device).unsqueeze(0)
 
-        state_tensor = torch.tensor(state, dtype=torch.float32,device=self.device)
-
-        # Tester toutes les actions (one-hot encoding) sur GPU
-        actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
-        # print("action_dim: ", actions.shape)
-        q_values = torch.cat([self.model(state_tensor, a) for a in actions])
-
+        # Calculer les Q-values pour toutes les actions
+        q_values = torch.cat([self.model(state_tensor, torch.tensor([[a]], dtype=torch.float32, device=self.device)) for a in range(self.env.nb_action)])
         # Choisir l'action avec la plus grande Q-value
         return torch.argmax(q_values).item()
 
+    # def epsilon_greedy(self, state,epsilon):
+        
+    #     if np.random.random() < epsilon:
+    #         return np.random.randint(0, self.env.nb_action)
+        
+
+    #     state_tensor = torch.tensor(state, dtype=torch.float32,device=self.device)
+
+    #     # Tester toutes les actions (one-hot encoding) sur GPU
+    #     actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
+    #     # print("action_dim: ", actions.shape)
+    #     q_values = torch.cat([self.model(state_tensor, torch.tensor(a)) for a in range(15)])
+    #     print(q_values)
+
+    #     # Choisir l'action avec la plus grande Q-value
+    #     return torch.argmax(q_values).item()
+
     
 class train:
-    def __init__(self,env,nIter,epsilon = 1,state_dim=3,action_dim=3):
+    def __init__(self,env,nIter,epsilon = 1,state_dim=3,action_dim=1):
         self.nIter = nIter
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -140,19 +140,19 @@ class train:
 
             #################### Simulation pour récupérer les rewards #################
             n = 0
-            state, stateM = self.env.reset()
+            state = self.env.reset()
             
             rew_cum = 0
             while n < 500:
                 # Convertir l'état en tenseur et l'envoyer sur GPU
-                state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device).unsqueeze(0)
+                state_tensor = torch.tensor(state, dtype=torch.float32, device=self.device).unsqueeze(0)
                 # Tester toutes les actions (one-hot encoding) sur GPU
                 actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
                 q_values = torch.cat([self.model(state_tensor, a.unsqueeze(0)) for a in actions])
 
                 action = torch.argmax(q_values).item()
-                next_state,next_stateM,reward,terminated = self.env.step(action)
-                stateM = next_stateM
+                next_state,reward,terminated = self.env.step(action)
+                state = next_state
 
                 rew_cum += reward 
                 n += 1
@@ -174,9 +174,10 @@ class train:
                     states.append(t[0])
                     actions.append(t[1])
                     
-            action_one_hot = np.eye(self.action_dim)[actions]
+            # action_one_hot = np.eye(self.action_dim)[actions]
             state_tensor = torch.tensor(states, dtype=torch.float32, device=self.device)
-            action_tensor = torch.tensor(action_one_hot, dtype=torch.float32, device=self.device)
+            # action_tensor = torch.tensor(action_one_hot, dtype=torch.float32, device=self.device)
+            action_tensor = torch.tensor(actions, dtype=torch.float32, device=self.device).unsqueeze(-1)
             target_tensor = torch.tensor(qvalues, dtype=torch.float32, device=self.device).unsqueeze(-1)
 
             q_value = self.model(state_tensor, action_tensor)
@@ -198,32 +199,35 @@ class train:
 class QagentNN:
     def __init__(self, env,model):
         self.env= env
-        self.action_dim = 3
+        self.nb_action = 15
         self.state_dim = 3
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = model
         self.max_steps = 5000
 
     def one_run(self):
-        state, stateM = self.env.reset()
+        state = self.env.reset()
         i = 0
         terminated = False
-        while not (terminated or i > self.max_steps):
+        for i in range(self.max_steps):
             # Convertir l'état en tenseur et l'envoyer sur GPU
-            state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device).unsqueeze(0)
+            state_tensor = torch.tensor(state, dtype=torch.float32, device=self.device).unsqueeze(0)
 
             # Tester toutes les actions (one-hot encoding) sur GPU
-            actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
-            q_values = torch.cat([self.model(state_tensor, a.unsqueeze(0)) for a in actions])
-
-            action = torch.argmax(q_values).item()
-            next_state,next_stateM,reward,terminated = self.env.step(action)
-            stateM = next_stateM
+            # actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
+            q_values = torch.cat([self.model(state_tensor, torch.tensor([[a]], dtype=torch.float32, device=self.device)) for a in range(self.nb_action)])
+            print("============")
+            # action = torch.argmax(q_values).item()
+            action = torch.argmax(q_values.squeeze()).item()
+            next_state,reward,terminated = self.env.step(action)
+            if terminated:
+                break
+            state = next_state
             i += 1
         self.env.show_traj()
 
 def main():
-    traine = train(MPR_envnn(custom=False),1000)
+    traine = train(MPR_env_NN(custom=False),20)
     losses,rewards,r = traine.run()
     # traine.saveWeights()
 
@@ -246,7 +250,7 @@ def main():
     plt.show()
 
 
-    agent = QagentNN(MPR_envnn(custom=False), traine.model)
+    agent = QagentNN(MPR_env_NN(custom=False), traine.model)
     agent.one_run()
 
 main()
