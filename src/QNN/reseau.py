@@ -6,7 +6,7 @@ import numpy as np
 
 # Vérifier si un GPU est dispo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+print(device)
 class QNetwork(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(QNetwork, self).__init__()
@@ -15,7 +15,7 @@ class QNetwork(nn.Module):
         self.fc3 = nn.Linear(128, 1)  # Prédit une seule Q-value
 
     def forward(self, state, action):
-        # Envoyer les tenseurs sur le GPU
+        # Envoi les tenseurs sur le cuda si non sur le cpu
         state = state.to(device)
         action = action.to(device)
 
