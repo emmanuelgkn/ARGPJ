@@ -1,6 +1,8 @@
 import numpy as np
 from MPRengine import Board, Point
 import matplotlib.pyplot as plt
+from datetime import datetime
+import csv
 class Hagent:
     def __init__(self):
         self.steps = []
@@ -35,7 +37,7 @@ class Hagent:
         next_cp_x,next_cp_y = board.checkpoints[board.next_checkpoint].getCoord()
         while True:
             x,y,next_cp_x,next_cp_y,dist,_ =board.play(Point(next_cp_x,next_cp_y), thrust)
-            coord.append((x,y))
+            coord.append([x,y])
             nb_step +=1
             if board.terminated:
                 break
@@ -44,8 +46,18 @@ class Hagent:
             elif dist < 2000:
                 thrust =50
             else: thrust =100
-        return coord, nb_step
+        return coord
     
+    def save_steps(self, filename):
+        commentaire = f"# {datetime.today()}\n# Agent heuristique nombre de pas"
+        with open(filename, mode="a", newline="") as file:
+            file.write(commentaire)
+            writer = csv.writer(file)
+            batch_size = 50
+            for i in range(0, len(self.steps), batch_size):
+                batch = self.steps[i:i+batch_size]
+                mean_step = np.mean(batch)
+                writer.writerow([i, mean_step])
 def main():
     board = Board(4,3)
     agent = Hagent()
@@ -67,5 +79,5 @@ def main():
 
 
 
-main()
+# main()
 

@@ -5,6 +5,7 @@ from tqdm import tqdm # type: ignore
 from datetime import datetime
 import csv
 import time
+from MPRengine import Board
 
 class Qagent:
     def __init__(self, env, episodes= 5000, max_steps =2000,alpha = .7, epsilon = .3, gamma = 0.95, do_test = True, nb_test = 100):
@@ -80,9 +81,7 @@ class Qagent:
             state = next_state
             if terminated:
                 break
-        
-
-
+        return self.env.traj
 
 
 
@@ -130,8 +129,9 @@ def main():
     # plt.title('Rewards per Episode qtable (en entrainement)')
     # plt.savefig('../Graphiques/rewards_per_episode_qlearning.png')
 
-    agent.one_run()
-    agent.env.show_traj()
-    agent.env.plot_vitesse()
+    # agent.one_run()
+    # agent.run_on_board(Board(2,2,False))
+    # agent.env.show_traj()
+    # agent.env.plot_vitesse()
     
 # main()

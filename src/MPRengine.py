@@ -107,27 +107,6 @@ class Pod(Point):
         else:
             return np.ceil(v)
         
-    # def closest(self, p : Point):
-    #     """ Trouve le point le plus proche de `self` sur la ligne passant par `a` et `b`. """
-    #     x1, y1 = self.getCoord()
-    #     x2, y2 = p.getCoord()
-
-
-    #     da = y2 - y1
-    #     db = x1 - x2
-    #     c1 = da * x1 + db * x2
-    #     c2 = -db * self.x + da * self.y
-    #     det = da * da + db * db
-
-    #     if det != 0:
-    #         cx = (da * c1 - db * c2) / det
-    #         cy = (da * c2 + db * c1) / det
-    #     else:
-    #         # Le point est déjà sur la ligne
-    #         cx = self.x
-    #         cy = self.y
-
-    #     return Point(cx, cy)
 
 
 class CheckPoint(Point):

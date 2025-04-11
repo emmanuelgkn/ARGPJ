@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 class MPR_env():
 
     def __init__(self, discretisation = [5,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False, chose_angle =False):
-        self.board = Board(nb_cp,nb_round,custom)
+
+        self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
         height, width = self.board.getInfos()
         self.custom =custom
@@ -88,12 +89,6 @@ class MPR_env():
         dist = self.board.pod.distance(next_cp)
         angle = self.board.pod.angle
 
-        # dans le cas discret
-        # state_matrix = [self.discretized_angle(angle),
-        #                 self.discretized_distance(dist),
-        #                 self.discretized_speed(x,y)]
-
-        # dans le cas continu
         vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
         state_matrix = [angle,
                         dist,
