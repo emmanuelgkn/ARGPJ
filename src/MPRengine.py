@@ -66,14 +66,17 @@ class Pod(Point):
         else:
             return -left
 
+
+
     def rotate(self,p : Point):
         angle = self.diffAngle(p)
 
-        if angle>18:
-            angle= 18
-        elif angle <-18:
-            angle= -18
-        
+        # if angle>18:
+        #     angle= 18
+        # elif angle <-18:
+        #     angle= -18
+        if abs(angle) > 18:
+            angle = 18 if angle > 0 else -18
         self.angle+=angle
         self.angle%= 360
 
@@ -93,6 +96,8 @@ class Pod(Point):
         self.y = round(self.y)
         self.vx = self.roundV(self.vx * 0.85)
         self.vy = self.roundV(self.vy * 0.85)
+
+        
         self.timeout-=1
 
     def play(self,p: Point,thrust: int):
@@ -100,13 +105,12 @@ class Pod(Point):
         self.boost(thrust)
         self.move()
         self.end()
-   
+
     def roundV(self,v):
         if v>0:
             return np.floor(v)
         else:
             return np.ceil(v)
-        
 
 
 class CheckPoint(Point):
@@ -136,8 +140,7 @@ class Board():
         self.next_checkpoint = 0
         first_cp_x, first_cp_y = self.checkpoints[self.next_checkpoint].getCoord()
 
-        self.next_checkpoint = 0
-        first_cp_x, first_cp_y = self.checkpoints[self.next_checkpoint].getCoord()
+
 
         self.pod = Pod(first_cp_x, first_cp_y , 0 )
         x, y = self.pod.getCoord()
@@ -166,8 +169,6 @@ class Board():
         next_cp_x , next_cp_y = next_cp.getCoord()
         dist = self.pod.distance(next_cp)
         angle = self.pod.getAngle(next_cp)
-
-
         return x,y,next_cp_x,next_cp_y,dist,angle
     
     def getInfos(self):

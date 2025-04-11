@@ -1,14 +1,15 @@
 import numpy as np
-from env import MPR_env
+# from env import MPR_env
 import matplotlib.pyplot as plt
 from tqdm import tqdm # type: ignore
 from datetime import datetime
 import csv
 import time
 from MPRengine import Board
+from env_dir import MPR_env
 
 class Qagent:
-    def __init__(self, env, episodes= 5000, max_steps =2000,alpha = .7, epsilon = .3, gamma = 0.95, do_test = True, nb_test = 100):
+    def __init__(self, env, episodes= 5000, max_steps =2000,alpha = .7, epsilon = 1, gamma = 0.95, do_test = True, nb_test = 100):
         self.env= env
         self.episodes = episodes
         self.max_steps = max_steps
@@ -16,6 +17,7 @@ class Qagent:
         self.epsilon = epsilon
         self.gamma = gamma   
         self.qtable = np.zeros((self.env.nb_etat,self.env.nb_action))
+        print(self.qtable.shape)
 
         #pour stocker les recompenses moyennes en fonction du nombre d'episode d'apprentissage
         #contient des tuples des la forme (nombre d'episodes d'apprentissage, recompense moyenne à ce stade de l'apprentissage)
@@ -31,10 +33,11 @@ class Qagent:
     def train(self):
         for i in tqdm(range(self.episodes)):
             cum_reward = 0
-            state,_ = self.env.reset()
+            state= self.env.reset()
+            # print(f"========={i}==========")
             for j in range(self.max_steps):
                 action = self.epsilon_greedy(state)
-                next_state,_,reward,terminated = self.env.step(action)
+                next_state,reward,terminated = self.env.step(action)
                 self.update_q_table(state,action,next_state,reward)
                 state = next_state
                 cum_reward += reward
@@ -45,6 +48,8 @@ class Qagent:
                 mean_steps, mean_reward = self.test()
                 self.steps.append((i,mean_steps))
                 self.rewards.append((i,mean_reward))
+                # self.env.show_traj()
+            
 
 
 
@@ -55,29 +60,28 @@ class Qagent:
         reward_per_test = []
         
         for i in range(self.nb_test):
-            state,_ = self.env.reset()
+            state = self.env.reset()
             pas = 0
             cum_reward = 0
             for j in range(self.max_steps):
                 action = np.argmax(self.qtable[state])
-                next_state,_,reward,terminated = self.env.step(action)
+                next_state,reward,terminated = self.env.step(action)
                 state = next_state
                 cum_reward+= reward
                 pas += 1
                 if terminated:
                     pas = j
                     break
-
             steps_per_test.append(pas)
             reward_per_test.append(cum_reward)
         return np.mean(steps_per_test), np.mean(reward_per_test)
 
     def one_run(self):
         
-        state,_ = self.env.reset()
+        state= self.env.reset()
         for j in range(self.max_steps):
             action = np.argmax(self.qtable[state])
-            next_state,_,reward,terminated = self.env.step(action)
+            next_state,reward,terminated = self.env.step(action)
             state = next_state
             if terminated:
                 break
@@ -119,7 +123,7 @@ class Qagent:
 
 
 def main():
-    agent = Qagent(MPR_env(custom=True), do_test=False, episodes= 1000, max_steps=10000)
+    agent = Qagent(MPR_env(custom=True), do_test=False, episodes= 5000, max_steps=10000)
     rewards_perepisode = agent.train()
 
     # plt.figure()
@@ -131,7 +135,7 @@ def main():
 
     # agent.one_run()
     # agent.run_on_board(Board(2,2,False))
-    # agent.env.show_traj()
+    agent.env.show_traj()
     # agent.env.plot_vitesse()
     
-# main()
+main()
