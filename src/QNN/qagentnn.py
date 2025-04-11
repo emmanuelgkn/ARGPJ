@@ -104,6 +104,15 @@ class GetInformations:
         # print("action_dim: ", actions.shape)
         q_values = torch.cat([self.model(state_tensor, a) for a in actions])
 
+        temp = [self.model(state_tensor, a) for a in actions]
+
+        # print("sans le cat :",temp[:3])
+        # print("avec le cat :",q_values[:3])
+
+        # print()
+
+        # return exit(actions)
+
         # Choisir l'action avec la plus grande Q-value
         return torch.argmax(q_values).item()
 
@@ -210,11 +219,11 @@ class QagentNN:
         terminated = False
         while not (terminated or i > self.max_steps):
             # Convertir l'état en tenseur et l'envoyer sur GPU
-            state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device).unsqueeze(0)
+            state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device)
 
             # Tester toutes les actions (one-hot encoding) sur GPU
             actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
-            q_values = torch.cat([self.model(state_tensor, a.unsqueeze(0)) for a in actions])
+            q_values = torch.cat([self.model(state_tensor, a) for a in actions])
 
             action = torch.argmax(q_values).item()
             next_state,next_stateM,reward,terminated = self.env.step(action)
@@ -249,4 +258,4 @@ def main():
     agent = QagentNN(MPR_envnn(custom=False), traine.model)
     agent.one_run()
 
-main()
+# main()
