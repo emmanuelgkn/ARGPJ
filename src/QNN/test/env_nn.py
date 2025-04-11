@@ -84,31 +84,6 @@ class MPR_env_NN():
         return  new_x, new_y, mapping_thrust[thrust]
         
 
-    def show_traj(self):
-
-        b_x= [b.getCoord()[0] for b in self.board.checkpoints]
-        b_y= [b.getCoord()[1] for b in self.board.checkpoints]
-        x,y = zip(*self.traj)
-        plt.figure()
-        plt.xlim(0,16000)
-        plt.ylim(0,9000)
-        plt.gca().invert_yaxis() 
-        plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
-        plt.scatter(b_x,b_y, c = 'red', s=600)
-        plt.title("Trajectoire avec NN")
-        plt.show()
-
-    
-
-    def plot_vitesse(self):
-        plt.figure()
-        plt.plot(np.arange(len(self.vitesse)),self.vitesse)
-        plt.xlabel("nb step")
-        plt.ylabel("vitesse")
-        # plt.title("evolution de la vitesse en test")
-        # plt.savefig("../Graphiques/figurevitesse.png")
-        plt.show()
-
 
 
 

@@ -7,7 +7,7 @@ if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
 import numpy as np
-from env_nn import MPR_env_NN
+from ARGPJ.src.QNN.test.env_nn import MPR_env_NN
 import matplotlib.pyplot as plt
 from tqdm import tqdm # type: ignore
 from reseau import QNetwork
