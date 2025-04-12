@@ -32,7 +32,6 @@ class MPR_env():
     
         
     def step(self,  action):
-
         target_x, target_y, thrust = self.convert_action(action)
         # next_cp = self.board.checkpoints[self.board.next_checkpoint]
         x,y,_,_,dist,angle = self.board.play(Point(target_x,target_y),thrust)
@@ -42,21 +41,22 @@ class MPR_env():
 
         vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
         #si rien de specifique ne s'est produit 
-        reward = vitesse/self.max_dist - 10e-2*dist/self.max_dist
-        # reward = -dist/self.max_dist
+        reward = -dist/max(0.01,vitesse)
+    
+        reward -= 10e-2 * dist / self.max_dist
+
         # reward =0
-        if dist<=600:
-            print("ok")
-            reward=20
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -100
+                reward = -10
                 self.terminated = True
             #arret fin de course
             else:
-                reward= 100
+                reward= 20
+                print("end")
+                self.show_traj()
                 self.terminated = True
         next_state =self.discretized_state(angle, dist, x,y)
         self.past_pos=self.current_pos
@@ -139,7 +139,8 @@ class MPR_env():
         plt.gca().invert_yaxis() 
         plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
         plt.scatter(b_x,b_y, c = 'red', s=600)
-
+        for i, (bx, by) in enumerate(zip(b_x, b_y)):
+            plt.text(bx, by, str(i), color="black", fontsize=12, ha='center', va='center')
         plt.title("Trajectoire avec NN")
         plt.show()
 

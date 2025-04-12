@@ -17,7 +17,7 @@ class Point():
     
     def distance(self, p)-> float:
 
-        return math.sqrt((abs(self.x- p.x))**2 + (abs(self.y-p.y)))
+        return math.sqrt((self.x - p.x)**2 + (self.y - p.y)**2)
 
     def getCoord(self):
         return self.x, self.y   
@@ -70,16 +70,10 @@ class Pod(Point):
 
     def rotate(self,p : Point):
         angle = self.diffAngle(p)
-
-        # if angle>18:
-        #     angle= 18
-        # elif angle <-18:
-        #     angle= -18
         if abs(angle) > 18:
             angle = 18 if angle > 0 else -18
         self.angle+=angle
         self.angle%= 360
-
 
 
     def boost(self,thrust: int):
@@ -151,10 +145,15 @@ class Board():
         
 
     def updateToNextCheckpoint(self):
-        if self.pod.distance(self.checkpoints[self.next_checkpoint])<CP_WIDTH:
+        if self.pod.distance(self.checkpoints[self.next_checkpoint])<CP_WIDTH/2:
             self.pod.timeout = TIMEOUT
             self.checkpoint_cp[self.next_checkpoint]+=1
-            self.next_checkpoint = (self.next_checkpoint +1)% self.nb_cp
+            # print(self.checkpoint_cp)
+            # print(self.next_checkpoint)
+            # print(f"Checkpoint {self.next_checkpoint} atteint à position {self.pod.getCoord()}")
+            # print(self.pod.distance(self.checkpoints[self.next_checkpoint]))
+            # print(self.checkpoints[self.next_checkpoint].getCoord())
+            self.next_checkpoint = (self.next_checkpoint+1)% self.nb_cp
     
     def checkTerminated(self):
         if self.checkpoint_cp == [self.nb_round]*self.nb_cp or self.pod.timeout<0:
