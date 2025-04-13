@@ -5,6 +5,7 @@ from MPRengine import Board, Point
 from math import prod
 import math
 import matplotlib.pyplot as plt
+from matplotlib.patches import Circle
 #Mad Pod Racing Environnement
 class MPR_env():
 
@@ -15,7 +16,8 @@ class MPR_env():
         height, width = self.board.getInfos()
         self.custom =custom
         self.discretisation = discretisation
-
+        self.nb_cp =nb_cp
+        self.nb_round = nb_round
         #on stock position precedente pour deriver la vitesse, past_pos = (x,y)
         self.past_pos= self.board.pod.getCoord()
         self.current_pos = self.past_pos
@@ -28,49 +30,56 @@ class MPR_env():
         
         self.traj = []
         self.vitesse =[]
+        self.dista = []
+        self.angles = []
 
     
         
     def step(self,  action):
         target_x, target_y, thrust = self.convert_action(action)
         # next_cp = self.board.checkpoints[self.board.next_checkpoint]
-        x,y,_,_,dist,angle = self.board.play(Point(target_x,target_y),thrust)
+        x,y,_,_,dist,angle = self.board.play(Point(target_x,target_y),100)
         # x,y,_,_,dist,angle = self.board.play(Point(0,0),thrust)
         self.traj.append([x,y])
-        self.vitesse.append(self.discretized_speed(x,y))
+        self.angles.append(angle)
+        self.dista.append(dist)
 
-        vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
+        vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
+
+        self.vitesse.append(vitesse)
+
         #si rien de specifique ne s'est produit 
-        reward = -dist/max(0.01,vitesse)
-    
-        reward -= 10e-2 * dist / self.max_dist
+
+        reward =  dist/vitesse
 
         # reward =0
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -10
+                reward = -100
                 self.terminated = True
             #arret fin de course
             else:
-                reward= 20
-                print("end")
-                self.show_traj()
+                reward= 100
                 self.terminated = True
         next_state =self.discretized_state(angle, dist, x,y)
         self.past_pos=self.current_pos
         self.current_pos = (x,y)
+
         return next_state,reward, self.terminated
     
 
     def reset(self):
-        self.board = Board(nb_cp=4,nb_round=3,custom =self.custom)
+        self.board = Board(nb_cp=self.nb_cp,nb_round=self.nb_round,custom =self.custom)
         self.terminated = False
         self.traj = []
-        self.vitesse = []
+        self.vitesse =[]
+        self.dista = []
+        self.angles = []
         x, y = self.board.pod.getCoord()
         self.past_pos= (x,y)
+        self.current_pos = self.past_pos
 
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         dist = self.board.pod.distance(next_cp)
@@ -90,6 +99,8 @@ class MPR_env():
 
         assert res < self.discretisation[0] + 2
         return res
+
+
 
     def discretized_distance(self, dist):
         if dist > self.max_dist:
@@ -114,12 +125,14 @@ class MPR_env():
     def convert_action(self, action):
         mapping_thrust = {0: 0, 1: 70, 2: 100}
         thrust = mapping_thrust[action // 5]
-        mapping_angle = {0: -18, 1: -9, 2: 0, 3: 9, 4: 18}
+        mapping_angle = {0: -90, 1: -45, 2: 0, 3: 45, 4: 90}
         x_past, y_past = self.past_pos
         x,y = self.current_pos
 
         angle_action = mapping_angle[action % 5]
+
         angle = math.degrees(math.atan2(y-y_past, x-x_past))
+        
         new_angle = angle + angle_action
         new_angle = math.radians(new_angle)
         new_x = x + math.cos(new_angle) * 10
@@ -138,9 +151,11 @@ class MPR_env():
         plt.ylim(0,9000)
         plt.gca().invert_yaxis() 
         plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
-        plt.scatter(b_x,b_y, c = 'red', s=600)
+        plt.scatter(b_x,b_y,s=1200, c = 'r')
         for i, (bx, by) in enumerate(zip(b_x, b_y)):
+
             plt.text(bx, by, str(i), color="black", fontsize=12, ha='center', va='center')
+
         plt.title("Trajectoire avec NN")
         plt.show()
 

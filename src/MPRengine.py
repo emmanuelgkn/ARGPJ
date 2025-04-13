@@ -30,7 +30,7 @@ class Pod(Point):
         self.angle = angle
         self.vx = 0
         self.vy = 0
-        self.angle = 0
+        # self.angle = 0
 
         self.timeout = TIMEOUT
 
@@ -51,20 +51,7 @@ class Pod(Point):
         """
         angle = self.getAngle(p)
 
-        if self.angle<= angle:
-            right = angle - self.angle
-        else:
-            right = 360 - self.angle + angle
-
-        if self.angle>= angle:
-            left = self.angle - angle
-        else:
-            left = self.angle + 360 -angle
-        
-        if right<left:
-            return right
-        else:
-            return -left
+        return (angle - self.angle + 540) % 360 - 180
 
 
 
@@ -74,6 +61,7 @@ class Pod(Point):
             angle = 18 if angle > 0 else -18
         self.angle+=angle
         self.angle%= 360
+
 
 
     def boost(self,thrust: int):
@@ -140,19 +128,14 @@ class Board():
         x, y = self.pod.getCoord()
 
         x2, y2 = self.checkpoints[self.next_checkpoint+1].getCoord()
-        self.pod.angle = np.arctan2(y2 - y, x2 - x) * 180 / np.pi
+        # self.pod.angle = np.arctan2(y2 - y, x2 - x) * 180 / np.pi
 
         
 
     def updateToNextCheckpoint(self):
-        if self.pod.distance(self.checkpoints[self.next_checkpoint])<CP_WIDTH/2:
+        if self.pod.distance(self.checkpoints[self.next_checkpoint])<CP_WIDTH:
             self.pod.timeout = TIMEOUT
             self.checkpoint_cp[self.next_checkpoint]+=1
-            # print(self.checkpoint_cp)
-            # print(self.next_checkpoint)
-            # print(f"Checkpoint {self.next_checkpoint} atteint à position {self.pod.getCoord()}")
-            # print(self.pod.distance(self.checkpoints[self.next_checkpoint]))
-            # print(self.checkpoints[self.next_checkpoint].getCoord())
             self.next_checkpoint = (self.next_checkpoint+1)% self.nb_cp
     
     def checkTerminated(self):
@@ -169,33 +152,14 @@ class Board():
         dist = self.pod.distance(next_cp)
         angle = self.pod.getAngle(next_cp)
         return x,y,next_cp_x,next_cp_y,dist,angle
-    
+
+
+
     def getInfos(self):
         return HEIGHT, WIDTH
 
 
 
-# def main():
-#     board = Board(2,3)
-#     l_x = []
-#     l_y=[]
-
-#     b_x= [b.getCoord()[0] for b in board.checkpoints]
-#     b_y= [b.getCoord()[1] for b in board.checkpoints]
-#     while not board.terminated:
-#         print(board.pod.timeout)
-#         x,y,next_cp_x,next_cp_y,dist,angle = board.play(board.checkpoints[board.next_checkpoint], 100)
-#         # print(x,y,next_cp_x,next_cp_y,dist,angle)
-#         l_x.append(x)
-#         l_y.append(y)
-    
-#     plt.figure()
-#     plt.scatter(l_x,l_y,c  = np.arange(len(l_x)), s = 3)
-#     plt.scatter(b_x,b_y, c = 'red', s=600)
-#     plt.show()
-
-
-# main()
 
 
 

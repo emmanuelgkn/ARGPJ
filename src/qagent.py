@@ -7,7 +7,7 @@ import csv
 import time
 from MPRengine import Board
 from env_dir import MPR_env
-
+import random 
 class Qagent:
     def __init__(self, env, episodes= 5000, max_steps =2000,alpha = .7, epsilon = 0.3, gamma = 0.95, do_test = True, nb_test = 100):
         self.env= env
@@ -31,16 +31,15 @@ class Qagent:
 
     def train(self):
         for i in tqdm(range(self.episodes)):
-            hist_reward = []
             cum_reward = 0
+            r = []
             state= self.env.reset()
-            # print(f"========={i}==========")
             for j in range(self.max_steps):
                 action = self.epsilon_greedy(state)
                 next_state,reward,terminated = self.env.step(action)
                 self.update_q_table(state,action,next_state,reward)
+                r.append(reward)
                 state = next_state
-                hist_reward.append(reward)
                 cum_reward += reward
                 if terminated:
                     break
@@ -50,18 +49,12 @@ class Qagent:
                 mean_steps, mean_reward = self.test()
                 self.steps.append((i,mean_steps))
                 self.rewards.append((i,mean_reward))
-                # self.env.show_traj()
-
-            
-
-
 
 
     def test(self):
 
         steps_per_test = []
         reward_per_test = []
-        
         for i in range(self.nb_test):
             state = self.env.reset()
             pas = 0
@@ -75,8 +68,9 @@ class Qagent:
                 if terminated:
                     pas = j
                     break
-            steps_per_test.append(pas)
             reward_per_test.append(cum_reward)
+            steps_per_test.append(pas)
+        self.env.show_traj()
         return np.mean(steps_per_test), np.mean(reward_per_test)
 
     def one_run(self):
@@ -100,6 +94,7 @@ class Qagent:
     def update_q_table(self, state, action, next_state, reward):
         next_q = np.max(self.qtable[next_state])
         self.qtable[state, action] += self.alpha*(reward + self.gamma*next_q - self.qtable[state,action])
+        # print( self.qtable[state, action])
 
     def save_rewards(self, filename):
         commentaire = f"# {datetime.today()}\n# Qlearning:episodes {self.episodes}, max_steps: {self.max_steps}, alpha: {self.alpha}, epsilon: {self.epsilon}, gamma: {self.gamma}"
@@ -126,19 +121,9 @@ class Qagent:
 
 
 def main():
-    agent = Qagent(MPR_env(custom=True), do_test=True, episodes= 400, max_steps=10000)
+    agent = Qagent(MPR_env(custom=False, nb_round=2,nb_cp=2), do_test=True, episodes= 1000, max_steps=10000)
     rewards_perepisode = agent.train()
 
-    # plt.figure()
-    # plt.plot(rewards_perepisode)
-    # plt.xlabel('Episodes')
-    # plt.ylabel('cumul Rewards')
-    # plt.title('Rewards per Episode qtable (en entrainement)')
-    # plt.savefig('../Graphiques/rewards_per_episode_qlearning.png')
-
-    # agent.one_run()
-    # agent.run_on_board(Board(2,2,False))
     agent.env.show_traj()
-    # agent.env.plot_vitesse()
     
 main()
