@@ -9,7 +9,7 @@ from matplotlib.patches import Circle
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation = [5,4,3] ,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [5,5,4] ,nb_cp = 4,nb_round = 3,custom=False):
 
         self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
@@ -23,49 +23,51 @@ class MPR_env():
         self.current_pos = self.past_pos
 
         self.max_dist = np.sqrt(width**2+height**2)
-        
-        self.nb_action = 15
+        self.nb_action = 27
         #7 angles, 4 distances, 3 vitesses
-        self.nb_etat = 7*4*3
+        # self.nb_etat = 7*4*3
+        self.nb_etat = (self.discretisation[0]+2) * self.discretisation[1] * self.discretisation[2]
+
         
         self.traj = []
         self.vitesse =[]
         self.dista = []
         self.angles = []
+        self.rewa = []
 
     
         
     def step(self,  action):
         target_x, target_y, thrust = self.convert_action(action)
-        # next_cp = self.board.checkpoints[self.board.next_checkpoint]
-        x,y,_,_,dist,angle = self.board.play(Point(target_x,target_y),100)
-        # x,y,_,_,dist,angle = self.board.play(Point(0,0),thrust)
+        x,y,_,_,dist,angle = self.board.play(Point(target_x,target_y),thrust)
         self.traj.append([x,y])
         self.angles.append(angle)
         self.dista.append(dist)
-
         vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
 
         self.vitesse.append(vitesse)
+        reward = - (dist/(vitesse+1e-5))
 
-        #si rien de specifique ne s'est produit 
+        if dist<600:
+            reward= 150
 
-        reward =  dist/vitesse
-
-        # reward =0
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -100
+                reward = -500
                 self.terminated = True
             #arret fin de course
             else:
-                reward= 100
+                reward= 500
                 self.terminated = True
+
+
+
         next_state =self.discretized_state(angle, dist, x,y)
         self.past_pos=self.current_pos
         self.current_pos = (x,y)
+        self.rewa.append(reward)
 
         return next_state,reward, self.terminated
     
@@ -77,13 +79,14 @@ class MPR_env():
         self.vitesse =[]
         self.dista = []
         self.angles = []
+        self.rewa = []
         x, y = self.board.pod.getCoord()
         self.past_pos= (x,y)
         self.current_pos = self.past_pos
 
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         dist = self.board.pod.distance(next_cp)
-        angle = self.board.pod.angle
+        angle = self.board.pod.getAngle(next_cp)
         return self.discretized_state(angle,dist, x, y)
 
     def discretized_angle(self, angle):
@@ -96,25 +99,20 @@ class MPR_env():
             res = self.discretisation[0]
         else:
             res = self.discretisation[0] + 1
-
         assert res < self.discretisation[0] + 2
         return res
 
 
-
     def discretized_distance(self, dist):
-        if dist > self.max_dist:
-            dist = self.max_dist
-        bins = [1000, 2000, 8000]
-        res = np.digitize(dist, bins)
-        assert res < self.discretisation[1]
-        return res
+        bins = [700, 1000, 2000, 8000]
+        return np.digitize(dist, bins)
 
     def discretized_speed(self, x, y):
-        vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
-        bins = [100, 300]
+        vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
+        bins = [400, 800, 1200]
         return np.digitize(vitesse, bins)
-    
+
+
 
     def discretized_state(self, angle, dist, x, y):
         state = (self.discretized_angle(angle), self.discretized_distance(dist), self.discretized_speed(x,y))
@@ -124,21 +122,21 @@ class MPR_env():
 
     def convert_action(self, action):
         mapping_thrust = {0: 0, 1: 70, 2: 100}
-        thrust = mapping_thrust[action // 5]
-        mapping_angle = {0: -90, 1: -45, 2: 0, 3: 45, 4: 90}
+        thrust = mapping_thrust[action // 9]
+        # mapping_angle = {0: -18, 1: -9, 2: 0, 3: 9, 4: 18}
+        # mapping_angle = {0: -90, 1: -45, 2: 0, 3: 45, 4: 90}
+        mapping_angle = {0:-90,1:-45,2:-18,3:-9,4:0,5:9,6:18,7:45,8:90}
         x_past, y_past = self.past_pos
         x,y = self.current_pos
 
-        angle_action = mapping_angle[action % 5]
+        angle_action = mapping_angle[action % 9]
 
-        angle = math.degrees(math.atan2(y-y_past, x-x_past))
+        # angle = math.degrees(math.atan2(y-y_past, x-x_past))
+        angle = self.board.pod.angle
         
-        new_angle = angle + angle_action
-        new_angle = math.radians(new_angle)
-        new_x = x + math.cos(new_angle) * 10
-        new_y = y + math.sin(new_angle) * 10
-
-
+        new_angle = (angle + angle_action +540)%360 -180
+        new_x = x + math.cos(math.radians(new_angle)) *500
+        new_y = y + math.sin(math.radians(new_angle)) *500
         return new_x, new_y, thrust
     
     def show_traj(self):

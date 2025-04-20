@@ -9,14 +9,15 @@ from MPRengine import Board
 from env_dir import MPR_env
 import random 
 class Qagent:
-    def __init__(self, env, episodes= 5000, max_steps =2000,alpha = .7, epsilon = 0.3, gamma = 0.95, do_test = True, nb_test = 100):
+    def __init__(self, env, episodes= 5000, max_steps =2000,alpha = .1, epsilon = 0.4, gamma = 0.95, do_test = True, nb_test = 100):
         self.env= env
         self.episodes = episodes
         self.max_steps = max_steps
         self.alpha = alpha
         self.epsilon = epsilon
         self.gamma = gamma   
-        self.qtable = np.zeros((self.env.nb_etat,self.env.nb_action))
+        self.qtable = np.random.uniform(low=-0.01, high=0.01, size=(self.env.nb_etat, self.env.nb_action))
+
 
         #pour stocker les recompenses moyennes en fonction du nombre d'episode d'apprentissage
         #contient des tuples des la forme (nombre d'episodes d'apprentissage, recompense moyenne à ce stade de l'apprentissage)
@@ -44,7 +45,7 @@ class Qagent:
                 if terminated:
                     break
             if self.epsilon>0.05:
-                self.epsilon*= 0.995
+                self.epsilon*= 0.9995
             if self.do_test and i%50 ==0:
                 mean_steps, mean_reward = self.test()
                 self.steps.append((i,mean_steps))
@@ -70,7 +71,7 @@ class Qagent:
                     break
             reward_per_test.append(cum_reward)
             steps_per_test.append(pas)
-        self.env.show_traj()
+        # self.env.show_traj()
         return np.mean(steps_per_test), np.mean(reward_per_test)
 
     def one_run(self):
@@ -121,9 +122,27 @@ class Qagent:
 
 
 def main():
-    agent = Qagent(MPR_env(custom=False, nb_round=2,nb_cp=2), do_test=True, episodes= 1000, max_steps=10000)
-    rewards_perepisode = agent.train()
+    agent = Qagent(MPR_env(custom=True, nb_round=3,nb_cp=4), do_test=False, episodes= 1, max_steps=20000)
+    agent.train()
+    np.save("qtable.npy", agent.qtable)
+
+    plt.figure()
+    rewards_x, rewards_y = zip(*agent.rewards)
+    plt.plot(rewards_x, rewards_y, label="reward")
+    plt.legend()
+    plt.title("reward")
 
     agent.env.show_traj()
+    
+    plt.figure()
+    # plt.plot(agent.env.vitesse, label='vitesse')
+    # plt.plot(agent.env.dista, label ="distance")
+    plt.plot(agent.env.rewa, label="reward")
+    plt.legend()
+
+    plt.show()
+    plt.matshow(agent.qtable, cmap = "viridis", aspect = "auto")
+    plt.colorbar()
+    plt.show()
     
 main()

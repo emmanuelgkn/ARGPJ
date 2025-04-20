@@ -115,12 +115,18 @@ class Board():
             self.checkpoints.append(CheckPoint(10700, 5025,3))
         else:
             for i in range(nb_cp):
-                cp = CheckPoint(np.random.randint(WIDTH), np.random.randint(HEIGHT),i)
-                self.checkpoints.append(cp)
+                while True:
+                    x = np.random.randint(WIDTH)
+                    y = np.random.randint(HEIGHT)
+                    cp_candidate = CheckPoint(x, y, i)
+                    # Vérifie que tous les checkpoints existants sont à plus de 1000
+                    if all(cp_candidate.distance(existing_cp) > 2000 for existing_cp in self.checkpoints):
+                        self.checkpoints.append(cp_candidate)
+                        break 
 
 
-        self.next_checkpoint = 0
-        first_cp_x, first_cp_y = self.checkpoints[self.next_checkpoint].getCoord()
+        self.next_checkpoint = 1
+        first_cp_x, first_cp_y = self.checkpoints[0].getCoord()
 
 
 
@@ -134,6 +140,7 @@ class Board():
 
     def updateToNextCheckpoint(self):
         if self.pod.distance(self.checkpoints[self.next_checkpoint])<CP_WIDTH:
+            
             self.pod.timeout = TIMEOUT
             self.checkpoint_cp[self.next_checkpoint]+=1
             self.next_checkpoint = (self.next_checkpoint+1)% self.nb_cp
@@ -142,24 +149,23 @@ class Board():
         if self.checkpoint_cp == [self.nb_round]*self.nb_cp or self.pod.timeout<0:
             self.terminated = True
     
-    def play(self, p,thrust):
-        self.pod.play(p,thrust)
+    def play(self, p, thrust):
+        self.pod.play(p, thrust)
         self.updateToNextCheckpoint()
         self.checkTerminated()
-        x,y= self.pod.getCoord()
+        x, y = self.pod.getCoord()
         next_cp = self.checkpoints[self.next_checkpoint]
-        next_cp_x , next_cp_y = next_cp.getCoord()
+        next_cp_x, next_cp_y = next_cp.getCoord()
         dist = self.pod.distance(next_cp)
         angle = self.pod.getAngle(next_cp)
-        return x,y,next_cp_x,next_cp_y,dist,angle
+
+
+        return x, y, next_cp_x, next_cp_y, dist, angle
 
 
 
     def getInfos(self):
         return HEIGHT, WIDTH
-
-
-
 
 
 
