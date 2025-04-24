@@ -1,5 +1,5 @@
 from qagent import Qagent
-from env import MPR_env
+from env_dir import MPR_env
 import matplotlib.pyplot as plt
 import pandas as pd
 from Hagent import Hagent
@@ -13,7 +13,7 @@ def fig_epsilon():
     timestamp = datetime.now().strftime("%d-%m")
     differents_eps = [0,.1,.3,.5,1]
     for i, eps in enumerate(differents_eps):
-        agent = Qagent(MPR_env(chose_angle=True),episodes = 5000,max_steps=10000,epsilon=eps)
+        agent = Qagent(MPR_env(),episodes = 5000,max_steps=10000,epsilon=eps)
         agent.train()
         agent.save_rewards(f"{LOG_PATH}/eps{i}_rewards_{timestamp}.csv")
         agent.save_steps(f"{LOG_PATH}/eps{i}_steps_{timestamp}.csv")
@@ -153,4 +153,4 @@ def comparatif():
 
 
 
-comparatif()
+fig_epsilon()

@@ -124,7 +124,6 @@ class Board():
                         self.checkpoints.append(cp_candidate)
                         break 
 
-
         self.next_checkpoint = 1
         first_cp_x, first_cp_y = self.checkpoints[0].getCoord()
 
@@ -134,13 +133,12 @@ class Board():
         x, y = self.pod.getCoord()
 
         x2, y2 = self.checkpoints[self.next_checkpoint+1].getCoord()
-        # self.pod.angle = np.arctan2(y2 - y, x2 - x) * 180 / np.pi
+        self.pod.angle = np.arctan2(y2 - y, x2 - x) * 180 / np.pi
 
         
 
     def updateToNextCheckpoint(self):
         if self.pod.distance(self.checkpoints[self.next_checkpoint])<CP_WIDTH:
-            
             self.pod.timeout = TIMEOUT
             self.checkpoint_cp[self.next_checkpoint]+=1
             self.next_checkpoint = (self.next_checkpoint+1)% self.nb_cp

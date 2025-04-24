@@ -139,7 +139,6 @@ class MPR_env():
 
     def discretized_state(self, angle, dist, x, y):
         state = (self.discretized_angle(angle), self.discretized_distance(dist), self.discretized_speed(x,y))
-        self.past_pos = (x,y)
         index = state[0]*(self.discretisation[1] * self.discretisation[2]) + state[1]*self.discretisation[2] + state[2]
         return index
 
