@@ -242,7 +242,7 @@ def main():
     plt.xlabel('Episodes')
     plt.ylabel('loss')
     plt.title('loss par episodes')
-    # plt.savefig('../Graphiques/loss_tmp')
+    plt.savefig('../Graphiques/loss_nn_tmp')
     plt.show()
 
     plt.figure()
@@ -252,11 +252,11 @@ def main():
     plt.ylabel('Reward moyen cumulé')
     plt.title('Reward moyen cumulé par episodes')
     plt.legend()
-    # plt.savefig('../Graphiques/reward_tmp')
+    plt.savefig('../Graphiques/reward_nn_tmp')
     plt.show()
 
 
     agent = QagentNN(MPR_envnn(custom=False), traine.model)
     agent.one_run()
 
-# main()
+main()
