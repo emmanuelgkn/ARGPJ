@@ -69,7 +69,7 @@ class GetInformations:
         # self.triplets = [[([-45.8114712160464, 0.0, 0.0], 0, -0.30000000000000004), ([314.1885287839536, 5429.5143429223945, 0.0], 2, -0.2), ([314.18846946374373, 5359.514343669583, 0.0], 1, -0.2), ([314.18261989224857, 5251.514448233005, 0.0], 1, -0.2), ([314.1768890328311, 5111.51455050262, 0.0], 0, -0.2), ([314.17443694305115, 4993.5145939508375, 0.0], 1, -0.2), ([314.1666444212111, 4844.514733180197, 0.0], 0, -0.2), ([314.1624020777121, 4718.514808708351, 0.0], 0, -0.2), ([314.1553157332471, 4611.514935463182, 0.0], 1, -0.2), ([314.1481043901425, 4472.515064256352, 0.0], 0, -0.2), ([314.14470921527226, 4355.5151245289, 0.0], 0, -0.2)], [([-102.79350316174879, 0.0, 0.0], 1, -0.30000000000000004), ([256.9435356555793, 1053.153834916818, 0.0], 2, -0.2), ([256.7025572417505, 1036.1134107808855, 0.0], 0, -0.2), ([256.4797486016259, 1022.0772964898497, 0.0], 2, -0.2), ([256.258368204429, 988.0425092069672, 0.0], 2, -0.2), ([256.05349986372187, 935.0112298790855, 0.0], 2, -0.1), ([255.8340126569527, 866.9786617904733, 0.0], 1, -0.1), ([255.59219378034305, 792.9438819992245, 0.0], 0, -0.1), ([255.34561971137907, 729.9095834416753, 0.0], 0, -0.2), ([255.08406436348133, 676.8744344411303, 0.0], 1, -0.2), ([254.80942777303102, 613.8387410387194, 0.0], 2, -0.1)]]
         for current_triplets in self.triplets:
 
-            current_qvalues = [0]*len(current_triplets)
+            current_qvalues = np.zeros(len(current_triplets))
             T = len(current_triplets) - 1
             R = current_triplets[T][2]
             
@@ -102,9 +102,10 @@ class GetInformations:
         # Tester toutes les actions (one-hot encoding) sur GPU
         actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
         # print("action_dim: ", actions.shape)
-        q_values = torch.cat([self.model(state_tensor, a) for a in actions])
+        q_values = self.model(state_tensor.repeat(self.action_dim, 1), actions)
 
-        temp = [self.model(state_tensor, a) for a in actions]
+
+        # temp = [self.model(state_tensor, a) for a in actions]
 
         # print("sans le cat :",temp[:3])
         # print("avec le cat :",q_values[:3])
@@ -223,7 +224,7 @@ class QagentNN:
 
             # Tester toutes les actions (one-hot encoding) sur GPU
             actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
-            q_values = torch.cat([self.model(state_tensor, a) for a in actions])
+            q_values = self.model(state_tensor.repeat(self.action_dim, 1), actions)
 
             action = torch.argmax(q_values).item()
             next_state,next_stateM,reward,terminated = self.env.step(action)
