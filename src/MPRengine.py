@@ -132,8 +132,9 @@ class Board():
         self.pod = Pod(first_cp_x, first_cp_y , 0 )
         x, y = self.pod.getCoord()
 
-        x2, y2 = self.checkpoints[self.next_checkpoint+1].getCoord()
-        self.pod.angle = np.arctan2(y2 - y, x2 - x) * 180 / np.pi
+        # x2, y2 = self.checkpoints[self.next_checkpoint+1].getCoord()
+        # self.pod.angle = np.arctan2(y2 - y, x2 - x) * 180 / np.pi
+        self.pod.angle =0
 
         
 
@@ -144,6 +145,8 @@ class Board():
             self.next_checkpoint = (self.next_checkpoint+1)% self.nb_cp
     
     def checkTerminated(self):
+        if self.nb_round == 1 and [0]+[self.nb_round]*(self.nb_cp-1)== self.checkpoint_cp:
+            self.terminated = True
         if self.checkpoint_cp == [self.nb_round]*self.nb_cp or self.pod.timeout<0:
             self.terminated = True
     

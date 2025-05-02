@@ -33,15 +33,14 @@ class Qagent:
             cum_reward = 0
             state= self.env.reset()
             for j in range(self.max_steps):
+
                 action = self.epsilon_greedy(state)
                 next_state,reward,terminated = self.env.step(action)
                 self.update_q_table(state,action,next_state,reward)
                 state = next_state
                 cum_reward += reward
+
                 if terminated:
-                    if self.env.board.pod.timeout>0:
-                        self.env.show_traj()
-                    
                     break
             self.epsilon = max(0.05, self.epsilon * 0.995)
             if self.do_test and i%5 ==0:
@@ -88,6 +87,7 @@ class Qagent:
         next_q = np.max(self.qtable[next_state])
         self.qtable[state, action] += self.alpha*(reward + self.gamma*next_q - self.qtable[state,action])
 
+
     def save_rewards(self, filename):
         commentaire = f"# {datetime.today()}\n# Qlearning:episodes {self.episodes}, max_steps: {self.max_steps}, alpha: {self.alpha}, epsilon: {self.epsilon}, gamma: {self.gamma}"
         with open(filename, mode="a", newline="") as file:
@@ -113,10 +113,9 @@ class Qagent:
 
 
 def main():
-    agent = Qagent(MPR_env(custom=True, nb_round=3,nb_cp=4), do_test=True, episodes= 5000, max_steps=20000)
+    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 200, max_steps=20000)
 
     agent.train()
-
 
 
     agent.env.show_traj()
