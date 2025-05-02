@@ -167,7 +167,7 @@ class MPR_env():
 
             plt.text(bx, by, str(i), color="black", fontsize=12, ha='center', va='center')
 
-        plt.title("Trajectoire avec NN")
+        plt.title("Trajectoire")
         plt.show()
 
 

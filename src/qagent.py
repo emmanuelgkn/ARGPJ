@@ -40,7 +40,8 @@ class Qagent:
                 cum_reward += reward
                 if terminated:
                     if self.env.board.pod.timeout>0:
-                        print(i)
+                        self.env.show_traj()
+                    
                     break
             self.epsilon = max(0.05, self.epsilon * 0.995)
             if self.do_test and i%5 ==0:
@@ -112,24 +113,42 @@ class Qagent:
 
 
 def main():
-    agent = Qagent(MPR_env(custom=True, nb_round=3,nb_cp=4), do_test=True, episodes= 10000, max_steps=20000)
+    agent = Qagent(MPR_env(custom=True, nb_round=3,nb_cp=4), do_test=True, episodes= 5000, max_steps=20000)
 
     agent.train()
-    np.save("qtable.npy", agent.qtable)
 
 
 
     agent.env.show_traj()
     
+    
     plt.figure()
     plt.plot(agent.env.vitesse, label='vitesse')
+    plt.legend()
+    plt.savefig("vitesse")
     # plt.plot(agent.env.dista, label ="distance")
     # plt.plot(agent.env.rewa, label="reward")
-    plt.legend()
 
-    plt.show()
     plt.matshow(agent.qtable, cmap = "viridis", aspect = "auto")
     plt.colorbar()
-    plt.show()
+    plt.savefig("qtable")
+
+    steps_x, steps_y = zip(*agent.steps)
+    plt.figure()
+    plt.plot(steps_x, steps_y)
+    plt.xlabel("Episodes")
+    plt.ylabel("Steps")
+    plt.title("nombre de step par episode")
+    plt.savefig("step_per_ep")
+
+    reward_x, reward_y = zip(*agent.rewards)
+    plt.figure()
+    plt.plot(reward_x, reward_y)
+    plt.xlabel("Episodes")
+    plt.ylabel("Reward")
+    plt.title("reward par episode")
+    plt.savefig("reward_per_ep")
+
+
     
 main()
