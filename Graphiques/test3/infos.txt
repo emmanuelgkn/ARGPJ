@@ -1,0 +1,4 @@
+utilisation de self.angle.pod
+20k episodes
+15 actions
+bins angles = [-120,-90, -45,-7,7 ,45 , 90,120]

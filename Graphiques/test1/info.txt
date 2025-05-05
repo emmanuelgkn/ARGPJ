@@ -1,0 +1,3 @@
+10000 iterations 
+angle avec self.pod.angle
+discretisation angle = 7

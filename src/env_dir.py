@@ -23,7 +23,7 @@ class MPR_env():
         self.current_pos = self.past_pos
 
         self.max_dist = np.sqrt(width**2+height**2)
-        self.nb_action = 9
+        self.nb_action = 15
         #7 angles, 4 distances, 3 vitesses
         # self.nb_etat = 7*4*3
         # self.nb_etat = (self.discretisation[0]+2) * self.discretisation[1] * self.discretisation[2]
@@ -107,13 +107,15 @@ class MPR_env():
         angle_pod = math.degrees(math.atan2(y - y_past, x - x_past)) % 360
         error = (angle - self.board.pod.angle + 540) % 360 - 180
         # error = (angle - angle_pod + 540) % 360 - 180
+        # error = (angle - angle_pod + 540) % 360 - 180
         # print(error)
         # bins = [-90, -45, -10, -3, 3, 10 ,45, 90,180]
         # bins = [-90, -10, -3, 3, 10 , 90]
-        bins = [-120,-90, -45,-5,5, 45 , 90,120]
+        bins = [-120,-90, -45,-7,7 ,45 , 90,120]
 
 
         res = np.digitize(error, bins)
+        # print(res)
         return res
 
 
@@ -135,15 +137,34 @@ class MPR_env():
         index = state[0]*(self.discretisation[1] * self.discretisation[2]) + state[1]*self.discretisation[2] + state[2]
         return index
 
+    # def convert_action(self, action):
+    #     mapping_thrust = {0: 0, 1: 30, 2: 100}
+    #     thrust = mapping_thrust[action // 3]
+    #     # mapping_angle = {0: -18, 1: -9, 2: 0, 3: 9, 4: 18}
+    #     mapping_angle = {0: -90, 1: 0, 2: 90}
+    #     x_past, y_past = self.past_pos
+    #     x,y = self.current_pos
+
+    #     angle_action = mapping_angle[action % 3]
+
+    #     angle = math.degrees(math.atan2(y-y_past, x-x_past))
+    #     # angle = self.board.pod.angle
+        
+    #     new_angle = (angle + angle_action +540)%360 -180
+    #     new_x = x + math.cos(math.radians(new_angle)) *500
+    #     new_y = y + math.sin(math.radians(new_angle)) *500
+    #     return int(new_x), int(new_y), thrust
+
+
     def convert_action(self, action):
         mapping_thrust = {0: 0, 1: 30, 2: 100}
-        thrust = mapping_thrust[action // 3]
+        thrust = mapping_thrust[action // 5]
         # mapping_angle = {0: -18, 1: -9, 2: 0, 3: 9, 4: 18}
-        mapping_angle = {0: -90, 1: 0, 2: 90}
+        mapping_angle = {0: -90,1:-45, 2: 0, 3:45, 4: 90}
         x_past, y_past = self.past_pos
         x,y = self.current_pos
 
-        angle_action = mapping_angle[action % 3]
+        angle_action = mapping_angle[action % 5]
 
         angle = math.degrees(math.atan2(y-y_past, x-x_past))
         # angle = self.board.pod.angle
@@ -152,6 +173,7 @@ class MPR_env():
         new_x = x + math.cos(math.radians(new_angle)) *500
         new_y = y + math.sin(math.radians(new_angle)) *500
         return int(new_x), int(new_y), thrust
+
 
 
     

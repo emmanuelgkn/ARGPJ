@@ -121,7 +121,7 @@ class Qagent:
 
 
 if __name__ == "__main__":
-    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 10000, max_steps=20000)
+    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 20000, max_steps=20000)
 
     # np.save("qtable", agent.qtable)
     agent.train()
