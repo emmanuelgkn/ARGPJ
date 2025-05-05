@@ -32,6 +32,7 @@ class Qagent:
 
         #False si l'on souhaite evaluer l'agent durant l'apprentissage
         self.do_test = do_test
+        self.eps = []
         #nombre de test à faire par phase de test durant l'apprentissage
 
     def train(self):
@@ -45,17 +46,20 @@ class Qagent:
                 self.update_q_table(state,action,next_state,reward)
                 state = next_state
                 cum_reward += reward
-
-                if terminated:
+                if terminated:  
+                    if reward!=100:
+                        print(i)               
                     break
-            self.epsilon = max(0.05, self.epsilon * 0.995)
-            if self.do_test and i%5 ==0:
-                nb_steps, cum_reward = self.test(i)
+
+            self.epsilon = max(0.05, self.epsilon * 0.998)
+            self.eps.append(self.epsilon)
+            if self.do_test and i%10 ==0:
+                nb_steps, cum_reward = self.test()
                 self.steps.append((i,nb_steps))
                 self.rewards.append((i,cum_reward))
 
 
-    def test(self, ep):
+    def test(self):
 
         state = self.env.reset()
         pas = 0
@@ -111,43 +115,17 @@ class Qagent:
             for i, step in self.steps:
                 writer.writerow([i, step])
 
-    def qtable_file(self, filename):
-        with open(filename, 'w') as f:
-            f.write("qtable = [\n")
-            for row in self.qtable:
-                f.write(f"    {repr(row)},\n")
-            f.write("]\n")
-
-def convert_action(action, past_pos, current_pos):
-    """
-    Calcule la cible (x, y) associée à une action discrète.
-    """
-    mapping_thrust = {0: 0, 1: 70, 2: 100}
-    mapping_angle = {0: -90, 1: 0, 2: 90}
-
-    thrust = mapping_thrust[action // 3]
-    angle_action = mapping_angle[action % 3]
-
-    x_past, y_past = past_pos
-    x, y = current_pos
-
-    # direction actuelle
-    angle = math.degrees(math.atan2(y - y_past, x - x_past))
-    new_angle = (angle + angle_action + 540) % 360 - 180
-
-    # projection à 500 unités dans la nouvelle direction
-    new_x = x + math.cos(math.radians(new_angle)) * 500
-    new_y = y + math.sin(math.radians(new_angle)) * 500
-
-    return new_x, new_y, thrust
 
 
 
 
-def main():
+
+if __name__ == "__main__":
     agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 6000, max_steps=20000)
 
+    # np.save("qtable", agent.qtable)
     agent.train()
+    np.savetxt("qtable", agent.qtable)
 
     agent.env.show_traj()
     
@@ -176,6 +154,7 @@ def main():
     plt.xlabel("Episodes")
     plt.ylabel("Steps")
     plt.title(f"Nombre de steps par episode (moyenne par batch de {batch_size})")
+
     plt.savefig(f"{GRAPH_PATH}/step_per_ep_{timestamp}")
 
     reward_x_b = [agent.rewards[i][0] for i in range(0, len(agent.rewards), batch_size)]
@@ -191,7 +170,12 @@ def main():
     plt.title(f"Reward par episode (moyenne par batch de {batch_size})")
     plt.savefig(f"{GRAPH_PATH}/reward_per_ep_{timestamp}")
 
+    plt.figure()
+    plt.plot(agent.eps)
+    plt.title("evolution epsilon")
+    plt.savefig(f"{GRAPH_PATH}/evolution_eps")
 
 
-    
-main()
+
+
+

@@ -47,7 +47,8 @@ def comparatif():
     agent1 = Qagent(MPR_env(),episodes=5000, max_steps=2000, do_test=True)
 
     #Agent choisit thrust et cible
-    agent2 = Qagent(MPR_env(chose_angle=True),episodes=5000, max_steps=2000, do_test=True)
+    agent2 =  Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 6000, max_steps=20000)
+
     
     #Agent heuristique
     agent3 = Hagent()
@@ -67,7 +68,7 @@ def comparatif():
     agent3.save_steps(f'{LOG_PATH}/agent3_steps_{timestamp}')
 
     #recuperation des traj
-    env_test_dir = MPR_env(custom=True, chose_angle=True)
+    env_test_dir = MPR_env(custom=True)
     env_test = MPR_env(custom=True)
     agent1.env = env_test
     agent2.env = env_test_dir
@@ -153,4 +154,5 @@ def comparatif():
 
 
 
-fig_epsilon()
+# fig_epsilon()
+comparatif()

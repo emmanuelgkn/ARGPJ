@@ -9,7 +9,7 @@ from matplotlib.patches import Circle
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation = [9,4,4] ,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [7,4,4] ,nb_cp = 4,nb_round = 3,custom=False):
 
         self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
@@ -47,7 +47,8 @@ class MPR_env():
         vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
 
         self.vitesse.append(vitesse)
-        reward = np.clip(- (dist/(vitesse+1)) ,-100,0)*0.01
+        # reward = np.clip(- (dist/(vitesse+1)) ,-100,0)*0.01
+        reward = -self.reward(dist)*0.1
 
         # if self.next_cp_old != self.board.next_checkpoint:
         #     reward = 20
@@ -56,7 +57,7 @@ class MPR_env():
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -20
+                reward = -100
                 self.terminated = True
             #arret fin de course
             else:
@@ -71,6 +72,9 @@ class MPR_env():
 
         return next_state,reward, self.terminated
     
+    def reward(self, dist):
+        bins = [600,700,800,1000,2000,3000,5000,6000,8000,100000]
+        return np.digitize(dist,bins)
 
     def reset(self):
         self.board = Board(nb_cp=self.nb_cp,nb_round=self.nb_round,custom =self.custom)
@@ -99,26 +103,26 @@ class MPR_env():
 
         x,y = self.current_pos
         x_past,y_past = self.past_pos
+
         angle_pod = math.degrees(math.atan2(y - y_past, x - x_past)) % 360
 
         error = (angle - self.board.pod.angle + 540) % 360 - 180
         # error = (angle - angle_pod + 540) % 360 - 180
         # print(error)
-        bins = [-90, -45, -10, -3, 3, 10 ,45, 90,180]
+        # bins = [-90, -45, -10, -3, 3, 10 ,45, 90,180]
+        bins = [-90, -10, -3, 3, 10 , 90,180]
         res = np.digitize(error, bins)
         
         return res
 
 
     def discretized_distance(self, dist):
-        bins = [2000, 4000,8000]
-
-
+        bins = [1500, 3000,8000]
         return np.digitize(dist, bins)
 
     def discretized_speed(self, x, y):
         vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
-        bins = [300,500, 800]
+        bins = [400,700, 1000]
 
         return np.digitize(vitesse, bins)
 
@@ -146,7 +150,7 @@ class MPR_env():
         new_angle = (angle + angle_action +540)%360 -180
         new_x = x + math.cos(math.radians(new_angle)) *500
         new_y = y + math.sin(math.radians(new_angle)) *500
-        return new_x, new_y, thrust
+        return int(new_x), int(new_y), thrust
 
 
     
@@ -156,8 +160,8 @@ class MPR_env():
         b_y= [b.getCoord()[1] for b in self.board.checkpoints]
         x,y = zip(*self.traj)
         plt.figure()
-        # plt.xlim(0,16000)
-        # plt.ylim(0,9000)
+        plt.xlim(0,16000)
+        plt.ylim(0,9000)
         plt.gca().invert_yaxis() 
         plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
         for bx, by in zip(b_x, b_y):
