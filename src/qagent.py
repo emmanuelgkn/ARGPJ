@@ -7,7 +7,13 @@ import csv
 import time
 from MPRengine import Board
 from env_dir import MPR_env
-import random 
+from config import GRAPH_PATH
+from datetime import datetime
+from matplotlib.patches import Circle
+import math
+import matplotlib.animation as animation
+timestamp = datetime.now().strftime("%d-%m")
+
 class Qagent:
     def __init__(self, env, episodes= 5000, max_steps =2000,alpha = .1, epsilon = .5, gamma = 0.95, do_test = True):
         self.env= env
@@ -33,29 +39,30 @@ class Qagent:
             cum_reward = 0
             state= self.env.reset()
             for j in range(self.max_steps):
+
                 action = self.epsilon_greedy(state)
                 next_state,reward,terminated = self.env.step(action)
                 self.update_q_table(state,action,next_state,reward)
                 state = next_state
                 cum_reward += reward
+
                 if terminated:
-                    if self.env.board.pod.timeout>0:
-                        print(i)
                     break
             self.epsilon = max(0.05, self.epsilon * 0.995)
             if self.do_test and i%5 ==0:
-                nb_steps, cum_reward = self.test()
+                nb_steps, cum_reward = self.test(i)
                 self.steps.append((i,nb_steps))
                 self.rewards.append((i,cum_reward))
 
 
-    def test(self):
+    def test(self, ep):
 
         state = self.env.reset()
         pas = 0
         cum_reward = 0
         for j in range(self.max_steps):
             action = np.argmax(self.qtable[state])
+
             next_state,reward,terminated = self.env.step(action)
             state = next_state
             cum_reward+= reward
@@ -87,6 +94,7 @@ class Qagent:
         next_q = np.max(self.qtable[next_state])
         self.qtable[state, action] += self.alpha*(reward + self.gamma*next_q - self.qtable[state,action])
 
+
     def save_rewards(self, filename):
         commentaire = f"# {datetime.today()}\n# Qlearning:episodes {self.episodes}, max_steps: {self.max_steps}, alpha: {self.alpha}, epsilon: {self.epsilon}, gamma: {self.gamma}"
         with open(filename, mode="a", newline="") as file:
@@ -110,26 +118,80 @@ class Qagent:
                 f.write(f"    {repr(row)},\n")
             f.write("]\n")
 
+def convert_action(action, past_pos, current_pos):
+    """
+    Calcule la cible (x, y) associée à une action discrète.
+    """
+    mapping_thrust = {0: 0, 1: 70, 2: 100}
+    mapping_angle = {0: -90, 1: 0, 2: 90}
+
+    thrust = mapping_thrust[action // 3]
+    angle_action = mapping_angle[action % 3]
+
+    x_past, y_past = past_pos
+    x, y = current_pos
+
+    # direction actuelle
+    angle = math.degrees(math.atan2(y - y_past, x - x_past))
+    new_angle = (angle + angle_action + 540) % 360 - 180
+
+    # projection à 500 unités dans la nouvelle direction
+    new_x = x + math.cos(math.radians(new_angle)) * 500
+    new_y = y + math.sin(math.radians(new_angle)) * 500
+
+    return new_x, new_y, thrust
+
+
+
 
 def main():
-    agent = Qagent(MPR_env(custom=True, nb_round=3,nb_cp=4), do_test=True, episodes= 10000, max_steps=20000)
+    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 6000, max_steps=20000)
 
     agent.train()
-    np.save("qtable.npy", agent.qtable)
-
-
 
     agent.env.show_traj()
     
-    plt.figure()
+    
+    plt.figure(figsize=(15,7))
     plt.plot(agent.env.vitesse, label='vitesse')
+    plt.legend()
+    plt.savefig("vitesse")
     # plt.plot(agent.env.dista, label ="distance")
     # plt.plot(agent.env.rewa, label="reward")
-    plt.legend()
 
-    plt.show()
     plt.matshow(agent.qtable, cmap = "viridis", aspect = "auto")
     plt.colorbar()
-    plt.show()
+    plt.savefig(f"{GRAPH_PATH}/qtable_{timestamp}")
+
+    batch_size = 10
+    steps_x_b = [agent.steps[i][0] for i in range(0, len(agent.steps), batch_size)]
+    steps_y_b = [ sum(agent.steps[i][1] for i in range(batch, min(batch + batch_size, len(agent.steps)))) /  (min(batch + batch_size, len(agent.steps)) - batch)for batch in range(0, len(agent.steps), batch_size)]
+    xs = [agent.steps[i][0] for i in range(len(agent.steps))]
+    ys = [agent.steps[i][1] for i in range(len(agent.steps))]
+    
+    plt.figure(figsize=(15,7))
+    plt.plot(xs,ys, label ="ep par ep")
+    plt.plot(steps_x_b, steps_y_b, label = "mean par batch")
+    plt.legend()
+    plt.xlabel("Episodes")
+    plt.ylabel("Steps")
+    plt.title(f"Nombre de steps par episode (moyenne par batch de {batch_size})")
+    plt.savefig(f"{GRAPH_PATH}/step_per_ep_{timestamp}")
+
+    reward_x_b = [agent.rewards[i][0] for i in range(0, len(agent.rewards), batch_size)]
+    reward_y_b = [sum(agent.rewards[i][1] for i in range(batch, min(batch + batch_size, len(agent.rewards)))) / (min(batch + batch_size, len(agent.rewards)) - batch) for batch in range(0, len(agent.rewards), batch_size)]
+    xr = [agent.rewards[i][0] for i in range(len(agent.rewards))]
+    yr = [agent.rewards[i][1] for i in range(len(agent.rewards))]
+    plt.figure()
+    plt.plot(xr,yr, label = "ep par ep")
+    plt.plot(reward_x_b, reward_y_b, label= "mean par batch")
+    plt.legend()
+    plt.xlabel("Episodes")
+    plt.ylabel("Reward")
+    plt.title(f"Reward par episode (moyenne par batch de {batch_size})")
+    plt.savefig(f"{GRAPH_PATH}/reward_per_ep_{timestamp}")
+
+
+
     
 main()
