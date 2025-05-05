@@ -8,17 +8,12 @@ import matplotlib.pyplot as plt
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation = [5,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False, chose_angle =False):
+    def __init__(self, discretisation = [5,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
 
         self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
         height, width = self.board.getInfos()
         self.custom =custom
-        self.chose_angle = chose_angle
-
-        
-        #discretisation est une liste qui donne le nombre de valeurs possible pour chaque attribut que l'on souhaite discretiser 
-        #ex si etat = (angle,distance,vitesse) et angle peut prendre 7 valeurs distance 4 et vitesse 3 alors discretisation = [7,4,3]
 
         self.discretisation = discretisation
 
@@ -28,8 +23,6 @@ class MPR_env():
         self.max_dist = np.sqrt(width**2+height**2)
         
         self.nb_action = nb_action
-        if self.chose_angle:
-            self.nb_action*=5
         self.nb_etat = prod([discretisation[0]+2] + discretisation[1:])
         # le plus 2 est pas propre mais c'est pour la discretisation de l'angle on choisit 
         # step de discretisation pour les angles devant auquel on ajoute 2 pour les 2 etat possible si angle derriere
@@ -41,40 +34,30 @@ class MPR_env():
         
     def step(self,  action):
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
-        target_x, target_y, thrust = self.convert_action(*self.past_pos,action,*next_cp.getCoord())
-        x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(Point(target_x,target_y),thrust)
-        # x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust) # sans direction
+        thrust = self.convert_action(action)
+        # x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(Point(target_x,target_y),thrust)
+        x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust) # sans direction
         self.traj.append([x,y])
         self.vitesse.append(self.discretized_speed(x,y))
 
         #si rien de specifique ne s'est produit 
-        reward = - 0.1*(self.discretisation[2] -self.discretized_speed(x,y) )
-        if self.chose_angle:
-            reward -= 0.1*self.discretized_distance(dist)
+        reward = - self.reward(dist)*0.01
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -20
+                reward = -100
                 self.terminated = True
-
             #arret fin de course
             else:
                 reward= 100
                 self.terminated = True
-
-
-
         next_state =self.discretized_state(angle, dist, x,y)
-
-
-        vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
-        next_state_matrix = [angle,
-                        dist,
-                        vitesse]
-
-        return next_state,next_state_matrix,reward, self.terminated
+        return next_state,reward, self.terminated
     
+    def reward(self, dist):
+        bins = [600,700,800,1000,2000,3000,5000,6000,8000,100000]
+        return np.digitize(dist,bins)
 
     def reset(self,seed=None,options=None):
         self.board = Board(nb_cp=4,nb_round=3,custom =self.custom)
@@ -85,56 +68,27 @@ class MPR_env():
         self.past_pos= (x,y)
 
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
-        cp_x, cp_y = next_cp.getCoord()
         dist = self.board.pod.distance(next_cp)
         angle = self.board.pod.angle
 
-        vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
-        state_matrix = [angle,
-                        dist,
-                        vitesse]
-
-        return self.discretized_state(angle,dist, x, y), state_matrix
+        return self.discretized_state(angle,dist, x, y)
     
 
     def discretized_angle(self, angle):
         #discretisation de l'angle self.discretisation corresponds à en combien d'etats on discretise un angle qui 
         #corresponds à devant le pod. si l'angle indique l'arrière du pod il est discretisé en deux états
-        if 0<= angle<= 180:
-            for i in range(self.discretisation[0]):
-                if angle <=  (i+1)* (180/self.discretisation[0]):
-                    res = i
-        elif angle < 270:
-            res = self.discretisation[0]
-        else:
-            res = self.discretisation[0] +1
-
-        assert res < self.discretisation[0]+2
-        return res
+        bins = [180,270]
+        return np.digitize(angle,bins)
         
     def discretized_distance(self, dist):
-        if dist> self.max_dist:
-            dist= self.max_dist
-        if dist< 1000:
-            res = 0
-        elif dist<2000:
-            res = 1
-        elif dist<8000:
-            res = 2
-        else:
-            res = 3
-        assert res < self.discretisation[1]
-        return res
+        bins = [1000,2000,8000,self.max_dist]
+        return np.digitize(dist,bins)
     
     def discretized_speed(self, x,y):
-
         vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
-        if vitesse<100:
-            return 0
-        elif vitesse<300:
-            return 1
-        else:
-            return 2
+        bins = [100,300]
+        return np.digitize(vitesse,bins)
+
     
 
     def discretized_state(self, angle, dist, x, y):
@@ -142,24 +96,9 @@ class MPR_env():
         index = state[0]*(self.discretisation[1] * self.discretisation[2]) + state[1]*self.discretisation[2] + state[2]
         return index
 
-    def convert_action(self,x,y, action,x_target, y_target):
-        if self.chose_angle :
-            thrust = action //5
-            mapping_thrust = {0:0,1:70,2:100}
-
-            angle_action = action % 5
-            angle = math.degrees(math.atan2(y_target - y, x_target - x))
-            mapping_angle = {0:-18,1:-9,2:0,3:9,4:18}
-            new_angle = angle + mapping_angle[angle_action]
-            new_angle = math.radians(new_angle)
-
-            new_x = x + math.cos(new_angle)
-            new_y = y + math.sin(new_angle)
-            return  new_x, new_y, mapping_thrust[thrust]
-        
-        else:
-            mapping_thrust = {0:0,1:70,2:100}
-            return x_target,y_target, mapping_thrust[action]
+    def convert_action(self, action):
+        mapping_thrust = {0:0,1:70,2:100}
+        return mapping_thrust[action]
 
 
     

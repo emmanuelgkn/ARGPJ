@@ -1,0 +1,5 @@
+15 actions 
+20000 episodes
+bins error angle = [-120,-90, -45,-7,7 ,45 , 90,120]
+
+discretized angle avec la direction du pod pas son angle

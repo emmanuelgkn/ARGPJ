@@ -136,7 +136,8 @@ class Board():
         self.pod = Pod(first_cp_x, first_cp_y , 0 )
         x, y = self.pod.getCoord()
         x2, y2 = self.checkpoints[(self.next_checkpoint+1)%nb_cp].getCoord()
-        self.pod.angle = np.arctan2(y2 - y, x2 - x) * 180 / np.pi
+        self.pod.angle = np.random.randint(0,360)
+
 
         
 

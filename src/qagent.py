@@ -15,7 +15,7 @@ import matplotlib.animation as animation
 timestamp = datetime.now().strftime("%d-%m")
 
 class Qagent:
-    def __init__(self, env, episodes= 5000, max_steps =2000,alpha = .1, epsilon = .5, gamma = 0.95, do_test = True):
+    def __init__(self, env, episodes= 5000, max_steps =2000,alpha = .1, epsilon = .6, gamma = 0.95, do_test = True):
         self.env= env
         self.episodes = episodes
         self.max_steps = max_steps
@@ -32,6 +32,8 @@ class Qagent:
 
         #False si l'on souhaite evaluer l'agent durant l'apprentissage
         self.do_test = do_test
+        self.trace_qtable = np.zeros((self.env.nb_etat, self.env.nb_action))
+        self.trace_etat = np.zeros(self.env.nb_etat)
         #nombre de test à faire par phase de test durant l'apprentissage
 
     def train(self):
@@ -39,23 +41,24 @@ class Qagent:
             cum_reward = 0
             state= self.env.reset()
             for j in range(self.max_steps):
-
+                
                 action = self.epsilon_greedy(state)
                 next_state,reward,terminated = self.env.step(action)
                 self.update_q_table(state,action,next_state,reward)
                 state = next_state
                 cum_reward += reward
-
-                if terminated:
+                if terminated:  
+           
                     break
-            self.epsilon = max(0.05, self.epsilon * 0.995)
-            if self.do_test and i%5 ==0:
-                nb_steps, cum_reward = self.test(i)
+
+            self.epsilon = max(0.05, self.epsilon * 0.998)
+            if self.do_test and i%10 ==0:
+                nb_steps, cum_reward = self.test()
                 self.steps.append((i,nb_steps))
                 self.rewards.append((i,cum_reward))
 
 
-    def test(self, ep):
+    def test(self):
 
         state = self.env.reset()
         pas = 0
@@ -93,6 +96,8 @@ class Qagent:
     def update_q_table(self, state, action, next_state, reward):
         next_q = np.max(self.qtable[next_state])
         self.qtable[state, action] += self.alpha*(reward + self.gamma*next_q - self.qtable[state,action])
+        self.trace_qtable[state,action]+=1
+        self.trace_etat[state]+=1
 
 
     def save_rewards(self, filename):
@@ -111,43 +116,16 @@ class Qagent:
             for i, step in self.steps:
                 writer.writerow([i, step])
 
-    def qtable_file(self, filename):
-        with open(filename, 'w') as f:
-            f.write("qtable = [\n")
-            for row in self.qtable:
-                f.write(f"    {repr(row)},\n")
-            f.write("]\n")
-
-def convert_action(action, past_pos, current_pos):
-    """
-    Calcule la cible (x, y) associée à une action discrète.
-    """
-    mapping_thrust = {0: 0, 1: 70, 2: 100}
-    mapping_angle = {0: -90, 1: 0, 2: 90}
-
-    thrust = mapping_thrust[action // 3]
-    angle_action = mapping_angle[action % 3]
-
-    x_past, y_past = past_pos
-    x, y = current_pos
-
-    # direction actuelle
-    angle = math.degrees(math.atan2(y - y_past, x - x_past))
-    new_angle = (angle + angle_action + 540) % 360 - 180
-
-    # projection à 500 unités dans la nouvelle direction
-    new_x = x + math.cos(math.radians(new_angle)) * 500
-    new_y = y + math.sin(math.radians(new_angle)) * 500
-
-    return new_x, new_y, thrust
 
 
 
 
-def main():
-    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 6000, max_steps=20000)
+if __name__ == "__main__":
+    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 20000, max_steps=20000)
 
+    # np.save("qtable", agent.qtable)
     agent.train()
+    np.savetxt("qtable", agent.qtable)
 
     agent.env.show_traj()
     
@@ -176,6 +154,7 @@ def main():
     plt.xlabel("Episodes")
     plt.ylabel("Steps")
     plt.title(f"Nombre de steps par episode (moyenne par batch de {batch_size})")
+
     plt.savefig(f"{GRAPH_PATH}/step_per_ep_{timestamp}")
 
     reward_x_b = [agent.rewards[i][0] for i in range(0, len(agent.rewards), batch_size)]
@@ -191,7 +170,22 @@ def main():
     plt.title(f"Reward par episode (moyenne par batch de {batch_size})")
     plt.savefig(f"{GRAPH_PATH}/reward_per_ep_{timestamp}")
 
+    plt.figure()
+    normalized_trace_qtable = agent.trace_qtable / np.max(agent.trace_qtable)
+    plt.matshow(normalized_trace_qtable, cmap = "viridis", aspect = "auto")
+    plt.colorbar()
+    plt.title("nombre de mise à jour de couple état action")
+    plt.savefig(f"{GRAPH_PATH}/trace_qtable_{timestamp}")
 
 
-    
-main()
+
+    plt.figure()
+    plt.bar(np.arange(len(agent.trace_etat)),agent.trace_etat)
+    plt.title("nombre de mise à jour pur un etat")
+    plt.savefig(f"{GRAPH_PATH}/trace_state{timestamp}")
+
+
+
+
+
+
