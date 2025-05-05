@@ -9,7 +9,7 @@ from matplotlib.patches import Circle
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation = [7,4,4] ,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [9,4,4] ,nb_cp = 4,nb_round = 3,custom=False):
 
         self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
@@ -48,7 +48,7 @@ class MPR_env():
 
         self.vitesse.append(vitesse)
         # reward = np.clip(- (dist/(vitesse+1)) ,-100,0)*0.01
-        reward = -self.reward(dist)*0.1
+        reward = -self.reward(dist)*0.01
 
         # if self.next_cp_old != self.board.next_checkpoint:
         #     reward = 20
@@ -57,7 +57,7 @@ class MPR_env():
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -100
+                reward = -50
                 self.terminated = True
             #arret fin de course
             else:
@@ -105,14 +105,15 @@ class MPR_env():
         x_past,y_past = self.past_pos
 
         angle_pod = math.degrees(math.atan2(y - y_past, x - x_past)) % 360
-
         error = (angle - self.board.pod.angle + 540) % 360 - 180
         # error = (angle - angle_pod + 540) % 360 - 180
         # print(error)
         # bins = [-90, -45, -10, -3, 3, 10 ,45, 90,180]
-        bins = [-90, -10, -3, 3, 10 , 90,180]
+        # bins = [-90, -10, -3, 3, 10 , 90]
+        bins = [-120,-90, -45,-5,5, 45 , 90,120]
+
+
         res = np.digitize(error, bins)
-        
         return res
 
 

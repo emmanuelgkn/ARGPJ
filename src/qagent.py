@@ -15,7 +15,7 @@ import matplotlib.animation as animation
 timestamp = datetime.now().strftime("%d-%m")
 
 class Qagent:
-    def __init__(self, env, episodes= 5000, max_steps =2000,alpha = .1, epsilon = .5, gamma = 0.95, do_test = True):
+    def __init__(self, env, episodes= 5000, max_steps =2000,alpha = .1, epsilon = .6, gamma = 0.95, do_test = True):
         self.env= env
         self.episodes = episodes
         self.max_steps = max_steps
@@ -32,7 +32,8 @@ class Qagent:
 
         #False si l'on souhaite evaluer l'agent durant l'apprentissage
         self.do_test = do_test
-        self.eps = []
+        self.trace_qtable = np.zeros((self.env.nb_etat, self.env.nb_action))
+        self.trace_etat = np.zeros(self.env.nb_etat)
         #nombre de test à faire par phase de test durant l'apprentissage
 
     def train(self):
@@ -40,19 +41,17 @@ class Qagent:
             cum_reward = 0
             state= self.env.reset()
             for j in range(self.max_steps):
-
+                
                 action = self.epsilon_greedy(state)
                 next_state,reward,terminated = self.env.step(action)
                 self.update_q_table(state,action,next_state,reward)
                 state = next_state
                 cum_reward += reward
                 if terminated:  
-                    if reward!=100:
-                        print(i)               
+           
                     break
 
             self.epsilon = max(0.05, self.epsilon * 0.998)
-            self.eps.append(self.epsilon)
             if self.do_test and i%10 ==0:
                 nb_steps, cum_reward = self.test()
                 self.steps.append((i,nb_steps))
@@ -97,6 +96,8 @@ class Qagent:
     def update_q_table(self, state, action, next_state, reward):
         next_q = np.max(self.qtable[next_state])
         self.qtable[state, action] += self.alpha*(reward + self.gamma*next_q - self.qtable[state,action])
+        self.trace_qtable[state,action]+=1
+        self.trace_etat[state]+=1
 
 
     def save_rewards(self, filename):
@@ -119,9 +120,8 @@ class Qagent:
 
 
 
-
 if __name__ == "__main__":
-    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 6000, max_steps=20000)
+    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 10000, max_steps=20000)
 
     # np.save("qtable", agent.qtable)
     agent.train()
@@ -171,9 +171,19 @@ if __name__ == "__main__":
     plt.savefig(f"{GRAPH_PATH}/reward_per_ep_{timestamp}")
 
     plt.figure()
-    plt.plot(agent.eps)
-    plt.title("evolution epsilon")
-    plt.savefig(f"{GRAPH_PATH}/evolution_eps")
+    normalized_trace_qtable = agent.trace_qtable / np.max(agent.trace_qtable)
+    plt.matshow(normalized_trace_qtable, cmap = "viridis", aspect = "auto")
+    plt.colorbar()
+    plt.title("nombre de mise à jour de couple état action")
+    plt.savefig(f"{GRAPH_PATH}/trace_qtable_{timestamp}")
+
+
+
+    plt.figure()
+    plt.bar(np.arange(len(agent.trace_etat)),agent.trace_etat)
+    plt.title("nombre de mise à jour pur un etat")
+    plt.savefig(f"{GRAPH_PATH}/trace_state{timestamp}")
+
 
 
 
