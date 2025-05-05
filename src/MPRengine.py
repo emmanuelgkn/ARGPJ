@@ -28,8 +28,11 @@ class Pod(Point):
     def __init__(self, x, y,angle):
         super().__init__(x, y)
         self.angle = angle
-        self.vx = 0
-        self.vy = 0
+        # self.vx = 0
+        # self.vy = 0
+        self.vx= np.random.randint(0,1000)
+        self.vy= np.random.randint(0,1000)
+
         # self.angle = 0
 
         self.timeout = TIMEOUT
@@ -134,7 +137,6 @@ class Board():
 
         # x2, y2 = self.checkpoints[self.next_checkpoint+1].getCoord()
         # self.pod.angle = np.arctan2(y2 - y, x2 - x) * 180 / np.pi
-        self.pod.angle =0
 
         
 
@@ -167,6 +169,5 @@ class Board():
 
     def getInfos(self):
         return HEIGHT, WIDTH
-
 
 

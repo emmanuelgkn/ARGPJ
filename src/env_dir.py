@@ -47,16 +47,16 @@ class MPR_env():
         vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
 
         self.vitesse.append(vitesse)
-        reward = np.clip(- (dist/(vitesse+1)) ,-100,0)*0.1
+        reward = np.clip(- (dist/(vitesse+1)) ,-100,0)*0.01
 
-        if self.next_cp_old != self.board.next_checkpoint:
-            reward = 20
+        # if self.next_cp_old != self.board.next_checkpoint:
+        #     reward = 20
         self.next_cp_old = self.board.next_checkpoint
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -100
+                reward = -20
                 self.terminated = True
             #arret fin de course
             else:
@@ -131,10 +131,10 @@ class MPR_env():
         return index
 
     def convert_action(self, action):
-        mapping_thrust = {0: 0, 1: 70, 2: 100}
+        mapping_thrust = {0: 0, 1: 30, 2: 100}
         thrust = mapping_thrust[action // 3]
         # mapping_angle = {0: -18, 1: -9, 2: 0, 3: 9, 4: 18}
-        mapping_angle = {0: -45, 1: 0, 2: 45}
+        mapping_angle = {0: -90, 1: 0, 2: 90}
         x_past, y_past = self.past_pos
         x,y = self.current_pos
 
@@ -173,10 +173,4 @@ class MPR_env():
 
         plt.title("Trajectoire")
         plt.show()
-
-
-
-
-
-
 
