@@ -27,7 +27,7 @@ import os
 # https://medium.com/data-science/reinforcement-learning-explained-visually-part-5-deep-q-networks-step-by-step-5a5317197f4b
 
 class ExperienceReplay:
-    def __init__(self,env,nbeps,model,epsilon = 1,state_dim=3,action_dim=3,quadruplets_size = 100000):
+    def __init__(self,env,nbeps,model,epsilon = 1,state_dim=3,action_dim=3,quadruplets_size = 10000):
         self.quadruplets = deque(maxlen=quadruplets_size)
         self.quadruplets_size = quadruplets_size
         self.epsilon = epsilon
@@ -63,7 +63,7 @@ class ExperienceReplay:
                 next_state,next_stateM,reward,terminated = self.env.step(action)
 
                 if mode == "simu":
-                    self.quadruplets.append((stateM,action,reward,next_stateM))
+                    self.quadruplets.append((stateM,action,reward,next_stateM,terminated))
                 else:
                     rew_cum += reward 
 
@@ -87,19 +87,18 @@ class ExperienceReplay:
         return max_indices.item()
 
 class Train:
-    def __init__(self,env,nIter,epsilon = 1,alpha=.7,gamma = 0.99,state_dim=3,action_dim=3,target_update_feq = 100, batch_size=64):
+    def __init__(self,env,nIter,epsilon = 1,alpha=.7,gamma = 0.99,state_dim=3,target_update_feq = 10, batch_size=64):
         self.nIter = nIter
         self.state_dim = state_dim
         self.batch_size = batch_size
         self.gamma = gamma
         self.alpha = alpha
-        self.action_dim = action_dim
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = QNetworkdqn(self.state_dim, self.action_dim).to(self.device)
-        self.target = QNetworkdqn(self.state_dim, self.action_dim).to(self.device)
+        self.model = QNetworkdqn(self.state_dim, env.nb_action).to(self.device)
+        self.target = QNetworkdqn(self.state_dim, env.nb_action).to(self.device)
         self.target.load_state_dict(self.model.state_dict()) 
         self.target.eval()
-        self.info = ExperienceReplay(env,10,self.model)
+        self.info = ExperienceReplay(env,1,self.model)
         self.steps_done = 0 
         self.target_update_feq = target_update_feq
         self.loss_fn = nn.MSELoss()
@@ -135,13 +134,14 @@ class Train:
 
             batch = random.sample(self.info.quadruplets, self.batch_size)
 
-            states, actions, reward_repl, next_states = zip(*batch)
+            states, actions, reward_repl, next_states,term = zip(*batch)
 
 
             state_tensor = torch.tensor(states, dtype=torch.float32, device=self.device)
             next_states_tensor = torch.tensor(next_states, dtype=torch.float32, device=self.device)
             action_tensor = torch.tensor(actions, device=self.device)
             reward_tensor = torch.tensor(reward_repl, dtype=torch.float32, device=self.device)
+            done = torch.tensor(term, dtype=torch.float32, device=self.device)
 
             prediction = self.model(state_tensor)
             target = self.target(next_states_tensor)
@@ -164,7 +164,7 @@ class Train:
 
             # return exit()
 
-            target_computed = reward_tensor + self.gamma * target_final 
+            target_computed = reward_tensor + self.gamma * target_final * (1-done)
 
             # return exit()
             loss = self.loss_fn(prediction_final, target_computed.unsqueeze(1))
@@ -172,8 +172,8 @@ class Train:
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-            self.epsilon *= 0.999
-            self.epsilon = max(self.epsilon, 0.01)
+            self.epsilon *= 0.995
+            self.epsilon = max(self.epsilon, 0.05)
 
             if i % self.target_update_feq == 0:
                 self.target.load_state_dict(self.model.state_dict())
@@ -191,7 +191,6 @@ class Train:
 class QagentDQN:
     def __init__(self, env,model):
         self.env= env
-        self.action_dim = 3
         self.state_dim = 3
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = model

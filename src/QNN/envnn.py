@@ -9,7 +9,7 @@ from matplotlib.patches import Circle
 #Mad Pod Racing Environnement
 class MPR_envnn():
 
-    def __init__(self, discretisation = [7,4,3] ,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [9,4,4] ,nb_cp = 4,nb_round = 3,custom=False):
 
         self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
@@ -21,15 +21,14 @@ class MPR_envnn():
         #on stock position precedente pour deriver la vitesse, past_pos = (x,y)
         self.past_pos= self.board.pod.getCoord()
         self.current_pos = self.past_pos
-        self.prev_dist = None
+
         self.max_dist = np.sqrt(width**2+height**2)
-        self.nb_action = 3
+        self.nb_action = 9
         #7 angles, 4 distances, 3 vitesses
         # self.nb_etat = 7*4*3
         # self.nb_etat = (self.discretisation[0]+2) * self.discretisation[1] * self.discretisation[2]
         self.nb_etat = self.discretisation[0]* self.discretisation[1] * self.discretisation[2]
 
-        
         self.traj = []
         self.vitesse =[]
         self.dista = []
@@ -38,6 +37,7 @@ class MPR_envnn():
         self.next_cp_old =self.board.next_checkpoint
 
     
+        
     def step(self,  action):
         target_x, target_y, thrust = self.convert_action(action)
         x,y,_,_,dist,angle = self.board.play(Point(target_x,target_y),thrust)
@@ -47,16 +47,17 @@ class MPR_envnn():
         vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
 
         self.vitesse.append(vitesse)
-        reward = np.clip(- (dist/(vitesse+1)) ,-100,0)*0.1
+        # reward = np.clip(- (dist/(vitesse+1)) ,-100,0)*0.01
+        reward = -self.reward(dist)*0.1
 
-        if self.next_cp_old != self.board.next_checkpoint:
-            reward = 20
+        # if self.next_cp_old != self.board.next_checkpoint:
+        #     reward = 20
         self.next_cp_old = self.board.next_checkpoint
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -100
+                reward = -20
                 self.terminated = True
             #arret fin de course
             else:
@@ -68,10 +69,10 @@ class MPR_envnn():
         self.past_pos=self.current_pos
         self.current_pos = (x,y)
         self.rewa.append(reward)
+
         next_state_matrix = [angle,
                         dist,
                         vitesse]
-        # reward /= 1000.0
 
         return next_state,next_state_matrix,reward, self.terminated
     
@@ -92,11 +93,18 @@ class MPR_envnn():
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         dist = self.board.pod.distance(next_cp)
         angle = self.board.pod.getAngle(next_cp)
-        vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
-        state_matrix = [angle,
+        
+        vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
+
+        next_state_matrix = [angle,
                         dist,
                         vitesse]
-        return self.discretized_state(angle,dist, x, y), state_matrix
+
+        return self.discretized_state(angle,dist, x, y),next_state_matrix
+
+    def reward(self, dist):
+        bins = [600,700,800,1000,2000,3000,5000,6000,8000,100000]
+        return np.digitize(dist,bins)
 
     def discretized_angle(self, angle):
         #probleme avant on discretisé l'etat entre pod et angle sans prendre en compte la direction du pod
@@ -109,22 +117,25 @@ class MPR_envnn():
         x_past,y_past = self.past_pos
         angle_pod = math.degrees(math.atan2(y - y_past, x - x_past)) % 360
 
-        # error = (angle - self.board.pod.angle + 540) % 360 - 180
-        error = (angle - angle_pod + 540) % 360 - 180
-        error = abs(error) 
-
-        bins =[15, 30, 60, 90, 135, 180]
+        error = (angle - self.board.pod.angle + 540) % 360 - 180
+        # error = (angle - angle_pod + 540) % 360 - 180
+        # print(error)
+        bins = [-90, -45, -10, -3, 3, 10 ,45, 90,180]
         res = np.digitize(error, bins)
+        
         return res
 
 
     def discretized_distance(self, dist):
-        bins = [1000, 4000]
+        bins = [2000, 4000,8000]
+
+
         return np.digitize(dist, bins)
 
     def discretized_speed(self, x, y):
         vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
-        bins = [200, 1000]
+        bins = [300,500, 800]
+
         return np.digitize(vitesse, bins)
 
 
@@ -136,10 +147,10 @@ class MPR_envnn():
         return index
 
     def convert_action(self, action):
-        mapping_thrust = {0: 0, 1: 70, 2: 100}
+        mapping_thrust = {0: 0, 1: 30, 2: 100}
         thrust = mapping_thrust[action // 3]
         # mapping_angle = {0: -18, 1: -9, 2: 0, 3: 9, 4: 18}
-        mapping_angle = {0: -45, 1: 0, 2: 45}
+        mapping_angle = {0: -90, 1: 0, 2: 90}
         x_past, y_past = self.past_pos
         x,y = self.current_pos
 
@@ -165,7 +176,9 @@ class MPR_envnn():
         # plt.ylim(0,9000)
         plt.gca().invert_yaxis() 
         plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
-        plt.scatter(b_x,b_y,s=1200, c = 'r')
+        for bx, by in zip(b_x, b_y):
+            circle = Circle((bx, by), 600, color='r', fill=True)
+            plt.gca().add_patch(circle)
         if self.traj:
             last_x, last_y = self.traj[-1]
             vx, vy = self.board.pod.vx, self.board.pod.vy
@@ -174,13 +187,6 @@ class MPR_envnn():
 
             plt.text(bx, by, str(i), color="black", fontsize=12, ha='center', va='center')
 
-        plt.title("Trajectoire avec NN")
-        plt.savefig("../Graphiques/tmp_trajectoireNN.png")
+        plt.title("Trajectoire")
         plt.show()
-
-
-
-
-
-
 

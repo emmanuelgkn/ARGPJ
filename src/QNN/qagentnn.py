@@ -100,9 +100,9 @@ class GetInformations:
         state_tensor = torch.tensor(state, dtype=torch.float32,device=self.device)
 
         # Tester toutes les actions (one-hot encoding) sur GPU
-        actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
+        actions = torch.eye(self.env.nb_action, device=self.device)  # Matrice identité pour one-hot
         # print("action_dim: ", actions.shape)
-        q_values = self.model(state_tensor.repeat(self.action_dim, 1), actions)
+        q_values = self.model(state_tensor.repeat(self.env.nb_action, 1), actions)
 
 
         # temp = [self.model(state_tensor, a) for a in actions]
@@ -124,7 +124,7 @@ class train:
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = QNetwork(self.state_dim, self.action_dim).to(self.device)
+        self.model = QNetwork(self.state_dim, env.nb_action).to(self.device)
         self.info = GetInformations(env,10,self.model)
         self.loss_fn = nn.MSELoss()
         self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
@@ -157,7 +157,7 @@ class train:
                 # Convertir l'état en tenseur et l'envoyer sur GPU
                 state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device).unsqueeze(0)
                 # Tester toutes les actions (one-hot encoding) sur GPU
-                actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
+                actions = torch.eye(self.env.nb_action, device=self.device)  # Matrice identité pour one-hot
                 q_values = torch.cat([self.model(state_tensor, a.unsqueeze(0)) for a in actions])
 
                 action = torch.argmax(q_values).item()
@@ -183,7 +183,7 @@ class train:
                     states.append(t[0])
                     actions.append(t[1])
                     
-            action_one_hot = np.eye(self.action_dim)[actions]
+            action_one_hot = np.eye(self.env.nb_action)[actions]
             state_tensor = torch.tensor(states, dtype=torch.float32, device=self.device)
             action_tensor = torch.tensor(action_one_hot, dtype=torch.float32, device=self.device)
             target_tensor = torch.tensor(qvalues, dtype=torch.float32, device=self.device).unsqueeze(-1)
@@ -221,7 +221,7 @@ class QagentNN:
             state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device)
 
             # Tester toutes les actions (one-hot encoding) sur GPU
-            actions = torch.eye(self.action_dim, device=self.device)  # Matrice identité pour one-hot
+            actions = torch.eye(self.env.nb_action, device=self.device)  # Matrice identité pour one-hot
             q_values = self.model(state_tensor.repeat(self.action_dim, 1), actions)
 
             action = torch.argmax(q_values).item()
@@ -231,7 +231,7 @@ class QagentNN:
         self.env.show_traj()
 
 def main():
-    traine = train(MPR_envnn(custom=False,nb_cp = 2,nb_round = 1),1000)
+    traine = train(MPR_envnn(custom=False,nb_cp = 2,nb_round = 1),500)
     losses,rewards,r = traine.run()
     traine.saveWeights()
 
