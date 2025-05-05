@@ -109,6 +109,7 @@ class Board():
         self.checkpoints = []
         self.checkpoint_cp = [0]*nb_cp
         if custom:
+            self.nb_cp = 4
             self.checkpoints.append(CheckPoint(14010, 2995,0))
             self.checkpoints.append(CheckPoint(4004, 7791,1)) #7791
             self.checkpoints.append(CheckPoint(12007, 1982,2))
@@ -124,15 +125,14 @@ class Board():
                         self.checkpoints.append(cp_candidate)
                         break 
 
-        self.next_checkpoint = 1
+        self.next_checkpoint = 1 % nb_cp
         first_cp_x, first_cp_y = self.checkpoints[0].getCoord()
 
 
 
         self.pod = Pod(first_cp_x, first_cp_y , 0 )
         x, y = self.pod.getCoord()
-
-        x2, y2 = self.checkpoints[self.next_checkpoint+1].getCoord()
+        x2, y2 = self.checkpoints[(self.next_checkpoint+1)%nb_cp].getCoord()
         self.pod.angle = np.arctan2(y2 - y, x2 - x) * 180 / np.pi
 
         

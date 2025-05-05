@@ -49,7 +49,7 @@ class GetInformations:
             current_triplets = []
             terminated = False
             n = 0
-            while not (terminated or n > self.max_steps):
+            while (not terminated) and (n < self.max_steps):
 
                 action = self.epsilon_greedy(stateM,epsilon)
                 next_state,next_stateM,reward,terminated = self.env.step(action)
@@ -151,9 +151,9 @@ class train:
             #################### Simulation pour récupérer les rewards #################
             n = 0
             state, stateM = self.env.reset()
-            
+            terminated = False
             rew_cum = 0
-            while n < 500:
+            while (not terminated) and (n < self.info.max_steps):
                 # Convertir l'état en tenseur et l'envoyer sur GPU
                 state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device).unsqueeze(0)
                 # Tester toutes les actions (one-hot encoding) sur GPU
@@ -166,10 +166,9 @@ class train:
 
                 rew_cum += reward 
                 n += 1
-                if terminated:
-                    break
                 
             rewards.append(rew_cum)
+            # print(rew_cum)
 
             reward_moyen = sum(rewards) / len(rewards)
             rewards_moyens.append(reward_moyen)
@@ -198,12 +197,11 @@ class train:
             loss.backward()
             self.optimizer.step()
             self.epsilon *= 0.995
-
         print("fini")
         return losses,rewards_moyens,rewards
 
     def saveWeights(self):
-        torch.save(self.model.state_dict(), 'weights_qagentnn.pth')
+        torch.save(self.model.state_dict(), 'QNN/weights_qagentnn.pth')
 
 class QagentNN:
     def __init__(self, env,model):
@@ -218,7 +216,7 @@ class QagentNN:
         state, stateM = self.env.reset()
         i = 0
         terminated = False
-        while not (terminated or i > self.max_steps):
+        while (not terminated) and (i < self.max_steps):
             # Convertir l'état en tenseur et l'envoyer sur GPU
             state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device)
 
@@ -233,9 +231,9 @@ class QagentNN:
         self.env.show_traj()
 
 def main():
-    traine = train(MPR_envnn(custom=False),1000)
+    traine = train(MPR_envnn(custom=False,nb_cp = 2,nb_round = 1),1000)
     losses,rewards,r = traine.run()
-    # traine.saveWeights()
+    traine.saveWeights()
 
     plt.figure()
     plt.plot(losses)
@@ -255,8 +253,5 @@ def main():
     plt.savefig('../Graphiques/reward_nn_tmp')
     plt.show()
 
-
-    agent = QagentNN(MPR_envnn(custom=False), traine.model)
-    agent.one_run()
-
-main()
+if __name__ == "__main__":
+    main()

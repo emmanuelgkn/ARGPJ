@@ -27,37 +27,53 @@ import os
 # https://medium.com/data-science/reinforcement-learning-explained-visually-part-5-deep-q-networks-step-by-step-5a5317197f4b
 
 class ExperienceReplay:
-    def __init__(self,env,nbeps,model,epsilon = 1,state_dim=3,action_dim=3):
-        self.quadruplets = []
-        self.qvalues = []
+    def __init__(self,env,nbeps,model,epsilon = 1,state_dim=3,action_dim=3,quadruplets_size = 100000):
+        self.quadruplets = deque(maxlen=quadruplets_size)
+        self.quadruplets_size = quadruplets_size
         self.epsilon = epsilon
         self.nbeps = nbeps
         self.env = env
         self.state_dim = state_dim 
         self.action_dim = action_dim
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = model#QNetwork(self.state_dim, self.action_dim).to(self.device)
+        self.model = model
         self.max_steps = 5000
+        self.losses = []
+        self.rewards = []
+        self.rewards_moyens = []
         pass
 
-    def launch_simulation(self,epsilon):
-        self.quadruplets = []
-        for i in range(self.nbeps):
+    def launch_simulation(self,epsilon=0,mode="simu"):
+        nb_episodes = self.nbeps
+        eps = epsilon
+
+        if mode == "reward":
+            rew_cum = 0
+            nb_episodes = 1
+            eps = 0
+
+        for i in range(nb_episodes):
 
             state, stateM = self.env.reset()
             terminated = False
             n = 0
-            while not (terminated or n > self.max_steps):
+            while (not terminated) and (n < self.max_steps):
 
-                action = self.epsilon_greedy(stateM,epsilon)
+                action = self.epsilon_greedy(stateM,eps)
                 next_state,next_stateM,reward,terminated = self.env.step(action)
-                self.quadruplets.append((stateM,action,reward,next_stateM))
+
+                if mode == "simu":
+                    self.quadruplets.append((stateM,action,reward,next_stateM))
+                else:
+                    rew_cum += reward 
 
                 stateM = next_stateM
                 n += 1
 
-            
-        return self.quadruplets
+        if mode == "reward":
+            return rew_cum
+
+
 
     def epsilon_greedy(self, state, epsilon):
         if np.random.random() < epsilon:
@@ -70,10 +86,11 @@ class ExperienceReplay:
 
         return max_indices.item()
 
-class train:
-    def __init__(self,env,nIter,epsilon = 1,alpha=.7,gamma = 0.95,state_dim=3,action_dim=3,target_update_feq = 100):
+class Train:
+    def __init__(self,env,nIter,epsilon = 1,alpha=.7,gamma = 0.99,state_dim=3,action_dim=3,target_update_feq = 100, batch_size=64):
         self.nIter = nIter
         self.state_dim = state_dim
+        self.batch_size = batch_size
         self.gamma = gamma
         self.alpha = alpha
         self.action_dim = action_dim
@@ -81,11 +98,12 @@ class train:
         self.model = QNetworkdqn(self.state_dim, self.action_dim).to(self.device)
         self.target = QNetworkdqn(self.state_dim, self.action_dim).to(self.device)
         self.target.load_state_dict(self.model.state_dict()) 
+        self.target.eval()
         self.info = ExperienceReplay(env,10,self.model)
         self.steps_done = 0 
         self.target_update_feq = target_update_feq
         self.loss_fn = nn.MSELoss()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-4)
         self.env = env
         self.epsilon = epsilon
         pass
@@ -99,53 +117,26 @@ class train:
         for i in tqdm(range(self.nIter)):
 
             #################### Simulation pour récupérer les rewards #################
-            n = 0
-            state, stateM = self.env.reset()
-            
-            rew_cum = 0
-            while n < 500:
-                # Convertir l'état en tenseur et l'envoyer sur GPU
-                state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device)
 
-                q_values = self.model(state_tensor)
-                max_q_values, max_indices = torch.max(q_values,dim=0)
-
-                action = max_indices.item()
-
-                next_state,next_stateM,reward,terminated = self.env.step(action)
-                stateM = next_stateM
-
-                rew_cum += reward 
-                n += 1
-                if terminated:
-                    break
+            rew_cum = self.info.launch_simulation(mode="reward") 
                 
             rewards.append(rew_cum)
-
             reward_moyen = sum(rewards) / len(rewards)
             rewards_moyens.append(reward_moyen)
 
-            ################ Apprentissage ##################################################
 
+            ################ Apprentissage ##################################################
 
             self.info.launch_simulation(self.epsilon)
 
-            quadruplets = self.info.quadruplets
+            # pour le remplir au début
+            while len(self.info.quadruplets) < self.info.quadruplets_size:
+                self.info.launch_simulation(self.epsilon)
 
-            random.shuffle(quadruplets)
+            batch = random.sample(self.info.quadruplets, self.batch_size)
 
-            states = []
-            actions = []
-            reward_repl = []
-            next_states = []
+            states, actions, reward_repl, next_states = zip(*batch)
 
-            for q in quadruplets:
-                states.append(q[0])
-                actions.append(q[1])
-                reward_repl.append(q[2])
-                next_states.append(q[3])
-
-            
 
             state_tensor = torch.tensor(states, dtype=torch.float32, device=self.device)
             next_states_tensor = torch.tensor(next_states, dtype=torch.float32, device=self.device)
@@ -173,7 +164,7 @@ class train:
 
             # return exit()
 
-            target_computed = reward_tensor + self.gamma * target_final
+            target_computed = reward_tensor + self.gamma * target_final 
 
             # return exit()
             loss = self.loss_fn(prediction_final, target_computed.unsqueeze(1))
@@ -181,19 +172,20 @@ class train:
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-            self.epsilon *= 0.85
+            self.epsilon *= 0.999
+            self.epsilon = max(self.epsilon, 0.01)
 
-            if self.steps_done % self.target_update_feq == 0:
+            if i % self.target_update_feq == 0:
                 self.target.load_state_dict(self.model.state_dict())
 
-
             self.steps_done += 1
+
 
         print("fini")
         return losses,rewards_moyens,rewards
 
     def saveWeights(self):
-        torch.save(self.model.state_dict(), 'weights_qagentdqn.pth')
+        torch.save(self.model.state_dict(), 'QNN/weights_qagentdqn.pth')
 
 
 class QagentDQN:
@@ -209,7 +201,7 @@ class QagentDQN:
         state, stateM = self.env.reset()
         i = 0
         terminated = False
-        while not (terminated or i > self.max_steps):
+        while (not terminated) and (i < self.max_steps):
             # Convertir l'état en tenseur et l'envoyer sur GPU
             state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device)
 
@@ -238,9 +230,9 @@ def main():
     # traine = train(MPR_envnn(custom=False),1000)
     # traine.run()
 
-    traine = train(MPR_envnn(custom=True),1000)
+    traine = Train(MPR_envnn(custom=False,nb_cp = 2,nb_round = 1),1000)
     losses,rewards,r = traine.run()
-    # traine.saveWeights()
+    traine.saveWeights()
 
     plt.figure()
     plt.plot(losses)
@@ -261,7 +253,8 @@ def main():
     plt.show()
 
 
-    # agent = QagentNN(MPR_envnn(custom=False), traine.model)
+    # agent = QagentDQN(MPR_envnn(custom=False), traine.model)
     # agent.one_run()
 
-main()
+if __name__ == "__main__":
+    main()
