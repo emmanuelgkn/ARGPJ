@@ -144,17 +144,15 @@ def convert_action(action, past_pos, current_pos):
 
 
 
-
-
 def main():
-    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 15000, max_steps=20000)
+    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 6000, max_steps=20000)
 
     agent.train()
 
     agent.env.show_traj()
     
     
-    plt.figure()
+    plt.figure(figsize=(15,7))
     plt.plot(agent.env.vitesse, label='vitesse')
     plt.legend()
     plt.savefig("vitesse")
@@ -170,9 +168,11 @@ def main():
     steps_y_b = [ sum(agent.steps[i][1] for i in range(batch, min(batch + batch_size, len(agent.steps)))) /  (min(batch + batch_size, len(agent.steps)) - batch)for batch in range(0, len(agent.steps), batch_size)]
     xs = [agent.steps[i][0] for i in range(len(agent.steps))]
     ys = [agent.steps[i][1] for i in range(len(agent.steps))]
-    plt.figure()
-    plt.plot(xs,ys)
-    plt.plot(steps_x_b, steps_y_b)
+    
+    plt.figure(figsize=(15,7))
+    plt.plot(xs,ys, label ="ep par ep")
+    plt.plot(steps_x_b, steps_y_b, label = "mean par batch")
+    plt.legend()
     plt.xlabel("Episodes")
     plt.ylabel("Steps")
     plt.title(f"Nombre de steps par episode (moyenne par batch de {batch_size})")
@@ -183,8 +183,9 @@ def main():
     xr = [agent.rewards[i][0] for i in range(len(agent.rewards))]
     yr = [agent.rewards[i][1] for i in range(len(agent.rewards))]
     plt.figure()
-    plt.plot(xr,yr)
-    plt.plot(reward_x_b, reward_y_b)
+    plt.plot(xr,yr, label = "ep par ep")
+    plt.plot(reward_x_b, reward_y_b, label= "mean par batch")
+    plt.legend()
     plt.xlabel("Episodes")
     plt.ylabel("Reward")
     plt.title(f"Reward par episode (moyenne par batch de {batch_size})")
