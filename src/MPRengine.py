@@ -161,7 +161,7 @@ class Board():
         next_cp = self.checkpoints[self.next_checkpoint]
         next_cp_x, next_cp_y = next_cp.getCoord()
         dist = self.pod.distance(next_cp)
-        angle = self.pod.getAngle(next_cp)
+        angle = self.pod.diffAngle(next_cp)
 
 
         return x, y, next_cp_x, next_cp_y, dist, angle
