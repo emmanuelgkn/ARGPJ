@@ -28,10 +28,10 @@ class Pod(Point):
     def __init__(self, x, y,angle):
         super().__init__(x, y)
         self.angle = angle
-        # self.vx = 0
-        # self.vy = 0
-        self.vx= np.random.randint(0,1000)
-        self.vy= np.random.randint(0,1000)
+        self.vx = 0
+        self.vy = 0
+
+
 
         # self.angle = 0
 
@@ -133,11 +133,18 @@ class Board():
 
 
 
-        self.pod = Pod(first_cp_x, first_cp_y , 0 )
-        x, y = self.pod.getCoord()
-        x2, y2 = self.checkpoints[(self.next_checkpoint+1)%nb_cp].getCoord()
-        self.pod.angle = np.random.randint(0,360)
+        # x2, y2 = self.checkpoints[(self.next_checkpoint+1)%nb_cp].getCoord()
+        # self.pod = Pod(first_cp_x, first_cp_y ,  0 )
+        # x, y = self.pod.getCoord()
 
+        first_cp = self.checkpoints[0]
+        second_cp = self.checkpoints[self.next_checkpoint]
+
+        dx = second_cp.x - first_cp.x
+        dy = second_cp.y - first_cp.y
+        angle = (math.degrees(math.atan2(dy, dx))) % 360
+
+        self.pod = Pod(first_cp.x, first_cp.y, angle)
 
         
 

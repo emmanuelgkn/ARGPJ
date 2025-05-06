@@ -9,7 +9,7 @@ from matplotlib.patches import Circle
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation = [4,4,4,5] ,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [7,4,4,5] ,nb_cp = 4,nb_round = 3,custom=False):
 
         self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
@@ -100,7 +100,7 @@ class MPR_env():
         #notre ancienne fonction permettait pas de faire la difference entre ces deux situations
         #maintenant on calcul la difference entre notre orientation et l'angle
         #en commentaire si on a pas le droit de recup self.board.pod.angle
-        bins = [-90, 0,90]
+        bins = [-90, -45,-20,20,45,90]
         res = np.digitize(angle, bins)
         return res
 
@@ -133,7 +133,7 @@ class MPR_env():
 
 
     def convert_action(self, action):
-        mapping_thrust = {0: 0, 1: 30, 2: 100}
+        mapping_thrust = {0: 0, 1: 70, 2: 100}
         thrust = mapping_thrust[action // 5]
         # mapping_angle = {0: -18, 1: -9, 2: 0, 3: 9, 4: 18}
         mapping_angle = {0: -90,1:-45, 2: 0, 3:45, 4: 90}

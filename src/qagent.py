@@ -57,6 +57,7 @@ class Qagent:
                 self.rewards.append((i,cum_reward))
 
 
+
     def test(self):
 
         state = self.env.reset()
@@ -116,15 +117,19 @@ class Qagent:
                 writer.writerow([i, step])
 
 
-
-
+def ranks_par_ligne(qtable):
+    qtable = np.array(qtable)
+    return np.argsort(np.argsort(qtable, axis=1), axis=1)
 
 if __name__ == "__main__":
-    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 15000, max_steps=20000)
+    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 50000, max_steps=20000)
 
     # np.save("qtable", agent.qtable)
     agent.train()
-    np.savetxt("qtable", agent.qtable)
+
+
+    np.savetxt("qtable1", agent.qtable,fmt="%.3e")
+ 
 
     agent.env.show_traj()
     
