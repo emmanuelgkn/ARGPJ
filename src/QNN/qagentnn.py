@@ -80,8 +80,8 @@ class ExperienceReplay:
     def epsilon_greedy(self, state, epsilon):
         if np.random.random() < epsilon:
             return np.random.randint(0, self.env.nb_action)
+        
         state_tensor = torch.tensor(state, dtype=torch.float32,device=self.device)
-        # state_tensor = torch.tensor(state)
 
         q_values = self.model(state_tensor)
         max_q_values, max_indices = torch.max(q_values,dim=0)
