@@ -59,13 +59,10 @@ class ExperienceReplay:
             env =MPR_envdqn(nb_cp=2,nb_round=1,custom=False)
             state = env.reset()
             terminated = False
-            n = 0
             while True:
-
                 action = self.epsilon_greedy(state,eps)
                 next_state,reward,terminated = env.step(action)
 
-                
                 if mode == "simu":
                     self.memory.append((state,action,reward,next_state,terminated))
                 else:
@@ -75,7 +72,6 @@ class ExperienceReplay:
                     break
                     
                 state = next_state
-                n += 1
             
 
         if mode == "reward":
@@ -95,7 +91,7 @@ class ExperienceReplay:
         return max_indices.item()
 
 class Train:
-    def __init__(self,env,nIter,epsilon = 1,alpha=.7,gamma = 0.99,state_dim=4,target_update_feq = 100, batch_size=64):
+    def __init__(self,env,nIter,epsilon = 1,alpha=.7,gamma = 0.99,state_dim=4,target_update_feq = 10, batch_size=64):
         self.nIter = nIter
         self.state_dim = state_dim
         self.batch_size = batch_size
@@ -105,7 +101,7 @@ class Train:
         self.target = QNetworkdqn(self.state_dim, env.nb_action).to(self.device)
         self.target.load_state_dict(self.model.state_dict()) 
         self.target.eval()
-        self.info = ExperienceReplay(env,model=self.model, nbeps=10)
+        self.info = ExperienceReplay(env,model=self.model, nbeps=100)
         self.steps_done = 0 
         self.target_update_feq = target_update_feq
         self.loss_fn = nn.MSELoss()
@@ -183,7 +179,7 @@ class Train:
 class QagentDQN:
     def __init__(self, env,model):
         self.env= env
-        self.state_dim = 3
+        self.state_dim = 4
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = model
         self.max_steps = 5000
@@ -221,7 +217,7 @@ def main():
     # traine = train(MPR_envnn(custom=False),1000)
     # traine.run()
 
-    traine = Train(MPR_envdqn(custom=False,nb_cp = 2,nb_round = 1),nIter=1000,)
+    traine = Train(MPR_envdqn(custom=False,nb_cp = 2,nb_round = 1),nIter=200,)
     losses,rewards,r = traine.run()
     traine.saveWeights()
 
