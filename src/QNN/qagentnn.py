@@ -49,28 +49,34 @@ class ExperienceReplay:
         nb_episodes = self.nbeps
         eps = epsilon
 
+
         if mode == "reward":
             rew_cum = 0
             nb_episodes = 1
             eps = 0
 
         for i in range(nb_episodes):
-
-            state = MPR_envdqn(nb_cp=2,nb_round=1,custom=False).reset()
+            env =MPR_envdqn(nb_cp=2,nb_round=1,custom=False)
+            state = env.reset()
             terminated = False
             n = 0
-            while not terminated:
+            while True:
 
                 action = self.epsilon_greedy(state,eps)
-                next_state,reward,terminated = self.env.step(action)
+                next_state,reward,terminated = env.step(action)
 
+                
                 if mode == "simu":
                     self.memory.append((state,action,reward,next_state,terminated))
                 else:
                     rew_cum += reward 
 
+                if terminated:
+                    break
+                    
                 state = next_state
                 n += 1
+            
 
         if mode == "reward":
             return rew_cum
@@ -89,18 +95,17 @@ class ExperienceReplay:
         return max_indices.item()
 
 class Train:
-    def __init__(self,env,nIter,epsilon = 1,alpha=.7,gamma = 0.99,state_dim=4,target_update_feq = 10, batch_size=64):
+    def __init__(self,env,nIter,epsilon = 1,alpha=.7,gamma = 0.99,state_dim=4,target_update_feq = 100, batch_size=64):
         self.nIter = nIter
         self.state_dim = state_dim
         self.batch_size = batch_size
         self.gamma = gamma
-        self.alpha = alpha
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = QNetworkdqn(self.state_dim, env.nb_action).to(self.device)
         self.target = QNetworkdqn(self.state_dim, env.nb_action).to(self.device)
         self.target.load_state_dict(self.model.state_dict()) 
         self.target.eval()
-        self.info = ExperienceReplay(env,1,self.model)
+        self.info = ExperienceReplay(env,model=self.model, nbeps=10)
         self.steps_done = 0 
         self.target_update_feq = target_update_feq
         self.loss_fn = nn.MSELoss()
@@ -150,21 +155,6 @@ class Train:
 
             prediction_final = torch.gather(prediction,1,action_tensor.unsqueeze(1))
             target_final, max_indices = torch.max(target,dim=1)
-
-            # print(target[:3])
-            # print(target_final[:3])
-            # print(max_indices[:3])
-            # return exit()
-
-            
-            # print(target[:3])
-            # print(prediction[:3])
-            # tensor([[-48.1780,  39.6336, -33.6857],
-            #         [-52.9365,  39.1674, -26.5802],
-            #         [-52.4106,  38.6017, -25.8553]], device='cuda:0',
-            #     grad_fn=<SliceBackward0>)
-
-            # return exit()
 
             target_computed = reward_tensor + self.gamma * target_final * (1-done)
 
@@ -231,7 +221,7 @@ def main():
     # traine = train(MPR_envnn(custom=False),1000)
     # traine.run()
 
-    traine = Train(MPR_envdqn(custom=False,nb_cp = 2,nb_round = 1),1000)
+    traine = Train(MPR_envdqn(custom=False,nb_cp = 2,nb_round = 1),nIter=1000,)
     losses,rewards,r = traine.run()
     traine.saveWeights()
 
