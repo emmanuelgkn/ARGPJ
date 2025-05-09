@@ -225,36 +225,33 @@ class MPR_envdqn():
         vitesse = self.compute_speed(x,y)
         direction = self.compute_direction(x,y)
 
-        # reward = np.clip(- (dist/(vitesse+1)) ,-100,0)*0.01
+        # reward = np.clip(- (dist/(vitesse+1)) ,-100,0)*0.1
         # reward = -self.reward(dist)*0.01
         reward =0
 
         if dist < self.dista[-1] if self.dista else self.max_dist:
             reward += 1 
 
-        if self.next_cp_old != self.board.next_checkpoint:
-            reward += 50 
-            self.next_cp_old = self.board.next_checkpoint
+        # if self.next_cp_old != self.board.next_checkpoint:
+        #     reward += 50 
+        #     self.next_cp_old = self.board.next_checkpoint
 
-        if dist > self.dista[-1] if self.dista else self.max_dist:
-            reward -= 1  
+        elif dist > self.dista[-1] if self.dista else self.max_dist:
+            reward -= 2
 
         if vitesse > 0:
             reward += min(vitesse / 1000, 1)  
 
 
-        if self.next_cp_old != self.board.next_checkpoint:
-            reward = 20
-        self.next_cp_old = self.board.next_checkpoint
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -50
+                reward = -10
                 self.terminated = True
             #arret fin de course
             else:
-                reward= 100
+                reward= 10
                 self.terminated = True
 
         #stockage des infos
@@ -320,7 +317,7 @@ class MPR_envdqn():
         angle = self.board.pod.diffAngle(next_cp)
         vitesse = self.compute_speed(x,y)
         direction = self.compute_direction(x,y)
-        return [angle/180, dist/self.max_dist,0,direction/360]
+        return [angle, dist,0,direction]
 
 
     

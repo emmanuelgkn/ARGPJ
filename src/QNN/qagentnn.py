@@ -30,7 +30,7 @@ from torch.utils.tensorboard import SummaryWriter
 # https://medium.com/data-science/reinforcement-learning-explained-visually-part-5-deep-q-networks-step-by-step-5a5317197f4b
 
 class ExperienceReplay:
-    def __init__(self,nbeps,model,epsilon = 1,nb_action = 15,quadruplets_size = 200000):
+    def __init__(self,nbeps,model,epsilon = 1,nb_action = 15,quadruplets_size = 20000):
         self.memory = deque(maxlen=quadruplets_size)
         self.epsilon = epsilon
         self.nbeps = nbeps
@@ -41,21 +41,18 @@ class ExperienceReplay:
     def launch_simulation(self,epsilon=0,mode="simu"):
         nb_episodes = self.nbeps
         eps = epsilon
-
-
         if mode == "reward":
             rew_cum = 0
             nb_episodes = 1
             eps = 0
 
         for i in range(nb_episodes):
-            env =MPR_envdqn(nb_cp=3,nb_round=2,custom=False)
+            env =MPR_envdqn(nb_cp=2,nb_round=1,custom=False)
             state = env.reset()
             terminated = False
             while True:
                 action = self.epsilon_greedy(state,eps)
                 next_state,reward,terminated = env.step(action)
-
                 if mode == "simu":
                     self.memory.append((state,action,reward,next_state,terminated))
                 else:
@@ -66,7 +63,6 @@ class ExperienceReplay:
                     
                 state = next_state
         # env.show_traj()
-
         if mode == "reward":
             return rew_cum
 
@@ -83,7 +79,7 @@ class ExperienceReplay:
         return max_indices.item()
 
 class Train:
-    def __init__(self,nIter,epsilon = 1,gamma = 0.99,state_dim=4, action_dim = 15,target_update_feq = 40, batch_size=64):
+    def __init__(self,nIter,epsilon = 1,gamma = 0.99,state_dim=4, action_dim = 15,target_update_feq = 20, batch_size=64):
         self.nIter = nIter
         self.batch_size = batch_size
         self.gamma = gamma
@@ -92,7 +88,7 @@ class Train:
         self.target = QNetworkdqn(state_dim, action_dim).to(self.device)
         self.target.load_state_dict(self.model.state_dict()) 
         self.target.eval()
-        self.info = ExperienceReplay(model=self.model, nbeps=500)
+        self.info = ExperienceReplay(model=self.model, nbeps=100)
         self.steps_done = 0 
         self.target_update_feq = target_update_feq
         self.loss_fn = nn.MSELoss()
@@ -109,7 +105,6 @@ class Train:
         rewards = []
         rewards_moyens = []
 
-
         for i in tqdm(range(self.nIter)):
 
             #################### Simulation pour récupérer les rewards #################
@@ -120,6 +115,7 @@ class Train:
             rewards_moyens.append(reward_moyen)
 
 
+
             ################ Apprentissage ##################################################
 
             self.info.launch_simulation(self.epsilon)
@@ -127,7 +123,7 @@ class Train:
             # pour le remplir au début
             # while len(self.info.memory) < self.info.quadruplets_size//3:
             #     self.info.launch_simulation(self.epsilon)
-            if len(self.info.memory)>=self.batch_size:
+            if len(self.info.memory)>=self.batch_size*10:
 
                 batch = random.sample(self.info.memory, self.batch_size)
 
@@ -155,7 +151,8 @@ class Train:
                 self.optimizer.step()   
 
                 self.writer.add_scalar("Loss/train", loss.item(), i)
-            self.epsilon *= 0.999
+            self.writer.add_scalar("Reward/train", rew_cum, i)
+            self.epsilon *= 0.995
             self.epsilon = max(self.epsilon, 0.05)
 
             if i % self.target_update_feq == 0:
@@ -199,35 +196,35 @@ class QagentDQN:
 
 def main():
 
-    traine = Train(nIter=5)
-    losses,rewards,r = traine.run()
-    traine.saveWeights()
+    # traine = Train(nIter=1000)
+    # losses,rewards_moyen,rewards= traine.run()
+    # traine.saveWeights()
 
-    plt.figure()
-    plt.plot(losses)
-    plt.xlabel('Episodes')
-    plt.ylabel('loss')
-    plt.title('loss par episodes')
-    plt.savefig('../Graphiques/loss_dqn_tmp')
-    plt.show()
+    # plt.figure()
+    # plt.plot(losses)
+    # plt.xlabel('Episodes')
+    # plt.ylabel('loss')
+    # plt.title('loss par episodes')
+    # plt.savefig('../Graphiques/loss_dqn_tmp')
+    # plt.show()
 
-    plt.figure()
-    plt.plot(r, c='#009FB7', label='reward par épisode')
-    plt.plot(rewards,c='#FE4A49', label='reward moyen cumulé')
-    plt.xlabel('Episodes')
-    plt.ylabel('Reward moyen cumulé')
-    plt.title('Reward moyen cumulé par episodes')
-    plt.legend()
-    plt.savefig('../Graphiques/reward_dqn_tmp')
-    plt.show()
+    # plt.figure()
+    # plt.plot(rewards, c='#009FB7', label='reward par épisode')
+    # plt.plot(rewards_moyen,c='#FE4A49', label='reward moyen cumulé')
+    # plt.plot
+    # plt.xlabel('Episodes')
+    # plt.ylabel('Reward moyen cumulé')
+    # plt.title('Reward moyen cumulé par episodes')
+    # plt.legend()
+    # plt.savefig('../Graphiques/reward_dqn_tmp')
+    # plt.show()
 
 
-    # trained_model = QNetworkdqn(4, 15).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-    # trained_model.load_state_dict(torch.load('QNN/weights_qagentdqn.pth'))
+    trained_model = QNetworkdqn(4, 15).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+    trained_model.load_state_dict(torch.load('QNN/weights_qagentdqn.pth'))
 
-    # agent = QagentDQN(MPR_envdqn(custom=False), trained_model)
-    # agent.one_run()
-    # agent.env.show_traj()
+    agent = QagentDQN(MPR_envdqn(nb_cp=3, nb_round=1,custom=False), trained_model)
+    agent.one_run()
 
 if __name__ == "__main__":
     main()
