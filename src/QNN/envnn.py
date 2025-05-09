@@ -226,7 +226,22 @@ class MPR_envdqn():
         direction = self.compute_direction(x,y)
 
         # reward = np.clip(- (dist/(vitesse+1)) ,-100,0)*0.01
-        reward = -self.reward(dist)*0.01
+        # reward = -self.reward(dist)*0.01
+        reward =0
+
+        if dist < self.dista[-1] if self.dista else self.max_dist:
+            reward += 1 
+
+        if self.next_cp_old != self.board.next_checkpoint:
+            reward += 50 
+            self.next_cp_old = self.board.next_checkpoint
+
+        if dist > self.dista[-1] if self.dista else self.max_dist:
+            reward -= 1  
+
+        if vitesse > 0:
+            reward += min(vitesse / 1000, 1)  
+
 
         if self.next_cp_old != self.board.next_checkpoint:
             reward = 20
@@ -254,7 +269,8 @@ class MPR_envdqn():
         self.current_pos = (x,y)
 
         return [angle,dist,vitesse,direction],reward, self.terminated
-    
+
+
     def reward(self, dist):
         bins = [600,700,800,1000,2000,3000,5000,6000,8000,100000]
         return np.digitize(dist,bins)
@@ -304,7 +320,7 @@ class MPR_envdqn():
         angle = self.board.pod.diffAngle(next_cp)
         vitesse = self.compute_speed(x,y)
         direction = self.compute_direction(x,y)
-        return [angle, dist,0,direction]
+        return [angle/180, dist/self.max_dist,0,direction/360]
 
 
     
