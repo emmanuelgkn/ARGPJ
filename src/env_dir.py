@@ -91,7 +91,7 @@ class MPR_env():
 
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         dist = self.board.pod.distance(next_cp)
-        angle = self.board.pod.getAngle(next_cp)
+        angle = self.board.pod.diffAngle(next_cp)
         return self.discretized_state(angle,dist, x, y)
 
     def discretized_angle(self, angle):

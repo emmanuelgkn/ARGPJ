@@ -7,127 +7,104 @@ if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
 import numpy as np
-from envnn import MPR_envnn
+from envnn import MPR_envnn, MPR_envdqn
 import matplotlib.pyplot as plt
 from tqdm import tqdm # type: ignore
 from datetime import datetime
 import csv
 import time
-from reseau import QNetwork
+from reseaudqn import QNetworkdqn
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from collections import deque
 from itertools import chain
-
+import random
 import sys
 import os
 
 
-class GetInformations:
-    def __init__(self,env,nbeps,model,epsilon = 1,alpha=.7,gamma = 0.95,state_dim=3,action_dim=3):
-        self.triplets = []
-        self.qvalues = []
+
+####EXPERIMENTATION
+# source 
+# https://medium.com/data-science/reinforcement-learning-explained-visually-part-5-deep-q-networks-step-by-step-5a5317197f4b
+
+class ExperienceReplay:
+    def __init__(self,env,nbeps,model,epsilon = 1,state_dim=4,action_dim=3,quadruplets_size = 10000):
+        self.memory = deque(maxlen=quadruplets_size)
+        self.quadruplets_size = quadruplets_size
         self.epsilon = epsilon
         self.nbeps = nbeps
-        self.gamma = gamma
         self.env = env
         self.state_dim = state_dim 
         self.action_dim = action_dim
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = model#QNetwork(self.state_dim, self.action_dim).to(self.device)
-        self.max_steps = 5000
-        self.alpha = alpha
+        self.model = model
+        self.losses = []
+        self.rewards = []
+        self.rewards_moyens = []
         pass
 
+    def launch_simulation(self,epsilon=0,mode="simu"):
+        nb_episodes = self.nbeps
+        eps = epsilon
 
-    def launchSimulation(self,epsilon):
-        self.triplets = []
-        for i in range(self.nbeps):
+        if mode == "reward":
+            rew_cum = 0
+            nb_episodes = 1
+            eps = 0
 
-            state, stateM = self.env.reset()
-            current_triplets = []
+        for i in range(nb_episodes):
+
+            state = MPR_envdqn(nb_cp=2,nb_round=1,custom=False).reset()
             terminated = False
             n = 0
-            while (not terminated) and (n < self.max_steps):
+            while not terminated:
 
-                action = self.epsilon_greedy(stateM,epsilon)
-                next_state,next_stateM,reward,terminated = self.env.step(action)
-                current_triplets.append((stateM,action,reward))
+                action = self.epsilon_greedy(state,eps)
+                next_state,reward,terminated = self.env.step(action)
 
-                stateM = next_stateM
+                if mode == "simu":
+                    self.memory.append((state,action,reward,next_state,terminated))
+                else:
+                    rew_cum += reward 
+
+                state = next_state
                 n += 1
 
-            self.triplets.append(current_triplets)
-        # print(self.epsilon)
-        # print("longueur: ",len(self.triplets))
-        # print(self.triplets[:2])
-        # print(len(self.triplets[:2]))
-    
-    def computeQvalues(self):
-        self.qvalues = []
-        # self.triplets = [[([-45.8114712160464, 0.0, 0.0], 0, -0.30000000000000004), ([314.1885287839536, 5429.5143429223945, 0.0], 2, -0.2), ([314.18846946374373, 5359.514343669583, 0.0], 1, -0.2), ([314.18261989224857, 5251.514448233005, 0.0], 1, -0.2), ([314.1768890328311, 5111.51455050262, 0.0], 0, -0.2), ([314.17443694305115, 4993.5145939508375, 0.0], 1, -0.2), ([314.1666444212111, 4844.514733180197, 0.0], 0, -0.2), ([314.1624020777121, 4718.514808708351, 0.0], 0, -0.2), ([314.1553157332471, 4611.514935463182, 0.0], 1, -0.2), ([314.1481043901425, 4472.515064256352, 0.0], 0, -0.2), ([314.14470921527226, 4355.5151245289, 0.0], 0, -0.2)], [([-102.79350316174879, 0.0, 0.0], 1, -0.30000000000000004), ([256.9435356555793, 1053.153834916818, 0.0], 2, -0.2), ([256.7025572417505, 1036.1134107808855, 0.0], 0, -0.2), ([256.4797486016259, 1022.0772964898497, 0.0], 2, -0.2), ([256.258368204429, 988.0425092069672, 0.0], 2, -0.2), ([256.05349986372187, 935.0112298790855, 0.0], 2, -0.1), ([255.8340126569527, 866.9786617904733, 0.0], 1, -0.1), ([255.59219378034305, 792.9438819992245, 0.0], 0, -0.1), ([255.34561971137907, 729.9095834416753, 0.0], 0, -0.2), ([255.08406436348133, 676.8744344411303, 0.0], 1, -0.2), ([254.80942777303102, 613.8387410387194, 0.0], 2, -0.1)]]
-        for current_triplets in self.triplets:
+        if mode == "reward":
+            return rew_cum
 
-            current_qvalues = np.zeros(len(current_triplets))
-            T = len(current_triplets) - 1
-            R = current_triplets[T][2]
-            
-            for i, t in enumerate(reversed(current_triplets[:-1])):
-                ind = T - i - 1
-                R = self.gamma*R + t[2]
-                current_qvalues[ind] = current_qvalues[ind] + self.alpha * (R - current_qvalues[ind])
-            self.qvalues.append(current_qvalues)
-        
-        # print("len q_values: ",len(self.qvalues))
 
-    def epsilon_greedy(self, state,epsilon):
-        
+
+    def epsilon_greedy(self, state, epsilon):
         if np.random.random() < epsilon:
             return np.random.randint(0, self.env.nb_action)
-
-
-        # Convertir l'état en tenseur et l'envoyer sur GPU
-        # print("state dim: ", self.state_dim)
-        # print("action dim: ", self.action_dim)
-        
-        
-        # Convertir l'état en tenseur et l'envoyer sur GPU
-        # print("state dim: ", self.state_dim)
-        # print("action dim: ", self.action_dim)
-        
-
         state_tensor = torch.tensor(state, dtype=torch.float32,device=self.device)
+        # state_tensor = torch.tensor(state)
 
-        # Tester toutes les actions (one-hot encoding) sur GPU
-        actions = torch.eye(self.env.nb_action, device=self.device)  # Matrice identité pour one-hot
-        # print("action_dim: ", actions.shape)
-        q_values = self.model(state_tensor.repeat(self.env.nb_action, 1), actions)
+        q_values = self.model(state_tensor)
+        max_q_values, max_indices = torch.max(q_values,dim=0)
 
+        return max_indices.item()
 
-        # temp = [self.model(state_tensor, a) for a in actions]
-
-        # print("sans le cat :",temp[:3])
-        # print("avec le cat :",q_values[:3])
-
-        # print()
-
-        # return exit(actions)
-
-        # Choisir l'action avec la plus grande Q-value
-        return torch.argmax(q_values).item()
-
-    
-class train:
-    def __init__(self,env,nIter,epsilon = 1,state_dim=3,action_dim=3):
+class Train:
+    def __init__(self,env,nIter,epsilon = 1,alpha=.7,gamma = 0.99,state_dim=4,target_update_feq = 10, batch_size=64):
         self.nIter = nIter
         self.state_dim = state_dim
-        self.action_dim = action_dim
+        self.batch_size = batch_size
+        self.gamma = gamma
+        self.alpha = alpha
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = QNetwork(self.state_dim, env.nb_action).to(self.device)
-        self.info = GetInformations(env,10,self.model)
+        self.model = QNetworkdqn(self.state_dim, env.nb_action).to(self.device)
+        self.target = QNetworkdqn(self.state_dim, env.nb_action).to(self.device)
+        self.target.load_state_dict(self.model.state_dict()) 
+        self.target.eval()
+        self.info = ExperienceReplay(env,1,self.model)
+        self.steps_done = 0 
+        self.target_update_feq = target_update_feq
         self.loss_fn = nn.MSELoss()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-4)
         self.env = env
         self.epsilon = epsilon
         pass
@@ -139,74 +116,83 @@ class train:
         rewards_moyens = []
 
         for i in tqdm(range(self.nIter)):
-            self.info.launchSimulation(self.epsilon)
-            self.info.computeQvalues()
-
-            triplets = self.info.triplets
-            qvalues = self.info.qvalues
-            qvalues = list(chain.from_iterable(qvalues))
-            # print("len_qvalues: ",len(qvalues))
-            # print("len_triplets: ",len(triplets))
 
             #################### Simulation pour récupérer les rewards #################
-            n = 0
-            state, stateM = self.env.reset()
-            terminated = False
-            rew_cum = 0
-            while (not terminated) and (n < self.info.max_steps):
-                # Convertir l'état en tenseur et l'envoyer sur GPU
-                state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device).unsqueeze(0)
-                # Tester toutes les actions (one-hot encoding) sur GPU
-                actions = torch.eye(self.env.nb_action, device=self.device)  # Matrice identité pour one-hot
-                q_values = torch.cat([self.model(state_tensor, a.unsqueeze(0)) for a in actions])
 
-                action = torch.argmax(q_values).item()
-                next_state,next_stateM,reward,terminated = self.env.step(action)
-                stateM = next_stateM
-
-                rew_cum += reward 
-                n += 1
+            rew_cum = self.info.launch_simulation(mode="reward") 
                 
             rewards.append(rew_cum)
-            # print(rew_cum)
-
             reward_moyen = sum(rewards) / len(rewards)
             rewards_moyens.append(reward_moyen)
 
+
             ################ Apprentissage ##################################################
 
-            states = []
-            actions = []
+            self.info.launch_simulation(self.epsilon)
 
-            for tr in triplets:
-                for t in tr:
-                    states.append(t[0])
-                    actions.append(t[1])
-                    
-            action_one_hot = np.eye(self.env.nb_action)[actions]
+            # pour le remplir au début
+            while len(self.info.memory) < self.info.quadruplets_size:
+                self.info.launch_simulation(self.epsilon)
+
+            batch = random.sample(self.info.memory, self.batch_size)
+
+            states, actions, reward_repl, next_states,term = zip(*batch)
+
+
             state_tensor = torch.tensor(states, dtype=torch.float32, device=self.device)
-            action_tensor = torch.tensor(action_one_hot, dtype=torch.float32, device=self.device)
-            target_tensor = torch.tensor(qvalues, dtype=torch.float32, device=self.device).unsqueeze(-1)
+            next_states_tensor = torch.tensor(next_states, dtype=torch.float32, device=self.device)
+            action_tensor = torch.tensor(actions, device=self.device)
+            reward_tensor = torch.tensor(reward_repl, dtype=torch.float32, device=self.device)
+            done = torch.tensor(term, dtype=torch.float32, device=self.device)
 
-            q_value = self.model(state_tensor, action_tensor)
+            prediction = self.model(state_tensor)
+            target = self.target(next_states_tensor)
+
+            prediction_final = torch.gather(prediction,1,action_tensor.unsqueeze(1))
+            target_final, max_indices = torch.max(target,dim=1)
+
+            # print(target[:3])
+            # print(target_final[:3])
+            # print(max_indices[:3])
+            # return exit()
+
+            
+            # print(target[:3])
+            # print(prediction[:3])
+            # tensor([[-48.1780,  39.6336, -33.6857],
+            #         [-52.9365,  39.1674, -26.5802],
+            #         [-52.4106,  38.6017, -25.8553]], device='cuda:0',
+            #     grad_fn=<SliceBackward0>)
 
             # return exit()
-            loss = self.loss_fn(q_value, target_tensor)
+
+            target_computed = reward_tensor + self.gamma * target_final * (1-done)
+
+            # return exit()
+            loss = self.loss_fn(prediction_final, target_computed.unsqueeze(1))
             losses.append(loss.item())
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
             self.epsilon *= 0.995
+            self.epsilon = max(self.epsilon, 0.05)
+
+            if i % self.target_update_feq == 0:
+                self.target.load_state_dict(self.model.state_dict())
+
+            self.steps_done += 1
+
+
         print("fini")
         return losses,rewards_moyens,rewards
 
     def saveWeights(self):
-        torch.save(self.model.state_dict(), 'QNN/weights_qagentnn.pth')
+        torch.save(self.model.state_dict(), 'QNN/weights_qagentdqn.pth')
 
-class QagentNN:
+
+class QagentDQN:
     def __init__(self, env,model):
         self.env= env
-        self.action_dim = 3
         self.state_dim = 3
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = model
@@ -220,9 +206,8 @@ class QagentNN:
             # Convertir l'état en tenseur et l'envoyer sur GPU
             state_tensor = torch.tensor(stateM, dtype=torch.float32, device=self.device)
 
-            # Tester toutes les actions (one-hot encoding) sur GPU
-            actions = torch.eye(self.env.nb_action, device=self.device)  # Matrice identité pour one-hot
-            q_values = self.model(state_tensor.repeat(self.action_dim, 1), actions)
+            q_values = self.model(state_tensor)
+            max_q_values, max_indices = torch.max(q_values,dim=0)
 
             action = torch.argmax(q_values).item()
             next_state,next_stateM,reward,terminated = self.env.step(action)
@@ -230,8 +215,23 @@ class QagentNN:
             i += 1
         self.env.show_traj()
 
+
+
 def main():
-    traine = train(MPR_envnn(custom=False,nb_cp = 2,nb_round = 1),500)
+    # test launchsimulation
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # model = QNetwork(3, 3).to(device)
+    # env = MPR_envnn(custom=False)
+    # exp = ExperienceReplay(env,10,model)
+    # quads = exp.launch_simulation(1)
+    # print(quads[0])
+    # print(len(quads))
+    
+    # tests run de la fonction train
+    # traine = train(MPR_envnn(custom=False),1000)
+    # traine.run()
+
+    traine = Train(MPR_envdqn(custom=False,nb_cp = 2,nb_round = 1),1000)
     losses,rewards,r = traine.run()
     traine.saveWeights()
 
@@ -240,7 +240,7 @@ def main():
     plt.xlabel('Episodes')
     plt.ylabel('loss')
     plt.title('loss par episodes')
-    plt.savefig('../Graphiques/loss_nn_tmp')
+    plt.savefig('../Graphiques/loss_dqn_tmp')
     plt.show()
 
     plt.figure()
@@ -250,8 +250,12 @@ def main():
     plt.ylabel('Reward moyen cumulé')
     plt.title('Reward moyen cumulé par episodes')
     plt.legend()
-    plt.savefig('../Graphiques/reward_nn_tmp')
+    plt.savefig('../Graphiques/reward_dqn_tmp')
     plt.show()
+
+
+    # agent = QagentDQN(MPR_envnn(custom=False), traine.model)
+    # agent.one_run()
 
 if __name__ == "__main__":
     main()
