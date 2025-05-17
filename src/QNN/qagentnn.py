@@ -79,7 +79,7 @@ class ExperienceReplay:
         return max_indices.item()
 
 class Train:
-    def __init__(self,nIter,epsilon = 1,gamma = 0.99,state_dim=4, action_dim = 15,target_update_feq = 20, batch_size=64):
+    def __init__(self,nIter,epsilon = 1,gamma = 0.95,state_dim=4, action_dim = 15,target_update_feq = 20, batch_size=128):
         self.nIter = nIter
         self.batch_size = batch_size
         self.gamma = gamma
@@ -88,12 +88,12 @@ class Train:
         self.target = QNetworkdqn(state_dim, action_dim).to(self.device)
         self.target.load_state_dict(self.model.state_dict()) 
         self.target.eval()
-        self.info = ExperienceReplay(model=self.model, nbeps=100)
+        self.info = ExperienceReplay(model=self.model, nbeps=50)
         self.steps_done = 0 
         self.target_update_feq = target_update_feq
         self.loss_fn = nn.MSELoss()
         # self.loss_fn = nn.SmoothL1Loss()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-4)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
         self.epsilon = epsilon
         self.writer = SummaryWriter(log_dir="runs/dqn_training")
 
@@ -196,35 +196,35 @@ class QagentDQN:
 
 def main():
 
-    # traine = Train(nIter=1000)
-    # losses,rewards_moyen,rewards= traine.run()
-    # traine.saveWeights()
+    traine = Train(nIter=1000)
+    losses,rewards_moyen,rewards= traine.run()
+    traine.saveWeights()
 
-    # plt.figure()
-    # plt.plot(losses)
-    # plt.xlabel('Episodes')
-    # plt.ylabel('loss')
-    # plt.title('loss par episodes')
-    # plt.savefig('../Graphiques/loss_dqn_tmp')
-    # plt.show()
+    plt.figure()
+    plt.plot(losses)
+    plt.xlabel('Episodes')
+    plt.ylabel('loss')
+    plt.title('loss par episodes')
+    plt.savefig('../Graphiques/loss_dqn_tmp')
+    plt.show()
 
-    # plt.figure()
-    # plt.plot(rewards, c='#009FB7', label='reward par épisode')
-    # plt.plot(rewards_moyen,c='#FE4A49', label='reward moyen cumulé')
-    # plt.plot
-    # plt.xlabel('Episodes')
-    # plt.ylabel('Reward moyen cumulé')
-    # plt.title('Reward moyen cumulé par episodes')
-    # plt.legend()
-    # plt.savefig('../Graphiques/reward_dqn_tmp')
-    # plt.show()
+    plt.figure()
+    plt.plot(rewards, c='#009FB7', label='reward par épisode')
+    plt.plot(rewards_moyen,c='#FE4A49', label='reward moyen cumulé')
+    plt.plot
+    plt.xlabel('Episodes')
+    plt.ylabel('Reward moyen cumulé')
+    plt.title('Reward moyen cumulé par episodes')
+    plt.legend()
+    plt.savefig('../Graphiques/reward_dqn_tmp')
+    plt.show()
 
 
-    trained_model = QNetworkdqn(4, 15).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-    trained_model.load_state_dict(torch.load('QNN/weights_qagentdqn.pth'))
+    # trained_model = QNetworkdqn(4, 15).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+    # trained_model.load_state_dict(torch.load('QNN/weights_qagentdqn.pth'))
 
-    agent = QagentDQN(MPR_envdqn(nb_cp=3, nb_round=1,custom=False), trained_model)
-    agent.one_run()
+    # agent = QagentDQN(MPR_envdqn(nb_cp=3, nb_round=1,custom=False), trained_model)
+    # agent.one_run()
 
 if __name__ == "__main__":
     main()
