@@ -45,6 +45,7 @@ class ExperienceReplay:
             rew_cum = 0
             nb_episodes = 1
             eps = 0
+            steps=0
 
         for i in range(nb_episodes):
             env =MPR_envdqn(nb_cp=2,nb_round=1,custom=False)
@@ -53,18 +54,25 @@ class ExperienceReplay:
             while True:
                 action = self.epsilon_greedy(state,eps)
                 next_state,reward,terminated = env.step(action)
+
                 if mode == "simu":
                     self.memory.append((state,action,reward,next_state,terminated))
                 else:
                     rew_cum += reward 
+                    steps += 1
 
                 if terminated:
+                    # plt.scatter(range(len(env.rewards)), env.rewards)
+                    # plt.title(f"{env.board.pod.timeout}")
+                    # plt.show()
+                    # env.show_traj()
                     break
                     
                 state = next_state
+
         # env.show_traj()
         if mode == "reward":
-            return rew_cum
+            return rew_cum,steps
 
 
 
@@ -79,7 +87,8 @@ class ExperienceReplay:
         return max_indices.item()
 
 class Train:
-    def __init__(self,nIter,epsilon = 1,gamma = 0.95,state_dim=4, action_dim = 42,target_update_feq = 20, batch_size=128):
+    # def __init__(self,nIter,epsilon = 1,gamma = 0.95,state_dim=4, action_dim = 42,target_update_feq = 20, batch_size=128):
+    def __init__(self,nIter,epsilon = .7,gamma = 0.95,state_dim=4, action_dim = 42,target_update_feq = 50, batch_size=128):
         self.nIter = nIter
         self.batch_size = batch_size
         self.gamma = gamma
@@ -109,7 +118,7 @@ class Train:
 
             #################### Simulation pour récupérer les rewards #################
 
-            rew_cum = self.info.launch_simulation(mode="reward") 
+            rew_cum,steps = self.info.launch_simulation(mode="reward") 
             rewards.append(rew_cum)
             reward_moyen = sum(rewards) / len(rewards)
             rewards_moyens.append(reward_moyen)
@@ -151,6 +160,11 @@ class Train:
                 self.optimizer.step()   
 
                 self.writer.add_scalar("Loss/train", loss.item(), i)
+            self.writer.add_scalar("Step/train", steps, i)
+            self.writer.add_scalar("Epsilon/train", self.epsilon, i)
+            self.writer.add_histogram('Action_distribution', np.array(actions), i)
+            self.writer.add_scalar('Q_value/mean',target_computed.mean().item(), i)
+
             self.writer.add_scalar("Reward/train", rew_cum, i)
             self.epsilon *= 0.995
             self.epsilon = max(self.epsilon, 0.05)
