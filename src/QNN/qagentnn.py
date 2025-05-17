@@ -30,7 +30,7 @@ from torch.utils.tensorboard import SummaryWriter
 # https://medium.com/data-science/reinforcement-learning-explained-visually-part-5-deep-q-networks-step-by-step-5a5317197f4b
 
 class ExperienceReplay:
-    def __init__(self,nbeps,model,epsilon = 1,nb_action = 15,quadruplets_size = 20000):
+    def __init__(self,nbeps,model,epsilon = 1,nb_action = 42,quadruplets_size = 20000):
         self.memory = deque(maxlen=quadruplets_size)
         self.epsilon = epsilon
         self.nbeps = nbeps
@@ -79,7 +79,7 @@ class ExperienceReplay:
         return max_indices.item()
 
 class Train:
-    def __init__(self,nIter,epsilon = 1,gamma = 0.95,state_dim=4, action_dim = 15,target_update_feq = 20, batch_size=128):
+    def __init__(self,nIter,epsilon = 1,gamma = 0.95,state_dim=4, action_dim = 42,target_update_feq = 20, batch_size=128):
         self.nIter = nIter
         self.batch_size = batch_size
         self.gamma = gamma

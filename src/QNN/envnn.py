@@ -282,13 +282,15 @@ class MPR_envdqn():
 
 
     def convert_action(self, action):
-        mapping_thrust = {0: 0, 1: 70, 2: 100}
-        thrust = mapping_thrust[action // 5]
-        mapping_angle = {0: -90,1:-45, 2: 0, 3:45, 4: 90}
+        # mapping_thrust = {0: 0, 1: 70, 2: 100}
+        mapping_thrust= {0:0, 1:25, 2:50,3:70,4: 80, 5:100}
+        thrust = mapping_thrust[action // 6]
+        # mapping_angle = {0: -90,1:-45, 2: 0, 3:45, 4: 90}
+        mapping_angle = {0: -18,1:-9, 2: -3, 3:0, 4: 3, 5:9,6:18}
         x_past, y_past = self.past_pos
         x,y = self.current_pos
 
-        angle_action = mapping_angle[action % 5]
+        angle_action = mapping_angle[action % 7]
         angle = math.degrees(math.atan2(y-y_past, x-x_past))
         
         new_angle = (angle + angle_action +540)%360 -180
