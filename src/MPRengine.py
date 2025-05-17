@@ -113,6 +113,7 @@ class Board():
         self.checkpoint_cp = [0]*nb_cp
         if custom:
             self.nb_cp = 4
+            self.checkpoint_cp = [0]*self.nb_cp
             self.checkpoints.append(CheckPoint(14010, 2995,0))
             self.checkpoints.append(CheckPoint(4004, 7791,1)) #7791
             self.checkpoints.append(CheckPoint(12007, 1982,2))

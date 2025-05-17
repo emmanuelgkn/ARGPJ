@@ -22,12 +22,23 @@ from itertools import chain
 import random
 import sys
 import os
+import shutil
+import glob
+
+for folder in glob.glob("runs/dqn_training_*"):
+    if os.path.isdir(folder):
+        shutil.rmtree(folder)
+
+LOG_PATH = f"runs/dqn_training_{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+
+
+from torch.utils.tensorboard import SummaryWriter
 
 # source 
 # https://medium.com/data-science/reinforcement-learning-explained-visually-part-5-deep-q-networks-step-by-step-5a5317197f4b
 
 class ExperienceReplay:
-    def __init__(self,env,nbeps,model,epsilon = 1,state_dim=3,action_dim=3,quadruplets_size = 10000):
+    def __init__(self,env,nbeps,model,epsilon = 1,state_dim=4,action_dim=3,quadruplets_size = 10000):
         self.quadruplets = deque(maxlen=quadruplets_size)
         self.quadruplets_size = quadruplets_size
         self.epsilon = epsilon
@@ -54,13 +65,13 @@ class ExperienceReplay:
 
         for i in range(nb_episodes):
 
-            state, stateM = self.env.reset()
+            stateM = self.env.reset()
             terminated = False
             n = 0
             while (not terminated) and (n < self.max_steps):
 
                 action = self.epsilon_greedy(stateM,eps)
-                next_state,next_stateM,reward,terminated = self.env.step(action)
+                next_stateM,reward,terminated = self.env.step(action)
 
                 if mode == "simu":
                     self.quadruplets.append((stateM,action,reward,next_stateM,terminated))
@@ -87,7 +98,7 @@ class ExperienceReplay:
         return max_indices.item()
 
 class Train:
-    def __init__(self,env,nIter,epsilon = 1,alpha=.7,gamma = 0.99,state_dim=3,target_update_feq = 10, batch_size=64):
+    def __init__(self,env,nIter,epsilon = 1,alpha=.7,gamma = 0.99,state_dim=4,target_update_feq = 10, batch_size=64):
         self.nIter = nIter
         self.state_dim = state_dim
         self.batch_size = batch_size
@@ -105,6 +116,7 @@ class Train:
         self.optimizer = optim.Adam(self.model.parameters(), lr=1e-4)
         self.env = env
         self.epsilon = epsilon
+        self.writer = SummaryWriter(log_dir=LOG_PATH)
         pass
 
     def run(self):
@@ -122,6 +134,8 @@ class Train:
             rewards.append(rew_cum)
             reward_moyen = sum(rewards) / len(rewards)
             rewards_moyens.append(reward_moyen)
+            self.writer.add_scalar("Reward/train",rew_cum,i)
+
 
 
             ################ Apprentissage ##################################################
@@ -168,6 +182,8 @@ class Train:
 
             # return exit()
             loss = self.loss_fn(prediction_final, target_computed.unsqueeze(1))
+            self.writer.add_scalar("Loss/train",loss.item(),i)
+
             losses.append(loss.item())
             self.optimizer.zero_grad()
             loss.backward()
@@ -180,7 +196,7 @@ class Train:
 
             self.steps_done += 1
 
-
+        self.writer.close()
         print("fini")
         return losses,rewards_moyens,rewards
 
@@ -197,7 +213,7 @@ class QagentDQN:
         self.max_steps = 5000
 
     def one_run(self):
-        state, stateM = self.env.reset()
+        stateM = self.env.reset()
         i = 0
         terminated = False
         while (not terminated) and (i < self.max_steps):
@@ -208,7 +224,7 @@ class QagentDQN:
             max_q_values, max_indices = torch.max(q_values,dim=0)
 
             action = torch.argmax(q_values).item()
-            next_state,next_stateM,reward,terminated = self.env.step(action)
+            next_stateM,reward,terminated = self.env.step(action)
             stateM = next_stateM
             i += 1
         self.env.show_traj()
@@ -229,27 +245,27 @@ def main():
     # traine = train(MPR_envnn(custom=False),1000)
     # traine.run()
 
-    traine = Train(MPR_envnn(custom=False,nb_cp = 2,nb_round = 1),1000)
+    traine = Train(MPR_envnn(custom=False,nb_cp = 2,nb_round = 1),2000)
     losses,rewards,r = traine.run()
     traine.saveWeights()
 
-    plt.figure()
-    plt.plot(losses)
-    plt.xlabel('Episodes')
-    plt.ylabel('loss')
-    plt.title('loss par episodes')
-    plt.savefig('../Graphiques/loss_dqn_tmp')
-    plt.show()
+    # plt.figure()
+    # plt.plot(losses)
+    # plt.xlabel('Episodes')
+    # plt.ylabel('loss')
+    # plt.title('loss par episodes')
+    # plt.savefig('../Graphiques/loss_dqn_tmp')
+    # plt.show()
 
-    plt.figure()
-    plt.plot(r, c='#009FB7', label='reward par épisode')
-    plt.plot(rewards,c='#FE4A49', label='reward moyen cumulé')
-    plt.xlabel('Episodes')
-    plt.ylabel('Reward moyen cumulé')
-    plt.title('Reward moyen cumulé par episodes')
-    plt.legend()
-    plt.savefig('../Graphiques/reward_dqn_tmp')
-    plt.show()
+    # plt.figure()
+    # plt.plot(r, c='#009FB7', label='reward par épisode')
+    # plt.plot(rewards,c='#FE4A49', label='reward moyen cumulé')
+    # plt.xlabel('Episodes')
+    # plt.ylabel('Reward moyen cumulé')
+    # plt.title('Reward moyen cumulé par episodes')
+    # plt.legend()
+    # plt.savefig('../Graphiques/reward_dqn_tmp')
+    # plt.show()
 
 
     # agent = QagentDQN(MPR_envnn(custom=False), traine.model)
