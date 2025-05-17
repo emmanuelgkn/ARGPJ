@@ -284,7 +284,7 @@ class MPR_envdqn():
     def convert_action(self, action):
         # mapping_thrust = {0: 0, 1: 70, 2: 100}
         mapping_thrust= {0:0, 1:25, 2:50,3:70,4: 80, 5:100}
-        thrust = mapping_thrust[action // 6]
+        thrust = mapping_thrust[action // 7]
         # mapping_angle = {0: -90,1:-45, 2: 0, 3:45, 4: 90}
         mapping_angle = {0: -18,1:-9, 2: -3, 3:0, 4: 3, 5:9,6:18}
         x_past, y_past = self.past_pos
