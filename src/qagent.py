@@ -81,9 +81,8 @@ class Qagent:
         # self.env.show_traj()
         return pas, cum_reward
 
-    def one_run(self):
-        
-        state= self.env.reset()
+    def one_run(self, board =None):
+        state= self.env.reset(board=board)
         for j in range(self.max_steps):
             action = np.argmax(self.qtable[state])
             next_state,reward,terminated = self.env.step(action)

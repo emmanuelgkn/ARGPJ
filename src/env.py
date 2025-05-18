@@ -60,8 +60,10 @@ class MPR_env():
         bins = [600,700,800,1000,2000,3000,5000,6000,8000,100000]
         return np.digitize(dist,bins)
 
-    def reset(self,seed=None,options=None):
+    def reset(self,seed=None,options=None, board=None):
         self.board = Board(nb_cp=4,nb_round=3,custom =self.custom)
+        if board is not None:
+            self.board = board
         self.terminated = False
         self.traj = []
         self.vitesse = []

@@ -298,8 +298,10 @@ class MPR_env_light():
     
 
 
-    def reset(self):
+    def reset(self, board=None):
         self.board = Board(nb_cp=self.nb_cp,nb_round=self.nb_round,custom =self.custom)
+        if board is not None:
+            self.board = board
         self.terminated = False
         self.traj = []
         self.old_dist = 0

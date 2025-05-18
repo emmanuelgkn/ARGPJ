@@ -164,10 +164,10 @@ def comparatif():
     timestamp = datetime.now().strftime("%d-%m")
     
     #Agent choisit uniquement thrust
-    agent1 = Qagent(MPR_env(),episodes=50, max_steps=2000, do_test=True)
+    agent1 = Qagent(MPR_env(),episodes=5000, max_steps=2000, do_test=True)
 
     #Agent choisit thrust et cible
-    agent2 =  Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=3), do_test=True, episodes= 100, max_steps=20000)
+    agent2 =  Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=3), do_test=True, episodes= 10000, max_steps=20000)
 
     
     #Agent heuristique
@@ -181,25 +181,21 @@ def comparatif():
 
 
     #recuperation des traj
-    board1 = Board(3,1,False)
+    board1 = Board(custom=True,nb_round=4,nb_cp=3)
     board2 = board1.copy()
 
-    env_test_dir = MPR_env()
-    env_test_dir.board = board1
 
-    env_test = MPR_env()
-    env_test.board = board2
+    # agent1.env.board = board1
+    # agent2.env.board = board2
 
-    agent1.env = env_test
-    agent2.env = env_test_dir
     
-    coord_agent1 = agent1.one_run()
-    coord_agent2 = agent2.one_run()
+    coord_agent1 = agent1.one_run(board1)
+    coord_agent2 = agent2.one_run(board2)
     coord_agent3 = agent3.get_one_traj(board1.copy())
 
     #plot traj
-    b_x= [b.getCoord()[0] for b in env_test.board.checkpoints]
-    b_y= [b.getCoord()[1] for b in env_test.board.checkpoints]
+    b_x= [b.getCoord()[0] for b in board1.checkpoints]
+    b_y= [b.getCoord()[1] for b in board1.checkpoints]
     x1,y1 = zip(*coord_agent1)
     x2,y2 = zip(*coord_agent2)
     x3,y3 = zip(*coord_agent3)
