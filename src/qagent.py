@@ -1,17 +1,14 @@
 import numpy as np
 # from env import MPR_env
 import matplotlib.pyplot as plt
-from tqdm import tqdm # type: ignore
+from tqdm import tqdm 
 from datetime import datetime
 import csv
 import time
 from MPRengine import Board
-from env_dir import MPR_env
+from env_dir import MPR_env, MPR_env_light
 from config import GRAPH_PATH
 from datetime import datetime
-from matplotlib.patches import Circle
-import math
-import matplotlib.animation as animation
 timestamp = datetime.now().strftime("%d-%m")
 
 class Qagent:
@@ -22,7 +19,8 @@ class Qagent:
         self.alpha = alpha
         self.epsilon = epsilon
         self.gamma = gamma   
-        self.qtable = np.random.uniform(low=-0.01, high=0.01, size=(self.env.nb_etat, self.env.nb_action))
+        # self.qtable = np.random.uniform(low=-0.01, high=0.01, size=(self.env.nb_etat, self.env.nb_action))
+        self.qtable = np.zeros((self.env.nb_etat, self.env.nb_action))
 
         #pour stocker les recompenses moyennes en fonction du nombre d'episode d'apprentissage
         #contient des tuples des la forme (nombre d'episodes d'apprentissage, recompense moyenne à ce stade de l'apprentissage)
@@ -47,11 +45,18 @@ class Qagent:
                 self.update_q_table(state,action,next_state,reward)
                 state = next_state
                 cum_reward += reward
+
                 if terminated:  
                     break
-
-            self.epsilon = max(0.05, self.epsilon * 0.998)
+            # plt.figure()
+            # plt.plot(self.env.rewa)
+            # plt.show()
+            # plt.title(f"Episode {i}")
+            self.epsilon = max(0.05, self.epsilon * 0.98)
             if self.do_test and i%10 ==0:
+                # print(np.mean(self.qtable))
+                # if i%1000==0:  
+                #     self.env.show_traj()
                 nb_steps, cum_reward = self.test()
                 self.steps.append((i,nb_steps))
                 self.rewards.append((i,cum_reward))
@@ -72,7 +77,7 @@ class Qagent:
             pas += 1
             if terminated:
                 break
-
+        # self.env.show_traj()
         return pas, cum_reward
 
     def one_run(self):
@@ -117,27 +122,35 @@ class Qagent:
                 writer.writerow([i, step])
 
 
-def ranks_par_ligne(qtable):
-    qtable = np.array(qtable)
-    return np.argsort(np.argsort(qtable, axis=1), axis=1)
+    def get_policy(self, nb_etat):
+        res = {}
+        for i in range(nb_etat):
+            action = np.argmax(self.qtable[i])
+            res[i] = action
+        
+        with open('policy_q_learning.txt', 'w') as f:
+            f.write(str(res))
+        return res
+
+
 
 if __name__ == "__main__":
-    agent = Qagent(MPR_env(custom=False, nb_round=1,nb_cp=2), do_test=True, episodes= 50000, max_steps=20000)
-
-    # np.save("qtable", agent.qtable)
+    # agent = Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=4), do_test=True, episodes= 20000, max_steps=20000)
+    agent = Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=3), do_test=True, episodes= 20000, max_steps=20000)
+    np.save("qtable", agent.qtable)
     agent.train()
 
-
+    agent.get_policy(agent.env.nb_etat)
     np.savetxt("qtable1", agent.qtable,fmt="%.3e")
  
 
     agent.env.show_traj()
     
     
-    plt.figure(figsize=(15,7))
-    plt.plot(agent.env.vitesse, label='vitesse')
-    plt.legend()
-    plt.savefig("vitesse")
+    # plt.figure(figsize=(15,7))
+    # plt.plot(agent.env.vitesse, label='vitesse')
+    # plt.legend()
+    # plt.savefig("vitesse")
     # plt.plot(agent.env.dista, label ="distance")
     # plt.plot(agent.env.rewa, label="reward")
 
@@ -187,9 +200,3 @@ if __name__ == "__main__":
     plt.bar(np.arange(len(agent.trace_etat)),agent.trace_etat)
     plt.title("nombre de mise à jour pur un etat")
     plt.savefig(f"{GRAPH_PATH}/trace_state{timestamp}")
-
-
-
-
-
-

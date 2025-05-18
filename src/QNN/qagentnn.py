@@ -7,7 +7,7 @@ if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
 import numpy as np
-from envnn import MPR_envnn, MPR_envdqn
+from envnn import  MPR_envdqn
 import matplotlib.pyplot as plt
 from tqdm import tqdm # type: ignore
 from datetime import datetime
@@ -30,7 +30,7 @@ from torch.utils.tensorboard import SummaryWriter
 # https://medium.com/data-science/reinforcement-learning-explained-visually-part-5-deep-q-networks-step-by-step-5a5317197f4b
 
 class ExperienceReplay:
-    def __init__(self,nbeps,model,epsilon = 1,nb_action = 42,quadruplets_size = 20000):
+    def __init__(self,nbeps,model,epsilon = .5,nb_action = 15,quadruplets_size = 20000):
         self.memory = deque(maxlen=quadruplets_size)
         self.epsilon = epsilon
         self.nbeps = nbeps
@@ -88,7 +88,7 @@ class ExperienceReplay:
 
 class Train:
     # def __init__(self,nIter,epsilon = 1,gamma = 0.95,state_dim=4, action_dim = 42,target_update_feq = 20, batch_size=128):
-    def __init__(self,nIter,epsilon = .7,gamma = 0.95,state_dim=4, action_dim = 42,target_update_feq = 50, batch_size=128):
+    def __init__(self,nIter,epsilon = 1,gamma = 0.99,state_dim=4, action_dim = 15,target_update_feq = 100, batch_size=512):
         self.nIter = nIter
         self.batch_size = batch_size
         self.gamma = gamma
@@ -102,7 +102,7 @@ class Train:
         self.target_update_feq = target_update_feq
         self.loss_fn = nn.MSELoss()
         # self.loss_fn = nn.SmoothL1Loss()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-05)
         self.epsilon = epsilon
         self.writer = SummaryWriter(log_dir="runs/dqn_training")
 
@@ -130,44 +130,44 @@ class Train:
             self.info.launch_simulation(self.epsilon)
 
             # pour le remplir au début
-            # while len(self.info.memory) < self.info.quadruplets_size//3:
-            #     self.info.launch_simulation(self.epsilon)
-            if len(self.info.memory)>=self.batch_size*10:
+            while len(self.info.memory) <10000:
+                print(len(self.info.memory))
+                self.info.launch_simulation(self.epsilon)
+            # if len(self.info.memory)>=self.batch_size*10:
 
-                batch = random.sample(self.info.memory, self.batch_size)
+            batch = random.sample(self.info.memory, self.batch_size)
 
-                states, actions, reward_repl, next_states,term = zip(*batch)
+            states, actions, reward_repl, next_states,term = zip(*batch)
 
 
-                state_tensor = torch.tensor(states, dtype=torch.float32, device=self.device)
-                next_states_tensor = torch.tensor(next_states, dtype=torch.float32, device=self.device)
-                action_tensor = torch.tensor(actions, device=self.device)
-                reward_tensor = torch.tensor(reward_repl, dtype=torch.float32, device=self.device)
-                done = torch.tensor(term, dtype=torch.float32, device=self.device)
-                prediction = self.model(state_tensor)
-                target = self.target(next_states_tensor)
+            state_tensor = torch.tensor(states, dtype=torch.float32, device=self.device)
+            next_states_tensor = torch.tensor(next_states, dtype=torch.float32, device=self.device)
+            action_tensor = torch.tensor(actions, device=self.device)
+            reward_tensor = torch.tensor(reward_repl, dtype=torch.float32, device=self.device)
+            done = torch.tensor(term, dtype=torch.float32, device=self.device)
+            prediction = self.model(state_tensor)
+            target = self.target(next_states_tensor)
 
-                prediction_final = torch.gather(prediction,1,action_tensor.unsqueeze(1))
-                target_final, max_indices = torch.max(target,dim=1)
+            prediction_final = torch.gather(prediction,1,action_tensor.unsqueeze(1))
+            target_final, max_indices = torch.max(target,dim=1)
 
-                target_computed = reward_tensor + self.gamma * target_final * (1-done)
+            target_computed = reward_tensor + self.gamma * target_final * (1-done)
 
-                # return exit()
-                loss = self.loss_fn(prediction_final, target_computed.unsqueeze(1))
-                losses.append(loss.item())
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()   
+            # return exit()
+            loss = self.loss_fn(prediction_final, target_computed.unsqueeze(1))
+            losses.append(loss.item())
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()   
 
-                self.writer.add_scalar("Loss/train", loss.item(), i)
+            self.writer.add_scalar("Loss/train", loss.item(), i)
+            self.writer.add_histogram('Action_distribution', np.array(actions), i)
             self.writer.add_scalar("Step/train", steps, i)
             self.writer.add_scalar("Epsilon/train", self.epsilon, i)
-            self.writer.add_histogram('Action_distribution', np.array(actions), i)
-            self.writer.add_scalar('Q_value/mean',target_computed.mean().item(), i)
 
             self.writer.add_scalar("Reward/train", rew_cum, i)
             self.epsilon *= 0.995
-            self.epsilon = max(self.epsilon, 0.05)
+            self.epsilon = max(self.epsilon, 0.2)
 
             if i % self.target_update_feq == 0:
                 self.target.load_state_dict(self.model.state_dict())
@@ -178,7 +178,7 @@ class Train:
         return losses,rewards_moyens,rewards
 
     def saveWeights(self):
-        torch.save(self.model.state_dict(), 'QNN/weights_qagentdqn.pth')
+        torch.save(self.model.state_dict(), 'weights_qagentdqn.pth')
 
 
 class QagentDQN:
@@ -187,7 +187,7 @@ class QagentDQN:
         self.state_dim = 4
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = model
-        self.max_steps = 5000
+        self.max_steps = 100
 
     def one_run(self):
         state = self.env.reset()
@@ -199,7 +199,6 @@ class QagentDQN:
 
             q_values = self.model(state_tensor)
             max_q_values, max_indices = torch.max(q_values,dim=0)
-
             action = torch.argmax(q_values).item()
             next_state,reward,terminated = self.env.step(action)
             state = next_state
@@ -210,32 +209,32 @@ class QagentDQN:
 
 def main():
 
-    traine = Train(nIter=1000)
+    traine = Train(nIter=5000)
     losses,rewards_moyen,rewards= traine.run()
     traine.saveWeights()
 
-    plt.figure()
-    plt.plot(losses)
-    plt.xlabel('Episodes')
-    plt.ylabel('loss')
-    plt.title('loss par episodes')
-    plt.savefig('../Graphiques/loss_dqn_tmp')
-    plt.show()
+    # plt.figure()
+    # plt.plot(losses)
+    # plt.xlabel('Episodes')
+    # plt.ylabel('loss')
+    # plt.title('loss par episodes')
+    # plt.savefig('../Graphiques/loss_dqn_tmp')
+    # plt.show()
 
-    plt.figure()
-    plt.plot(rewards, c='#009FB7', label='reward par épisode')
-    plt.plot(rewards_moyen,c='#FE4A49', label='reward moyen cumulé')
-    plt.plot
-    plt.xlabel('Episodes')
-    plt.ylabel('Reward moyen cumulé')
-    plt.title('Reward moyen cumulé par episodes')
-    plt.legend()
-    plt.savefig('../Graphiques/reward_dqn_tmp')
-    plt.show()
+    # plt.figure()
+    # plt.plot(rewards, c='#009FB7', label='reward par épisode')
+    # plt.plot(rewards_moyen,c='#FE4A49', label='reward moyen cumulé')
+    # plt.plot
+    # plt.xlabel('Episodes')
+    # plt.ylabel('Reward moyen cumulé')
+    # plt.title('Reward moyen cumulé par episodes')
+    # plt.legend()
+    # plt.savefig('../Graphiques/reward_dqn_tmp')
+    # plt.show()
 
 
     # trained_model = QNetworkdqn(4, 15).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-    # trained_model.load_state_dict(torch.load('QNN/weights_qagentdqn.pth'))
+    # trained_model.load_state_dict(torch.load('weights_qagentdqn.pth'))
 
     # agent = QagentDQN(MPR_envdqn(nb_cp=3, nb_round=1,custom=False), trained_model)
     # agent.one_run()

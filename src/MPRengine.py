@@ -28,10 +28,9 @@ class Pod(Point):
     def __init__(self, x, y,angle):
         super().__init__(x, y)
         self.angle = angle
-        # self.vx = 0
-        # self.vy = 0
-        self.vx = np.random.randint(-1000, 1000)
-        self.vy = np.random.randint(-1000, 1000)
+        self.vx = 0
+        self.vy = 0
+
 
 
 
@@ -146,19 +145,20 @@ class Board():
         dx = second_cp.x - first_cp.x
         dy = second_cp.y - first_cp.y
         angle = (math.degrees(math.atan2(dy, dx))) % 360
-        self.pod = Pod(first_cp.x, first_cp.y, 0)
+        self.pod = Pod(first_cp.x, first_cp.y, angle)
 
         
 
     def updateToNextCheckpoint(self):
         if self.pod.distance(self.checkpoints[self.next_checkpoint])<CP_WIDTH:
+
             self.pod.timeout = TIMEOUT
             self.checkpoint_cp[self.next_checkpoint]+=1
             self.next_checkpoint = (self.next_checkpoint+1)% self.nb_cp
     
     def checkTerminated(self):
-        if self.nb_round == 1 and [0]+[self.nb_round]*(self.nb_cp-1)== self.checkpoint_cp:
-            self.terminated = True
+        # if self.nb_round == 1 and [0]+[self.nb_round]*(self.nb_cp-1)== self.checkpoint_cp:
+        #     self.terminated = True
         if self.checkpoint_cp == [self.nb_round]*self.nb_cp or self.pod.timeout<0:
             self.terminated = True
     
