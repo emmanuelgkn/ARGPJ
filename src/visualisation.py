@@ -164,7 +164,7 @@ def comparatif():
     timestamp = datetime.now().strftime("%d-%m")
     
     #Agent choisit uniquement thrust
-    agent1 = Qagent(MPR_env(),episodes=5000, max_steps=2000, do_test=True)
+    agent1 = Qagent(MPR_env(),episodes=1000, do_test=True)
 
     #Agent choisit thrust et cible
     agent2 =  Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=3), do_test=True, episodes= 10000, max_steps=20000)
@@ -174,28 +174,59 @@ def comparatif():
     agent3 = Hagent()
 
 
-    #Recuperation des steps
     agent1.train()
     agent2.train()
     
 
+    a1_steps = []
+    a2_steps = []
+    a3_steps = []
+    for i in range(10):
 
-    #recuperation des traj
-    board1 = Board(custom=True,nb_round=4,nb_cp=3)
-    board2 = board1.copy()
+        board1 = Board(custom=False,nb_round=3,nb_cp=4)
+        board2 = board1.copy()
+        board3 = board1.copy()
+        coord_agent1 = agent1.one_run(board1)
+        coord_agent2 = agent2.one_run(board2)
+        coord_agent3 = agent3.get_one_traj(board3)
+
+        agent1.env.show_traj()
+        agent2.env.show_traj()
+        agent3.show_traj(board3)
 
 
-    # agent1.env.board = board1
-    # agent2.env.board = board2
+        if board1.pod.timeout<0:
+            a1_steps.append(1000)
+        else:
+            a1_steps.append(len(coord_agent1))
+        
+        if board2.pod.timeout<0:
+            a2_steps.append(1000)
+        else:
+            a2_steps.append(len(coord_agent2))
+        if board3.pod.timeout<0:
+            a3_steps.append(1000)
+        else:
+            a3_steps.append(len(coord_agent3))
 
-    
+
+        a1_steps.append(len(coord_agent1))
+        a2_steps.append(len(coord_agent2))
+        a3_steps.append(len(coord_agent3))
+
+    board1 = Board(4,3,True)
+    board2 = Board(4,3,True)
+
     coord_agent1 = agent1.one_run(board1)
     coord_agent2 = agent2.one_run(board2)
-    coord_agent3 = agent3.get_one_traj(board1.copy())
-
+    coord_agent3 = agent3.get_one_traj(Board(4,3,True))
     #plot traj
     b_x= [b.getCoord()[0] for b in board1.checkpoints]
     b_y= [b.getCoord()[1] for b in board1.checkpoints]
+        
+    for i, (bx, by) in enumerate(zip(b_x, b_y)):
+        plt.text(bx, by, str(i), color="black", fontsize=12, ha='center', va='center')
+
     x1,y1 = zip(*coord_agent1)
     x2,y2 = zip(*coord_agent2)
     x3,y3 = zip(*coord_agent3)
@@ -242,7 +273,15 @@ def comparatif():
     plt.savefig(f'{GRAPH_PATH}/traj/comp_traj_{timestamp}')
 
 
-
+    plt.figure(figsize=(15,8))
+    plt.title("Comparatif du nombre de pas entre 3 agents")
+    plt.xlabel("numero de course")
+    plt.ylabel("nombre de pas")
+    plt.plot(a1_steps,label=f"Agent1 :Pas de choix de direction")
+    plt.plot(a2_steps,label=f"Agent2 :Choix de la direction")
+    plt.plot(a3_steps,label=f"Agent3 :Agent heuristique")
+    plt.legend()
+    plt.savefig(f"{GRAPH_PATH}/comp_choix_dir_steps_{timestamp}")
 
 # fig_epsilon()
 comparatif()

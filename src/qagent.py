@@ -6,14 +6,14 @@ from datetime import datetime
 import csv
 import time
 from MPRengine import Board
-from env_dir import MPR_env, MPR_env_light
+from env_dir import MPR_env_light
 from env import MPR_env
 from config import GRAPH_PATH
 from datetime import datetime
 timestamp = datetime.now().strftime("%d-%m")
 
 class Qagent:
-    def __init__(self, env, episodes= 5000, max_steps =2000,alpha = .1, epsilon = .6, gamma = 0.95, do_test = True):
+    def __init__(self, env, episodes= 5000, max_steps =100,alpha = .1, epsilon = .9, gamma = 0.95, do_test = True):
         self.env= env
         self.episodes = episodes
         self.max_steps = max_steps
@@ -36,10 +36,11 @@ class Qagent:
         #nombre de test à faire par phase de test durant l'apprentissage
 
     def train(self):
+        q_values = []
         for i in tqdm(range(self.episodes)):
             cum_reward = 0
             state= self.env.reset()
-            for j in range(self.max_steps):
+            for j in range(20000):
                 
                 action = self.epsilon_greedy(state)
                 next_state,reward,terminated = self.env.step(action)
@@ -47,20 +48,16 @@ class Qagent:
                 state = next_state
                 cum_reward += reward
 
-                if terminated:  
+                if terminated: 
                     break
-            # plt.figure()
-            # plt.plot(self.env.rewa)
-            # plt.show()
-            # plt.title(f"Episode {i}")
+
             self.epsilon = max(0.05, self.epsilon * 0.98)
             if self.do_test and i%10 ==0:
-                # print(np.mean(self.qtable))
-                # if i%1000==0:  
-                #     self.env.show_traj()
                 nb_steps, cum_reward = self.test()
                 self.steps.append((i,nb_steps))
                 self.rewards.append((i,cum_reward))
+            q_values.append(np.mean(self.qtable))
+        return q_values
 
 
 
@@ -83,7 +80,7 @@ class Qagent:
 
     def one_run(self, board =None):
         state= self.env.reset(board=board)
-        for j in range(self.max_steps):
+        for j in range(20000):
             action = np.argmax(self.qtable[state])
             next_state,reward,terminated = self.env.step(action)
             state = next_state
@@ -136,13 +133,13 @@ class Qagent:
 
 if __name__ == "__main__":
     # agent = Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=4), do_test=True, episodes= 20000, max_steps=20000)
-    agent = Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=3), do_test=True, episodes= 20000, max_steps=20000)
+    agent = Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=3), do_test=True, episodes= 5000)
+    # agent = Qagent(MPR_env(), do_test=True, episodes= 1000)
     # np.save("qtable", agent.qtable)
-    agent.train()
+    q_values = agent.train()
 
     agent.get_policy(agent.env.nb_etat)
-    np.savetxt("qtable1", agent.qtable,fmt="%.3e")
- 
+
 
     agent.env.show_traj()
     
@@ -199,3 +196,11 @@ if __name__ == "__main__":
     plt.bar(np.arange(len(agent.trace_etat)),agent.trace_etat)
     plt.title("nombre de mise à jour pur un etat")
     plt.savefig(f"{GRAPH_PATH}/trace_state{timestamp}")
+
+    plt.figure()
+    plt.plot(q_values)
+    plt.title("Valeur moyenne de la qtable")
+    plt.xlabel("Episodes")
+    plt.ylabel("Valeur moyenne")
+    plt.savefig(f"{GRAPH_PATH}/qtable_mean_{timestamp}")
+    plt.show()

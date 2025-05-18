@@ -262,6 +262,7 @@ class MPR_env_light():
         self.target = []
         self.old_dist = 0
         self.old_cp =self.board.next_checkpoint
+        self.vitesse =[]
 
     
         
@@ -270,6 +271,8 @@ class MPR_env_light():
         x,y,_,_,dist,angle = self.board.play(Point(target_x,target_y),thrust)
         self.traj.append([x,y])
         self.target.append([target_x,target_y,x,y])
+        vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
+        self.vitesse.append(vitesse)
         reward = -1 
         if self.old_dist>dist:
             reward = 0
@@ -285,7 +288,7 @@ class MPR_env_light():
                 reward = -20
                 self.terminated = True
             else:
-                reward= 1000
+                reward= 10000
                 print("done")
                 self.terminated = True
 
@@ -309,6 +312,7 @@ class MPR_env_light():
         x, y = self.board.pod.getCoord()
         self.past_pos= (x,y)
         self.current_pos = self.past_pos
+        self.vitesse = []
 
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         dist = self.board.pod.distance(next_cp)

@@ -8,26 +8,18 @@ import matplotlib.pyplot as plt
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation = [3,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [4,5,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
 
         self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
         height, width = self.board.getInfos()
         self.custom =custom
-
         self.discretisation = discretisation
-
-        #on stock position precedente pour deriver la vitesse, past_pos = (x,y)
         self.past_pos= self.board.pod.getCoord()
-
         self.max_dist = np.sqrt(width**2+height**2)
-        
         self.nb_action = nb_action
-        self.nb_etat = prod([discretisation[0]+2] + discretisation[1:])
         self.nb_etat = prod(discretisation)
-        # le plus 2 est pas propre mais c'est pour la discretisation de l'angle on choisit 
-        # step de discretisation pour les angles devant auquel on ajoute 2 pour les 2 etat possible si angle derriere
-        
+    
         self.traj = []
         self.vitesse =[]
 
@@ -36,8 +28,7 @@ class MPR_env():
     def step(self,  action):
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         thrust = self.convert_action(action)
-        # x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(Point(target_x,target_y),thrust)
-        x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust) # sans direction
+        x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust) 
         self.traj.append([x,y])
         self.vitesse.append(self.discretized_speed(x,y))
 
@@ -76,12 +67,9 @@ class MPR_env():
 
         return self.discretized_state(angle,dist, x, y)
     
-
-    def discretized_angle(self, angle):
-        #discretisation de l'angle self.discretisation corresponds à en combien d'etats on discretise un angle qui 
-        #corresponds à devant le pod. si l'angle indique l'arrière du pod il est discretisé en deux états
-        bins = [180,270]
-        return np.digitize(angle,bins)
+    def discretized_angle(self,angle):
+        bins = [-90,0,90]
+        return np.digitize(angle, bins)
         
     def discretized_distance(self, dist):
         bins = [1000,2000,8000,self.max_dist]
