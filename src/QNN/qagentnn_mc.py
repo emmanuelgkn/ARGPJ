@@ -25,11 +25,13 @@ import sys
 import os
 import glob
 
-for folder in glob.glob("runs/mc_training_*"):
-    if os.path.isdir(folder):
-        shutil.rmtree(folder)
 
-LOG_PATH = f"runs/mc_training_{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+if __name__ == "__main__":
+    for folder in glob.glob("runs/mc_training_*"):
+        if os.path.isdir(folder):
+            shutil.rmtree(folder)
+
+    LOG_PATH = f"runs/mc_training_{datetime.now().strftime('%Y%m%d-%H%M%S')}"
 
 
 from torch.utils.tensorboard import SummaryWriter
@@ -211,7 +213,7 @@ class train:
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-            self.epsilon *= 0.995
+            self.epsilon *= 0.999
         
         self.writer.close()
         print("fini")
@@ -254,7 +256,7 @@ class QagentNN:
         self.env.show_traj()
 
 def main():
-    traine = train(MPR_envnn(custom=False,nb_cp = 2,nb_round = 1),1000)
+    traine = train(MPR_envnn(custom=False,nb_cp = 4,nb_round = 3),1000)
     losses,rewards,r = traine.run()
     traine.saveWeights()
 
@@ -278,3 +280,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    pass

@@ -245,7 +245,7 @@ def main():
     # traine = train(MPR_envnn(custom=False),1000)
     # traine.run()
 
-    traine = Train(MPR_envnn(custom=False,nb_cp = 2,nb_round = 1),2000)
+    traine = Train(MPR_envnn(custom=False,nb_cp = 2,nb_round = 1),10000)
     losses,rewards,r = traine.run()
     traine.saveWeights()
 

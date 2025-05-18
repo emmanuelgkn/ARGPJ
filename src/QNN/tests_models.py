@@ -13,8 +13,8 @@ import time
 ############################# Pour le dqn ##########################################
 # DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# STATE_DIM = 3
-# ACTION_DIM = 3
+# STATE_DIM = 4
+# ACTION_DIM = 15
 
 # model = QNetworkdqn(STATE_DIM,ACTION_DIM).to(DEVICE)
 
@@ -24,7 +24,7 @@ import time
 
 # print("Les poids ont été chargés avec succès dans le modèle.")
 
-# agent = QagentDQN(MPR_envnn(custom=True,nb_cp = 2,nb_round = 1), model)
+# agent = QagentDQN(MPR_envnn(custom=False,nb_cp = 2,nb_round = 1), model)
 # agent.one_run()
 
 
@@ -42,5 +42,6 @@ model.load_state_dict(torch.load(poids, map_location=DEVICE))
 
 print("Les poids ont été chargés avec succès dans le modèle.")
 
-agent = QagentNN(MPR_envnn(custom=False,nb_cp = 2,nb_round = 1), model)
+agent = QagentNN(MPR_envnn(custom=False,nb_cp = 4,nb_round = 3), model)
 agent.one_run()
+

@@ -47,43 +47,54 @@ class MPR_envnn():
         vitesse = self.compute_speed(x,y)
         direction = self.compute_direction(x,y)
 
+        # ... code précédent ...
+
         max_distance = math.sqrt(WIDTH**2 + HEIGHT**2)
-        reward_dist = - (dist/max_distance)
-        if self.next_cp_old != self.board.next_checkpoint:
-            reward_checkpoint = 10
+
+        # Calcul de la progression vers le checkpoint
+        if hasattr(self, "last_dist"):
+            reward_progress = (self.last_dist - dist) * 5  # Encourage à se rapprocher
         else:
-            reward_checkpoint = 0
+            reward_progress = 0
+        self.last_dist = dist
 
-        reward_angle = - (abs(angle) / 180)
-        reward_speed = vitesse / max_distance
-        reward_penalty = -5 if abs(angle) > 90 else 0
-            
-        reward = (
-            # 1.0 * reward_checkpoint +
-            0.3 * reward_dist +
-            0.2 * reward_angle +
-            1 * reward_speed +
-            1.0 * reward_penalty
-        )
+        # Récompense d’alignement (plus l’angle est petit, mieux c’est)
+        reward_alignment = max(0, 1 - abs(angle) / 180) * 5
 
-        # reward = 0
-        # if self.next_cp_old != self.board.next_checkpoint:
-        #     reward += 1000
+        # Récompense vitesse brute (encourage à aller vite)
+        reward_speed = vitesse / 100  # Ajuste le facteur selon l'échelle de vitesse
 
-        # reward = - dist / 1000  # normalise distance
-        # reward -= abs(angle) / 180
-        # reward += vitesse / max_distance
+        # Projette la vitesse dans la direction du checkpoint
+        directional_speed = vitesse * math.cos(math.radians(angle))
+        reward_directional_speed = max(0, directional_speed / max_distance) * 3
 
-        #si la course est terminée
+        # Bonus fort quand un checkpoint est atteint
+        reward_checkpoint = 1000 if self.next_cp_old != self.board.next_checkpoint else 0
+
+        # Penalité légère à chaque étape pour finir vite
+        reward_time_penalty = -1
+
+        # Punition sévère si le pod regarde à plus de 120° du checkpoint (donc quasi dos)
+        reward_bad_angle = -10 if abs(angle) > 120 else 0
+
+        # Terminaison
         if self.board.terminated:
-            #arret a cause d'un timeout
-            if self.board.pod.timeout<0:
-                reward = 0
+            if self.board.pod.timeout < 0:
+                reward = -1000  # échec
                 self.terminated = True
-            #arret fin de course
             else:
-                reward+= 1000
+                reward = 3000 
                 self.terminated = True
+        else:
+            reward = (
+                1.0 * reward_checkpoint +
+                reward_progress +
+                reward_alignment +
+                reward_speed +
+                reward_directional_speed +
+                reward_time_penalty +
+                reward_bad_angle
+            )
 
         #stockage des infos
         self.angles.append(angle)

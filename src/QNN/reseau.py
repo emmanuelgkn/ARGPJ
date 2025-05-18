@@ -10,9 +10,9 @@ print(device)
 class QNetwork(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(QNetwork, self).__init__()
-        self.fc1 = nn.Linear(state_dim + action_dim, 128)  # Concaténation de s et a
-        self.fc2 = nn.Linear(128, 128)
-        self.fc3 = nn.Linear(128, 1)  # Prédit une seule Q-value
+        self.fc1 = nn.Linear(state_dim + action_dim, 64)  # Concaténation de s et a
+        # self.fc2 = nn.Linear(128, 128)
+        self.fc3 = nn.Linear(64, 1)  # Prédit une seule Q-value
 
     def forward(self, state, action):
         # Envoi les tenseurs sur le cuda si non sur le cpu
@@ -24,7 +24,7 @@ class QNetwork(nn.Module):
 
         x = torch.cat([state, action], dim=-1)  # Concaténation de l'état et de l'action
         x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
+        # x = torch.relu(self.fc2(x))
         q_value = self.fc3(x)
         return q_value
 
