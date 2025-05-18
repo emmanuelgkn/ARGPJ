@@ -180,4 +180,11 @@ class Board():
     def getInfos(self):
         return HEIGHT, WIDTH
 
+    def copy(self):
+        new_board = Board(self.nb_cp, self.nb_round)
+        new_board.checkpoints = self.checkpoints.copy()
+        new_board.pod = Pod(self.pod.x, self.pod.y, self.pod.angle)
+        new_board.next_checkpoint = self.next_checkpoint
+        new_board.checkpoint_cp = self.checkpoint_cp.copy()
+        return new_board
 

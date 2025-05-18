@@ -7,6 +7,7 @@ import csv
 import time
 from MPRengine import Board
 from env_dir import MPR_env, MPR_env_light
+from env import MPR_env
 from config import GRAPH_PATH
 from datetime import datetime
 timestamp = datetime.now().strftime("%d-%m")
@@ -137,7 +138,7 @@ class Qagent:
 if __name__ == "__main__":
     # agent = Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=4), do_test=True, episodes= 20000, max_steps=20000)
     agent = Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=3), do_test=True, episodes= 20000, max_steps=20000)
-    np.save("qtable", agent.qtable)
+    # np.save("qtable", agent.qtable)
     agent.train()
 
     agent.get_policy(agent.env.nb_etat)
@@ -145,7 +146,6 @@ if __name__ == "__main__":
  
 
     agent.env.show_traj()
-    
     
     # plt.figure(figsize=(15,7))
     # plt.plot(agent.env.vitesse, label='vitesse')

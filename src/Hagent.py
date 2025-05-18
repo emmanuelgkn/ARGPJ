@@ -58,6 +58,24 @@ class Hagent:
                 batch = self.steps[i:i+batch_size]
                 mean_step = np.mean(batch)
                 writer.writerow([i, mean_step])
+
+    def show_traj(self,board):
+        traj,nb_step = self.get_one_traj(board)
+        b_x= [b.getCoord()[0] for b in board.checkpoints]
+        b_y= [b.getCoord()[1] for b in board.checkpoints]
+        for i, (x, y) in enumerate(zip(b_x, b_y)):
+            plt.text(x, y, str(i))
+        x,y = zip(*traj)
+        plt.figure()
+        plt.xlim(0,16000)
+        plt.ylim(0,9000)
+        plt.gca().invert_yaxis() 
+        plt.scatter(x,y,c =np.arange(len(traj)), s = 5)
+        plt.scatter(b_x,b_y, c = 'red', s=600)
+        plt.title(f"Trajectoire agent heuristique, steps = {nb_step}")
+            # plt.text(x, y, str(i), color='white', fontsize=12, fontweight='bold',ha='center', va='center')
+        plt.show()
+
 def main():
     board = Board(4,3)
     agent = Hagent()

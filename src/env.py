@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation = [5,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [3,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
 
         self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
@@ -24,6 +24,7 @@ class MPR_env():
         
         self.nb_action = nb_action
         self.nb_etat = prod([discretisation[0]+2] + discretisation[1:])
+        self.nb_etat = prod(discretisation)
         # le plus 2 est pas propre mais c'est pour la discretisation de l'angle on choisit 
         # step de discretisation pour les angles devant auquel on ajoute 2 pour les 2 etat possible si angle derriere
         
@@ -114,7 +115,7 @@ class MPR_env():
         plt.gca().invert_yaxis() 
         plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
         plt.scatter(b_x,b_y, c = 'red', s=600)
-        plt.title("Trajectoire avec NN")
+        plt.title("Trajectoire ")
         plt.show()
 
     
@@ -132,3 +133,4 @@ class MPR_env():
 
 
 
+    
