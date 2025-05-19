@@ -6,8 +6,8 @@ from datetime import datetime
 import csv
 import time
 from MPRengine import Board
-# from env_dir import MPR_env_light, MPR_env
-from env import MPR_env
+from env_dir import MPR_env_light, MPR_env
+from env_thrust import MPR_env_thrust
 from config import GRAPH_PATH
 from datetime import datetime
 timestamp = datetime.now().strftime("%d-%m")
@@ -179,7 +179,7 @@ def test_hyperparams():
 
 if __name__ == "__main__":
     # test_hyperparams()
-    agent = Qagent(MPR_env(), epsilon = .4, alpha=.1, gamma= .95 ,do_test=True, episodes= 3000)
+    agent = Qagent(MPR_env_thrust(), epsilon = .4, alpha=.1, gamma= .95 ,do_test=True, episodes= 3000)
     q_values = agent.train()
     agent.get_policy(agent.env.nb_etat)
 

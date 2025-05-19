@@ -1,6 +1,6 @@
 from qagent import Qagent
-from env_dir import MPR_env_light
-from env import MPR_env
+from env_dir import MPR_env_light, MPR_env
+from env_thrust import MPR_env_thrust
 import matplotlib.pyplot as plt
 import pandas as pd
 from Hagent import Hagent

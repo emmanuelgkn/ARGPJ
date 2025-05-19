@@ -1,12 +1,15 @@
 
 import numpy as np
 
-from MPRengine import Board, Point
+from MPRengine import Board
 from math import prod
 import math
 import matplotlib.pyplot as plt
 #Mad Pod Racing Environnement
-class MPR_env():
+
+#Environnement pour qlearnign sur MadPod Racing gestion uniquement d thrust
+
+class MPR_env_thrust():
 
     def __init__(self, discretisation = [4,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
 
