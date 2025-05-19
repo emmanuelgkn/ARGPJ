@@ -11,9 +11,9 @@ from env import MPR_env
 from config import GRAPH_PATH
 from datetime import datetime
 timestamp = datetime.now().strftime("%d-%m")
-
+import itertools
 class Qagent:
-    def __init__(self, env, episodes= 5000, max_steps =100,alpha = .2, epsilon = .3, gamma = 0.95, do_test = True):
+    def __init__(self, env, episodes= 5000, max_steps =10000,alpha = .2, epsilon = .3, gamma = 0.95, do_test = True):
         self.env= env
         self.episodes = episodes
         self.max_steps = max_steps
@@ -38,20 +38,17 @@ class Qagent:
     def train(self):
         q_values = []
         for i in tqdm(range(self.episodes)):
-            cum_reward = 0
+            # cum_reward = 0
             state= self.env.reset()
-            nb_steps = 0
             for j in range(20000):
                 
                 action = self.epsilon_greedy(state)
                 next_state,reward,terminated = self.env.step(action)
                 self.update_q_table(state,action,next_state,reward)
                 state = next_state
-                cum_reward += reward
-
+                # cum_reward += reward
                 if terminated: 
                     break
-                nb_steps += 1
 
             self.epsilon = max(0.05, self.epsilon * 0.98)
             if self.do_test and i%10 ==0:
@@ -66,11 +63,11 @@ class Qagent:
 
 
     def test(self):
-
-        state = self.env.reset()
+        
+        state = self.env.reset(board = Board(custom=True, nb_cp=4, nb_round=1))
         pas = 0
         cum_reward = 0
-        for j in range(self.max_steps):
+        for j in range(20000):
             action = np.argmax(self.qtable[state])
 
             next_state,reward,terminated = self.env.step(action)
@@ -124,7 +121,6 @@ class Qagent:
 
 
     def get_policy(self, nb_etat):
-        print(self.qtable)
         res = {}
         for i in range(nb_etat):
             action = np.argmax(self.qtable[i])
@@ -134,78 +130,84 @@ class Qagent:
             f.write(str(res))
         return res
 
+def test_hyperparams():
+    alphas = [0.1, 0.2]
+    gammas = [0.95]
+    epsilons = [0.3, 0.5]
+    episodes_list = [3000]
+
+    results = {}  
+    
+    for alpha, gamma, epsilon, episodes in itertools.product(alphas, gammas, epsilons, episodes_list):
+        env = MPR_env()
+        agent = Qagent(env, alpha=alpha, gamma=gamma, epsilon=epsilon, episodes=episodes, do_test=True)
+        agent.train()
+
+        label = f"α={alpha}, γ={gamma}, ε={epsilon}, ep={episodes}"
+        results[label] = {
+            "steps": [(x[0], x[1]) for x in agent.steps],
+            "rewards": [(x[0], x[1]) for x in agent.rewards]
+        }
+
+    plt.figure(figsize=(15, 7))
+    for label, data in results.items():
+        xs = [x[0] for x in data["steps"]]
+        ys = [x[1] for x in data["steps"]]
+        plt.plot(xs, ys, label=label)
+    plt.xlabel("Episodes")
+    plt.ylabel("Steps")
+    plt.title("Steps par épisode pour différentes valeurs d'hyperparamètres")
+    plt.legend()
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(f"{GRAPH_PATH}/compare_steps.png")
+
+    plt.figure(figsize=(15, 7))
+    for label, data in results.items():
+        xs = [x[0] for x in data["rewards"]]
+        ys = [x[1] for x in data["rewards"]]
+        plt.plot(xs, ys, label=label)
+    plt.xlabel("Episodes")
+    plt.ylabel("Reward")
+    plt.title("Reward par épisode pour différentes valeurs d'hyperparamètres")
+    plt.legend()
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(f"{GRAPH_PATH}/compare_rewards.png")
+
 
 
 if __name__ == "__main__":
-    # agent = Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=4), do_test=True, episodes= 20000, max_steps=20000)
-    agent = Qagent(MPR_env(custom=False, nb_round= 3,nb_cp=4), do_test=True, episodes= 5000)
-    # agent = Qagent(MPR_env(), do_test=True, episodes= 1000)
-    # np.save("qtable", agent.qtable)
+    # test_hyperparams()
+    agent = Qagent(MPR_env(), epsilon = .4, alpha=.1, gamma= .95 ,do_test=True, episodes= 3000)
     q_values = agent.train()
-
     agent.get_policy(agent.env.nb_etat)
-
-
-    agent.env.show_traj()
-    
-    # plt.figure(figsize=(15,7))
-    # plt.plot(agent.env.vitesse, label='vitesse')
-    # plt.legend()
-    # plt.savefig("vitesse")
-    # plt.plot(agent.env.dista, label ="distance")
-    # plt.plot(agent.env.rewa, label="reward")
 
     plt.matshow(agent.qtable, cmap = "viridis", aspect = "auto")
     plt.colorbar()
     plt.savefig(f"{GRAPH_PATH}/qtable_{timestamp}")
 
-    batch_size = 10
-    steps_x_b = [agent.steps[i][0] for i in range(0, len(agent.steps), batch_size)]
-    steps_y_b = [ sum(agent.steps[i][1] for i in range(batch, min(batch + batch_size, len(agent.steps)))) /  (min(batch + batch_size, len(agent.steps)) - batch)for batch in range(0, len(agent.steps), batch_size)]
+    plt.figure(figsize=(15, 7))
     xs = [agent.steps[i][0] for i in range(len(agent.steps))]
     ys = [agent.steps[i][1] for i in range(len(agent.steps))]
-    
-    plt.figure(figsize=(15,7))
-    plt.plot(xs,ys, label ="ep par ep")
-    plt.plot(steps_x_b, steps_y_b, label = "mean par batch")
-    plt.legend()
     plt.xlabel("Episodes")
     plt.ylabel("Steps")
-    plt.title(f"Nombre de steps par episode (moyenne par batch de {batch_size})")
+    plt.title("Steps par épisode en test")
+    plt.plot(xs, ys)
+    plt.grid()
+    plt.savefig(f"{GRAPH_PATH}/compare_steps.png")
 
-    plt.savefig(f"{GRAPH_PATH}/step_per_ep_{timestamp}")
-
-    reward_x_b = [agent.rewards[i][0] for i in range(0, len(agent.rewards), batch_size)]
-    reward_y_b = [sum(agent.rewards[i][1] for i in range(batch, min(batch + batch_size, len(agent.rewards)))) / (min(batch + batch_size, len(agent.rewards)) - batch) for batch in range(0, len(agent.rewards), batch_size)]
+    plt.figure(figsize=(15, 7))
     xr = [agent.rewards[i][0] for i in range(len(agent.rewards))]
     yr = [agent.rewards[i][1] for i in range(len(agent.rewards))]
-    plt.figure()
-    plt.plot(xr,yr, label = "ep par ep")
-    plt.plot(reward_x_b, reward_y_b, label= "mean par batch")
-    plt.legend()
     plt.xlabel("Episodes")
     plt.ylabel("Reward")
-    plt.title(f"Reward par episode (moyenne par batch de {batch_size})")
-    plt.savefig(f"{GRAPH_PATH}/reward_per_ep_{timestamp}")
-
-    # plt.figure()
-    # normalized_trace_qtable = agent.trace_qtable / np.max(agent.trace_qtable)
-    # plt.matshow(normalized_trace_qtable, cmap = "viridis", aspect = "auto")
-    # plt.colorbar()
-    # plt.title("nombre de mise à jour de couple état action")
-    # plt.savefig(f"{GRAPH_PATH}/trace_qtable_{timestamp}")
+    plt.title("Reward cumulée par épisode en test")
+    plt.plot(xr, yr)
+    plt.grid()
+    plt.savefig(f"{GRAPH_PATH}/compare_rewards.png")
 
 
 
-    # plt.figure()
-    # plt.bar(np.arange(len(agent.trace_etat)),agent.trace_etat)
-    # plt.title("nombre de mise à jour pur un etat")
-    # plt.savefig(f"{GRAPH_PATH}/trace_state{timestamp}")
 
-    plt.figure()
-    plt.plot(q_values)
-    plt.title("Valeur moyenne de la qtable")
-    plt.xlabel("Episodes")
-    plt.ylabel("Valeur moyenne")
-    plt.savefig(f"{GRAPH_PATH}/qtable_mean_{timestamp}")
-    plt.show()
+

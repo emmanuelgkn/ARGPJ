@@ -158,11 +158,11 @@ class Board():
     
     def checkTerminated(self):
         # pas de tour on ne repasse pas par cp 0
-        # if sum(self.checkpoint_cp) == self.nb_cp-1 or self.pod.timeout<0:
-        #     self.terminated = True
-        #tour complet
-        if self.checkpoint_cp == [self.nb_round]*self.nb_cp or self.pod.timeout<0:
+        if sum(self.checkpoint_cp) == self.nb_cp-1 or self.pod.timeout<0:
             self.terminated = True
+        #tour complet
+        # if self.checkpoint_cp == [self.nb_round]*self.nb_cp or self.pod.timeout<0:
+        #     self.terminated = True
     
     def play(self, p, thrust):
         self.pod.play(p, thrust)

@@ -248,11 +248,10 @@ class MPR_env_light():
             reward = 0
         self.old_dist = dist
 
-        if vitesse<500:
-            reward-= .5
+
         if self.board.next_checkpoint != self.old_cp:
             self.old_cp = self.board.next_checkpoint
-            reward = 1000
+            reward = 200
             # reward = 10000
             # self.show_traj()
         if self.board.terminated:
@@ -260,7 +259,7 @@ class MPR_env_light():
                 # reward = -1
                 self.terminated = True
             else:
-                reward= 10000
+                reward= 1000
                 print("done")
                 
                 self.terminated = True
@@ -343,7 +342,7 @@ class MPR_env_light():
 
 
     def convert_action(self, action):
-        mapping_thrust = {0: 0, 1: 70, 2: 100}
+        mapping_thrust = {0: 30, 1: 70, 2: 100}
         thrust = mapping_thrust[action // 3]
         mapping_angle = {0: -18,1: 0, 2: 18}
         x_past, y_past = self.past_pos

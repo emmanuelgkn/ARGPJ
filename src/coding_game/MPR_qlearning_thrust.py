@@ -6,8 +6,7 @@ import sys
 
 
 
-
-policy = {0: np.int64(1), 1: np.int64(1), 2: np.int64(0), 3: np.int64(2), 4: np.int64(2), 5: np.int64(0), 6: np.int64(2), 7: np.int64(0), 8: np.int64(0), 9: np.int64(2), 10: np.int64(2), 11: np.int64(1), 12: np.int64(2), 13: np.int64(2), 14: np.int64(1), 15: np.int64(1), 16: np.int64(2), 17: np.int64(2), 18: np.int64(2), 19: np.int64(1), 20: np.int64(0), 21: np.int64(2), 22: np.int64(2), 23: np.int64(2), 24: np.int64(2), 25: np.int64(2), 26: np.int64(2), 27: np.int64(2), 28: np.int64(2), 29: np.int64(2), 30: np.int64(2), 31: np.int64(2), 32: np.int64(2), 33: np.int64(2), 34: np.int64(2), 35: np.int64(1), 36: np.int64(1), 37: np.int64(1), 38: np.int64(0), 39: np.int64(2), 40: np.int64(2), 41: np.int64(1), 42: np.int64(1), 43: np.int64(0), 44: np.int64(2), 45: np.int64(1), 46: np.int64(1), 47: np.int64(0)}
+policy = {0: np.int64(2), 1: np.int64(1), 2: np.int64(1), 3: np.int64(0), 4: np.int64(2), 5: np.int64(1), 6: np.int64(0), 7: np.int64(1), 8: np.int64(1), 9: np.int64(0), 10: np.int64(2), 11: np.int64(0), 12: np.int64(2), 13: np.int64(2), 14: np.int64(1), 15: np.int64(2), 16: np.int64(2), 17: np.int64(0), 18: np.int64(2), 19: np.int64(2), 20: np.int64(2), 21: np.int64(2), 22: np.int64(2), 23: np.int64(2), 24: np.int64(1), 25: np.int64(1), 26: np.int64(1), 27: np.int64(2), 28: np.int64(2), 29: np.int64(2), 30: np.int64(1), 31: np.int64(2), 32: np.int64(2), 33: np.int64(2), 34: np.int64(2), 35: np.int64(2), 36: np.int64(2), 37: np.int64(0), 38: np.int64(1), 39: np.int64(1), 40: np.int64(1), 41: np.int64(1), 42: np.int64(0), 43: np.int64(2), 44: np.int64(2), 45: np.int64(1), 46: np.int64(1), 47: np.int64(0)}
 
 discretisation= [4,4,3]
 nb_action=15
@@ -27,7 +26,7 @@ def discretized_distance(dist):
 
 def discretized_speed( x, y, past_pos):
     vitesse = np.sqrt((x - past_pos[0])**2 + (y - past_pos[1])**2)
-    bins = [200,500,1000]
+    bins = [200,400]
     return np.digitize(vitesse,bins)
 
 
@@ -37,7 +36,7 @@ def discretized_state(angle, dist, x, y, past_pos):
     return index
 
 def convert_action(action):
-    mapping_thrust = {0:0,1:70,2:100}
+    mapping_thrust = {0:0,1:50,2:100}
     return mapping_thrust[action]
 actions = []
 pos = []

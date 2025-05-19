@@ -32,10 +32,13 @@ class MPR_env():
         thrust = self.convert_action(action)
         x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust) 
         self.traj.append([x,y])
-        self.vitesse.append(self.discretized_speed(x,y))
+        vitesse =self.discretized_speed(x,y)
 
-        #si rien de specifique ne s'est produit 
-        reward = -self.reward(dist)
+        self.vitesse.append(vitesse)
+
+        reward = (self.old_dist - dist)*0.05
+        self.old_dist = dist
+        
         if self.board.next_checkpoint != self.next_cp_old:
             reward = 100
             self.next_cp_old = self.board.next_checkpoint
@@ -44,18 +47,17 @@ class MPR_env():
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                # reward = -1
+                # reward = -10
                 self.terminated = True
             #arret fin de course
             else:
-                reward= 100
+                reward= 500
                 self.terminated = True
         next_state =self.discretized_state(angle, dist, x,y)
+        self.past_pos = (x,y)
         return next_state,reward, self.terminated
     
-    def reward(self, dist):
-        bins = [600, 1000, 8000, 10000]
-        return np.digitize(dist, bins)
+
 
     def reset(self,seed=None,options=None, board=None):
         self.board = Board(nb_cp=4,nb_round=3,custom =self.custom)
@@ -83,8 +85,9 @@ class MPR_env():
         return np.digitize(dist,bins)
     
     def discretized_speed(self, x,y):
-        vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
-        bins = [200,1000]
+        
+        vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
+        bins = [200,400]
         return np.digitize(vitesse,bins)
 
     
@@ -95,7 +98,7 @@ class MPR_env():
         return index
 
     def convert_action(self, action):
-        mapping_thrust = {0:0,1:70,2:100}
+        mapping_thrust = {0:0,1:50,2:100}
         return mapping_thrust[action]
 
 
