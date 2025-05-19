@@ -22,6 +22,7 @@ class MPR_env():
     
         self.traj = []
         self.vitesse =[]
+        self.old_dist = 0
 
     
         
@@ -33,23 +34,22 @@ class MPR_env():
         self.vitesse.append(self.discretized_speed(x,y))
 
         #si rien de specifique ne s'est produit 
-        reward = - self.reward(dist)*0.01
+        reward = (self.old_dist - dist)*0.01
+        self.old_dist = dist
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -100
+                # reward = -1
                 self.terminated = True
             #arret fin de course
             else:
-                reward= 100
+                reward= 1000
                 self.terminated = True
         next_state =self.discretized_state(angle, dist, x,y)
         return next_state,reward, self.terminated
     
-    def reward(self, dist):
-        bins = [600,700,800,1000,2000,3000,5000,6000,8000,100000]
-        return np.digitize(dist,bins)
+
 
     def reset(self,seed=None,options=None, board=None):
         self.board = Board(nb_cp=4,nb_round=3,custom =self.custom)
@@ -60,11 +60,11 @@ class MPR_env():
         self.vitesse = []
         x, y = self.board.pod.getCoord()
         self.past_pos= (x,y)
+        self.old_dist = 0
 
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         dist = self.board.pod.distance(next_cp)
-        angle = self.board.pod.angle
-
+        angle = self.board.pod.diffAngle(next_cp)
         return self.discretized_state(angle,dist, x, y)
     
     def discretized_angle(self,angle):
@@ -72,12 +72,12 @@ class MPR_env():
         return np.digitize(angle, bins)
         
     def discretized_distance(self, dist):
-        bins = [1000,2000,8000,self.max_dist]
+        bins = [1000,2000,8000,16000]
         return np.digitize(dist,bins)
     
     def discretized_speed(self, x,y):
         vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
-        bins = [100,300]
+        bins = [200,1000]
         return np.digitize(vitesse,bins)
 
     

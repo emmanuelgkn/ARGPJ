@@ -6,22 +6,22 @@ from datetime import datetime
 import csv
 import time
 from MPRengine import Board
-from env_dir import MPR_env_light
+# from env_dir import MPR_env_light, MPR_env
 from env import MPR_env
 from config import GRAPH_PATH
 from datetime import datetime
 timestamp = datetime.now().strftime("%d-%m")
 
 class Qagent:
-    def __init__(self, env, episodes= 5000, max_steps =100,alpha = .1, epsilon = .9, gamma = 0.95, do_test = True):
+    def __init__(self, env, episodes= 5000, max_steps =100,alpha = .1, epsilon = .6, gamma = 0.95, do_test = True):
         self.env= env
         self.episodes = episodes
         self.max_steps = max_steps
         self.alpha = alpha
         self.epsilon = epsilon
         self.gamma = gamma   
-        # self.qtable = np.random.uniform(low=-0.01, high=0.01, size=(self.env.nb_etat, self.env.nb_action))
-        self.qtable = np.zeros((self.env.nb_etat, self.env.nb_action))
+        self.qtable = np.random.uniform(low=-1, high=1, size=(self.env.nb_etat, self.env.nb_action))
+        # self.qtable = np.zeros((self.env.nb_etat, self.env.nb_action))
 
         #pour stocker les recompenses moyennes en fonction du nombre d'episode d'apprentissage
         #contient des tuples des la forme (nombre d'episodes d'apprentissage, recompense moyenne à ce stade de l'apprentissage)
@@ -31,7 +31,7 @@ class Qagent:
 
         #False si l'on souhaite evaluer l'agent durant l'apprentissage
         self.do_test = do_test
-        self.trace_qtable = np.zeros((self.env.nb_etat, self.env.nb_action))
+        self.trace_qtable = np.random.uniform(size=(self.env.nb_etat, self.env.nb_action))
         self.trace_etat = np.zeros(self.env.nb_etat)
         #nombre de test à faire par phase de test durant l'apprentissage
 
@@ -40,6 +40,7 @@ class Qagent:
         for i in tqdm(range(self.episodes)):
             cum_reward = 0
             state= self.env.reset()
+            nb_steps = 0
             for j in range(20000):
                 
                 action = self.epsilon_greedy(state)
@@ -50,9 +51,12 @@ class Qagent:
 
                 if terminated: 
                     break
-
+                nb_steps += 1
+            
             self.epsilon = max(0.05, self.epsilon * 0.98)
             if self.do_test and i%10 ==0:
+                # if i%100 == 0:
+                #     self.env.show_traj()
                 nb_steps, cum_reward = self.test()
                 self.steps.append((i,nb_steps))
                 self.rewards.append((i,cum_reward))
@@ -120,6 +124,7 @@ class Qagent:
 
 
     def get_policy(self, nb_etat):
+        print(self.qtable)
         res = {}
         for i in range(nb_etat):
             action = np.argmax(self.qtable[i])
@@ -133,7 +138,7 @@ class Qagent:
 
 if __name__ == "__main__":
     # agent = Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=4), do_test=True, episodes= 20000, max_steps=20000)
-    agent = Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=3), do_test=True, episodes= 5000)
+    agent = Qagent(MPR_env(custom=False, nb_round= 3,nb_cp=4), do_test=True, episodes= 1000)
     # agent = Qagent(MPR_env(), do_test=True, episodes= 1000)
     # np.save("qtable", agent.qtable)
     q_values = agent.train()
@@ -183,19 +188,19 @@ if __name__ == "__main__":
     plt.title(f"Reward par episode (moyenne par batch de {batch_size})")
     plt.savefig(f"{GRAPH_PATH}/reward_per_ep_{timestamp}")
 
-    plt.figure()
-    normalized_trace_qtable = agent.trace_qtable / np.max(agent.trace_qtable)
-    plt.matshow(normalized_trace_qtable, cmap = "viridis", aspect = "auto")
-    plt.colorbar()
-    plt.title("nombre de mise à jour de couple état action")
-    plt.savefig(f"{GRAPH_PATH}/trace_qtable_{timestamp}")
+    # plt.figure()
+    # normalized_trace_qtable = agent.trace_qtable / np.max(agent.trace_qtable)
+    # plt.matshow(normalized_trace_qtable, cmap = "viridis", aspect = "auto")
+    # plt.colorbar()
+    # plt.title("nombre de mise à jour de couple état action")
+    # plt.savefig(f"{GRAPH_PATH}/trace_qtable_{timestamp}")
 
 
 
-    plt.figure()
-    plt.bar(np.arange(len(agent.trace_etat)),agent.trace_etat)
-    plt.title("nombre de mise à jour pur un etat")
-    plt.savefig(f"{GRAPH_PATH}/trace_state{timestamp}")
+    # plt.figure()
+    # plt.bar(np.arange(len(agent.trace_etat)),agent.trace_etat)
+    # plt.title("nombre de mise à jour pur un etat")
+    # plt.savefig(f"{GRAPH_PATH}/trace_state{timestamp}")
 
     plt.figure()
     plt.plot(q_values)

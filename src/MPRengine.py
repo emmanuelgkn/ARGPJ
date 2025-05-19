@@ -157,8 +157,10 @@ class Board():
             self.next_checkpoint = (self.next_checkpoint+1)% self.nb_cp
     
     def checkTerminated(self):
-        # if self.nb_round == 1 and [0]+[self.nb_round]*(self.nb_cp-1)== self.checkpoint_cp:
+        # pas de tour on ne repasse pas par cp 0
+        # if sum(self.checkpoint_cp) == self.nb_cp-1 or self.pod.timeout<0:
         #     self.terminated = True
+        #tour complet
         if self.checkpoint_cp == [self.nb_round]*self.nb_cp or self.pod.timeout<0:
             self.terminated = True
     
