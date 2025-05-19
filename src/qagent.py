@@ -13,7 +13,7 @@ from datetime import datetime
 timestamp = datetime.now().strftime("%d-%m")
 
 class Qagent:
-    def __init__(self, env, episodes= 5000, max_steps =100,alpha = .1, epsilon = .6, gamma = 0.95, do_test = True):
+    def __init__(self, env, episodes= 5000, max_steps =100,alpha = .2, epsilon = .3, gamma = 0.95, do_test = True):
         self.env= env
         self.episodes = episodes
         self.max_steps = max_steps
@@ -52,7 +52,7 @@ class Qagent:
                 if terminated: 
                     break
                 nb_steps += 1
-            
+
             self.epsilon = max(0.05, self.epsilon * 0.98)
             if self.do_test and i%10 ==0:
                 # if i%100 == 0:
@@ -138,7 +138,7 @@ class Qagent:
 
 if __name__ == "__main__":
     # agent = Qagent(MPR_env_light(custom=False, nb_round=1,nb_cp=4), do_test=True, episodes= 20000, max_steps=20000)
-    agent = Qagent(MPR_env(custom=False, nb_round= 3,nb_cp=4), do_test=True, episodes= 1000)
+    agent = Qagent(MPR_env(custom=False, nb_round= 3,nb_cp=4), do_test=True, episodes= 5000)
     # agent = Qagent(MPR_env(), do_test=True, episodes= 1000)
     # np.save("qtable", agent.qtable)
     q_values = agent.train()

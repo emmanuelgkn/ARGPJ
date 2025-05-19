@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation = [4,5,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [4,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
 
         self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
@@ -23,6 +23,7 @@ class MPR_env():
         self.traj = []
         self.vitesse =[]
         self.old_dist = 0
+        self.next_cp_old =self.board.next_checkpoint
 
     
         
@@ -34,7 +35,10 @@ class MPR_env():
         self.vitesse.append(self.discretized_speed(x,y))
 
         #si rien de specifique ne s'est produit 
-        reward = (self.old_dist - dist)*0.01
+        reward = -self.reward(dist)
+        if self.board.next_checkpoint != self.next_cp_old:
+            reward = 100
+            self.next_cp_old = self.board.next_checkpoint
         self.old_dist = dist
         #si la course est terminée
         if self.board.terminated:
@@ -44,12 +48,14 @@ class MPR_env():
                 self.terminated = True
             #arret fin de course
             else:
-                reward= 1000
+                reward= 100
                 self.terminated = True
         next_state =self.discretized_state(angle, dist, x,y)
         return next_state,reward, self.terminated
     
-
+    def reward(self, dist):
+        bins = [600, 1000, 8000, 10000]
+        return np.digitize(dist, bins)
 
     def reset(self,seed=None,options=None, board=None):
         self.board = Board(nb_cp=4,nb_round=3,custom =self.custom)
@@ -61,6 +67,7 @@ class MPR_env():
         x, y = self.board.pod.getCoord()
         self.past_pos= (x,y)
         self.old_dist = 0
+        self.next_cp_old =self.board.next_checkpoint
 
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         dist = self.board.pod.distance(next_cp)
@@ -72,7 +79,7 @@ class MPR_env():
         return np.digitize(angle, bins)
         
     def discretized_distance(self, dist):
-        bins = [1000,2000,8000,16000]
+        bins = [1000,5000,10000]
         return np.digitize(dist,bins)
     
     def discretized_speed(self, x,y):

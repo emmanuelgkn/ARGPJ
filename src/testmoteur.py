@@ -21,7 +21,15 @@ for i in range(len(action)):
 
 print(len(traj))
 print(len(pos))
+plt.figure(figsize=(20,10))
+plt.subplot(121)
+plt.title("Trajectoire sur Codingame")
 for i in range(len(traj[:-1])):
     plt.scatter(traj[i][0],traj[i][1],color='blue')
+    # plt.scatter(pos[i][0],pos[i][1],color='red')
+plt.subplot(122)
+plt.title("Trajectoire en local")
+for i in range(len(traj[:-1])):
+    # plt.scatter(traj[i][0],traj[i][1],color='blue')
     plt.scatter(pos[i][0],pos[i][1],color='red')
 plt.show()

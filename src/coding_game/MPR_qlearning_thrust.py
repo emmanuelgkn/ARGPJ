@@ -6,9 +6,10 @@ import sys
 
 
 
-policy = {0: np.int64(0), 1: np.int64(1), 2: np.int64(2), 3: np.int64(2), 4: np.int64(0), 5: np.int64(0), 6: np.int64(2), 7: np.int64(0), 8: np.int64(0), 9: np.int64(1), 10: np.int64(1), 11: np.int64(2), 12: np.int64(2), 13: np.int64(2), 14: np.int64(2), 15: np.int64(0), 16: np.int64(1), 17: np.int64(2), 18: np.int64(2), 19: np.int64(0), 20: np.int64(0), 21: np.int64(1), 22: np.int64(1), 23: np.int64(2), 24: np.int64(1), 25: np.int64(2), 26: np.int64(1), 27: np.int64(1), 28: np.int64(0), 29: np.int64(2), 30: np.int64(1), 31: np.int64(1), 32: np.int64(1), 33: np.int64(0), 34: np.int64(0), 35: np.int64(2), 36: np.int64(1), 37: np.int64(1), 38: np.int64(2), 39: np.int64(2), 40: np.int64(1), 41: np.int64(1), 42: np.int64(0), 43: np.int64(2), 44: np.int64(2), 45: np.int64(2), 46: np.int64(0), 47: np.int64(2), 48: np.int64(0), 49: np.int64(1), 50: np.int64(0), 51: np.int64(2), 52: np.int64(2), 53: np.int64(2), 54: np.int64(1), 55: np.int64(2), 56: np.int64(0), 57: np.int64(0), 58: np.int64(2), 59: np.int64(1)}
 
-discretisation= [4,5,3]
+policy = {0: np.int64(1), 1: np.int64(1), 2: np.int64(0), 3: np.int64(2), 4: np.int64(2), 5: np.int64(0), 6: np.int64(2), 7: np.int64(0), 8: np.int64(0), 9: np.int64(2), 10: np.int64(2), 11: np.int64(1), 12: np.int64(2), 13: np.int64(2), 14: np.int64(1), 15: np.int64(1), 16: np.int64(2), 17: np.int64(2), 18: np.int64(2), 19: np.int64(1), 20: np.int64(0), 21: np.int64(2), 22: np.int64(2), 23: np.int64(2), 24: np.int64(2), 25: np.int64(2), 26: np.int64(2), 27: np.int64(2), 28: np.int64(2), 29: np.int64(2), 30: np.int64(2), 31: np.int64(2), 32: np.int64(2), 33: np.int64(2), 34: np.int64(2), 35: np.int64(1), 36: np.int64(1), 37: np.int64(1), 38: np.int64(0), 39: np.int64(2), 40: np.int64(2), 41: np.int64(1), 42: np.int64(1), 43: np.int64(0), 44: np.int64(2), 45: np.int64(1), 46: np.int64(1), 47: np.int64(0)}
+
+discretisation= [4,4,3]
 nb_action=15
 max_dist = np.sqrt(16000**2+9000**2)
 past_pos = (0,0)
@@ -20,7 +21,7 @@ def discretized_angle(angle):
 
 
 def discretized_distance(dist):
-    bins = [1000,2000,8000,16000]
+    bins = [1000,5000,10000]
     return np.digitize(dist,bins)
     
 
