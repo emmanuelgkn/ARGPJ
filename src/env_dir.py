@@ -9,7 +9,7 @@ from matplotlib.patches import Circle
 #Mad Pod Racing Environnement
 class MPR_env():
 
-    def __init__(self, discretisation = [9,4,4,8] ,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [7,4,4,8] ,nb_cp = 4,nb_round = 3,custom=False):
 
         self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
@@ -40,44 +40,40 @@ class MPR_env():
 
     
         
+
     def step(self,  action):
         target_x, target_y, thrust = self.convert_action(action)
         x,y,_,_,dist,angle = self.board.play(Point(target_x,target_y),thrust)
         self.traj.append([x,y])
         self.target.append([target_x,target_y,x,y])
-        self.angles.append(angle)
-        self.dista.append(dist)
         vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
-
         self.vitesse.append(vitesse)
-        reward =- np.log(dist)
-        # reward = np.clip(- (dist/(vitesse+1)) ,-100,0)*0.01
-        # reward = -self.reward(dist)*0.01
-        reward = sum(self.board.checkpoint_cp)*50000 -dist
-        # reward = self.old_dist - dist
-        # self.old_dist = dist
+        reward = -1 
+        if self.old_dist>dist:
+            reward = 0
+        self.old_dist = dist
 
-        # if self.old_dist>dist:
-        #     reward = 0
-        # self.next_cp_old = self.board.next_checkpoint
-        #si la course est terminée
+        if self.board.next_checkpoint != self.next_cp_old:
+            self.next_cp_old = self.board.next_checkpoint
+            reward = 1000
+            # reward = 10000
+            # self.show_traj()
         if self.board.terminated:
-            #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                # reward = -10
+                reward = -20
                 self.terminated = True
-            #arret fin de course
             else:
-                # reward= 10000
+                reward= 10000
+                print("done")
                 self.terminated = True
 
 
         next_state =self.discretized_state(angle, dist, x,y)
         self.past_pos=self.current_pos
         self.current_pos = (x,y)
-        self.rewa.append(reward)
 
         return next_state,reward, self.terminated
+
     
 
 
@@ -101,21 +97,17 @@ class MPR_env():
         angle = self.board.pod.diffAngle(next_cp)
         return self.discretized_state(angle,dist, x, y)
 
-    # def discretized_angle(self, angle):
-    #     #probleme avant on discretisé l'etat entre pod et angle sans prendre en compte la direction du pod
-    #     #cela posait pb ex si pod à gauche du cp si le pod va faire la gauche c'est pas bien si il va vers la droite c'est bien
-    #     #notre ancienne fonction permettait pas de faire la difference entre ces deux situations
-    #     #maintenant on calcul la difference entre notre orientation et l'angle
-    #     #en commentaire si on a pas le droit de recup self.board.pod.angle
-    #     bins = [-90, -45,-20,20,45,90]
-    #     res = np.digitize(angle, bins)
-    #     return res
+    def discretized_angle(self, angle):
 
-    def discretized_angle(self,angle):
-        n_bins = self.discretisation[0]
-        angle = np.clip(angle, -180, 180)
-        step = 360 / n_bins  
-        return int((angle + 180) / step)
+        bins = [-90, -45,-20,20,45,90]
+        res = np.digitize(angle, bins)
+        return res
+
+    # def discretized_angle(self,angle):
+    #     n_bins = self.discretisation[0]
+    #     angle = np.clip(angle, -180, 180)
+    #     step = 360 / n_bins  
+    #     return int((angle + 180) / step)
 
 
     def discretized_distance(self, dist):
@@ -174,36 +166,14 @@ class MPR_env():
         # angle = self.board.pod.angle
         
         new_angle = (angle + angle_action +540)%360 -180
-        new_x = x + math.cos(math.radians(new_angle)) *thrust
-        new_y = y + math.sin(math.radians(new_angle)) *thrust
+        new_x = x + math.cos(math.radians(new_angle)) *500
+        new_y = y + math.sin(math.radians(new_angle)) *500
         return int(new_x), int(new_y), thrust
 
 
 
     
-    # def show_traj(self):
 
-    #     b_x= [b.getCoord()[0] for b in self.board.checkpoints]
-    #     b_y= [b.getCoord()[1] for b in self.board.checkpoints]
-    #     x,y = zip(*self.traj)
-    #     plt.figure()
-    #     plt.xlim(0,16000)
-    #     plt.ylim(0,9000)
-    #     plt.gca().invert_yaxis() 
-    #     plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
-    #     for bx, by in zip(b_x, b_y):
-    #         circle = Circle((bx, by), 600, color='r', fill=True)
-    #         plt.gca().add_patch(circle)
-    #     if self.traj:
-    #         last_x, last_y = self.traj[-1]
-    #         vx, vy = self.board.pod.vx, self.board.pod.vy
-    #         plt.arrow(last_x, last_y, vx*10, vy*10, color='blue', head_width=200, length_includes_head=True)
-    #     for i, (bx, by) in enumerate(zip(b_x, b_y)):
-
-    #         plt.text(bx, by, str(i), color="black", fontsize=12, ha='center', va='center')
-
-    #     plt.title("Trajectoire")
-    #     plt.show()
 
 
 
@@ -262,6 +232,7 @@ class MPR_env_light():
         self.target = []
         self.old_dist = 0
         self.old_cp =self.board.next_checkpoint
+        self.vitesse =[]
 
     
         
@@ -270,23 +241,27 @@ class MPR_env_light():
         x,y,_,_,dist,angle = self.board.play(Point(target_x,target_y),thrust)
         self.traj.append([x,y])
         self.target.append([target_x,target_y,x,y])
+        vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
+        self.vitesse.append(vitesse)
         reward = -1 
         if self.old_dist>dist:
             reward = 0
         self.old_dist = dist
 
+
         if self.board.next_checkpoint != self.old_cp:
             self.old_cp = self.board.next_checkpoint
-            reward = 1000
+            reward = 200
             # reward = 10000
             # self.show_traj()
         if self.board.terminated:
             if self.board.pod.timeout<0:
-                reward = -20
+                # reward = -1
                 self.terminated = True
             else:
                 reward= 1000
                 print("done")
+                
                 self.terminated = True
 
 
@@ -298,8 +273,10 @@ class MPR_env_light():
     
 
 
-    def reset(self):
+    def reset(self, board=None):
         self.board = Board(nb_cp=self.nb_cp,nb_round=self.nb_round,custom =self.custom)
+        if board is not None:
+            self.board = board
         self.terminated = False
         self.traj = []
         self.old_dist = 0
@@ -307,6 +284,7 @@ class MPR_env_light():
         x, y = self.board.pod.getCoord()
         self.past_pos= (x,y)
         self.current_pos = self.past_pos
+        self.vitesse = []
 
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         dist = self.board.pod.distance(next_cp)
@@ -364,7 +342,7 @@ class MPR_env_light():
 
 
     def convert_action(self, action):
-        mapping_thrust = {0: 0, 1: 70, 2: 100}
+        mapping_thrust = {0: 30, 1: 70, 2: 100}
         thrust = mapping_thrust[action // 3]
         mapping_angle = {0: -18,1: 0, 2: 18}
         x_past, y_past = self.past_pos

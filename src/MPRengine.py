@@ -157,10 +157,12 @@ class Board():
             self.next_checkpoint = (self.next_checkpoint+1)% self.nb_cp
     
     def checkTerminated(self):
-        # if self.nb_round == 1 and [0]+[self.nb_round]*(self.nb_cp-1)== self.checkpoint_cp:
-        #     self.terminated = True
-        if self.checkpoint_cp == [self.nb_round]*self.nb_cp or self.pod.timeout<0:
+        # pas de tour on ne repasse pas par cp 0
+        if sum(self.checkpoint_cp) == self.nb_cp-1 or self.pod.timeout<0:
             self.terminated = True
+        #tour complet
+        # if self.checkpoint_cp == [self.nb_round]*self.nb_cp or self.pod.timeout<0:
+        #     self.terminated = True
     
     def play(self, p, thrust):
         self.pod.play(p, thrust)
@@ -180,4 +182,11 @@ class Board():
     def getInfos(self):
         return HEIGHT, WIDTH
 
+    def copy(self):
+        new_board = Board(self.nb_cp, self.nb_round)
+        new_board.checkpoints = self.checkpoints.copy()
+        new_board.pod = Pod(self.pod.x, self.pod.y, self.pod.angle)
+        new_board.next_checkpoint = self.next_checkpoint
+        new_board.checkpoint_cp = self.checkpoint_cp.copy()
+        return new_board
 

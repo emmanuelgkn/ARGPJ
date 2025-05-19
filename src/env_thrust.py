@@ -1,92 +1,96 @@
 
 import numpy as np
 
-from MPRengine import Board, Point
+from MPRengine import Board
 from math import prod
 import math
 import matplotlib.pyplot as plt
 #Mad Pod Racing Environnement
-class MPR_env():
 
-    def __init__(self, discretisation = [5,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
+#Environnement pour qlearnign sur MadPod Racing gestion uniquement d thrust
+
+class MPR_env_thrust():
+
+    def __init__(self, discretisation = [4,4,3] , nb_action=3,nb_cp = 4,nb_round = 3,custom=False):
 
         self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
         height, width = self.board.getInfos()
         self.custom =custom
-
         self.discretisation = discretisation
-
-        #on stock position precedente pour deriver la vitesse, past_pos = (x,y)
         self.past_pos= self.board.pod.getCoord()
-
         self.max_dist = np.sqrt(width**2+height**2)
-        
         self.nb_action = nb_action
-        self.nb_etat = prod([discretisation[0]+2] + discretisation[1:])
-        # le plus 2 est pas propre mais c'est pour la discretisation de l'angle on choisit 
-        # step de discretisation pour les angles devant auquel on ajoute 2 pour les 2 etat possible si angle derriere
-        
+        self.nb_etat = prod(discretisation)
+    
         self.traj = []
         self.vitesse =[]
+        self.old_dist = 0
+        self.next_cp_old =self.board.next_checkpoint
 
     
         
     def step(self,  action):
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         thrust = self.convert_action(action)
-        # x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(Point(target_x,target_y),thrust)
-        x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust) # sans direction
+        x,y,next_cp_x,next_cp_y,dist,angle = self.board.play(next_cp,thrust) 
         self.traj.append([x,y])
-        self.vitesse.append(self.discretized_speed(x,y))
+        vitesse =self.discretized_speed(x,y)
 
-        #si rien de specifique ne s'est produit 
-        reward = - self.reward(dist)*0.01
+        self.vitesse.append(vitesse)
+
+        reward = (self.old_dist - dist)*0.05
+        self.old_dist = dist
+        
+        if self.board.next_checkpoint != self.next_cp_old:
+            reward = 100
+            self.next_cp_old = self.board.next_checkpoint
+        self.old_dist = dist
         #si la course est terminée
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -100
+                # reward = -10
                 self.terminated = True
             #arret fin de course
             else:
-                reward= 100
+                reward= 500
                 self.terminated = True
         next_state =self.discretized_state(angle, dist, x,y)
+        self.past_pos = (x,y)
         return next_state,reward, self.terminated
     
-    def reward(self, dist):
-        bins = [600,700,800,1000,2000,3000,5000,6000,8000,100000]
-        return np.digitize(dist,bins)
 
-    def reset(self,seed=None,options=None):
+
+    def reset(self,seed=None,options=None, board=None):
         self.board = Board(nb_cp=4,nb_round=3,custom =self.custom)
+        if board is not None:
+            self.board = board
         self.terminated = False
         self.traj = []
         self.vitesse = []
         x, y = self.board.pod.getCoord()
         self.past_pos= (x,y)
+        self.old_dist = 0
+        self.next_cp_old =self.board.next_checkpoint
 
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         dist = self.board.pod.distance(next_cp)
-        angle = self.board.pod.angle
-
+        angle = self.board.pod.diffAngle(next_cp)
         return self.discretized_state(angle,dist, x, y)
     
-
-    def discretized_angle(self, angle):
-        #discretisation de l'angle self.discretisation corresponds à en combien d'etats on discretise un angle qui 
-        #corresponds à devant le pod. si l'angle indique l'arrière du pod il est discretisé en deux états
-        bins = [180,270]
-        return np.digitize(angle,bins)
+    def discretized_angle(self,angle):
+        bins = [-90,0,90]
+        return np.digitize(angle, bins)
         
     def discretized_distance(self, dist):
-        bins = [1000,2000,8000,self.max_dist]
+        bins = [1000,5000,10000]
         return np.digitize(dist,bins)
     
     def discretized_speed(self, x,y):
-        vitesse = np.sqrt(abs(x - self.past_pos[0])**2 + abs(y - self.past_pos[1])**2)
-        bins = [100,300]
+        
+        vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
+        bins = [200,400]
         return np.digitize(vitesse,bins)
 
     
@@ -97,7 +101,7 @@ class MPR_env():
         return index
 
     def convert_action(self, action):
-        mapping_thrust = {0:0,1:70,2:100}
+        mapping_thrust = {0:0,1:50,2:100}
         return mapping_thrust[action]
 
 
@@ -114,7 +118,7 @@ class MPR_env():
         plt.gca().invert_yaxis() 
         plt.scatter(x,y,c =np.arange(len(self.traj)), s = 1)
         plt.scatter(b_x,b_y, c = 'red', s=600)
-        plt.title("Trajectoire avec NN")
+        plt.title("Trajectoire ")
         plt.show()
 
     
@@ -132,3 +136,4 @@ class MPR_env():
 
 
 
+    
