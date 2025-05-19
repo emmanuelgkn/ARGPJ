@@ -214,6 +214,7 @@ class train:
             loss.backward()
             self.optimizer.step()
             self.epsilon *= 0.999
+            self.epsilon = max(self.epsilon,0.2)
         
         self.writer.close()
         print("fini")
@@ -225,7 +226,7 @@ class train:
 class QagentNN:
     def __init__(self, env,model):
         self.env= env
-        self.action_dim = 15
+        self.action_dim = env.nb_action
         self.state_dim = 4
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = model
@@ -246,6 +247,7 @@ class QagentNN:
             q_values = self.model(state_tensor.repeat(self.action_dim, 1), actions)
 
             action = torch.argmax(q_values).item()
+            print(action)
             next_stateM,reward,terminated = self.env.step(action)
             stateM = next_stateM
             i += 1

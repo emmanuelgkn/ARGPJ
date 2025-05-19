@@ -9,7 +9,7 @@ import random
 # Instantiation du tic tac toe classique
 # mode="mcts" pour laisser le monte carlo jouer (on peut aussi laisser vide car c'est le mode par defaut)
 # mode="" pour jouer manuellement ou encore autre chose que "mcts" ça va toujours marcher
-def TicTacToeMcts(mode="mcts"):
+def TicTacToe(mode="mcts"):
     """fonction qui permet de jouer au TicTacToe
     """
     game = TTT()
@@ -78,7 +78,7 @@ def tauxReussiteMctsTTT(niter=100):
     random = 0
     draw = 0
     for i in range(niter):
-        res = TicTacToeMcts("mcts")
+        res = TicTacToe("mcts")
         if res == 1:
             mcts = mcts + 1
         elif res == 3:
@@ -224,7 +224,7 @@ def somme_n_premiers(n):
 
 if __name__ == "__main__":
     # print("TicTacToeMcts")
-    # TicTacToeMcts("mcts")
+    # TicTacToe("mcts")
     # print("TicTacToeMcts")
     # tauxReussiteMctsTTT(10)
     # print("ticTacToeUltimate")

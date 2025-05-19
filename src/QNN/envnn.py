@@ -26,7 +26,7 @@ class MPR_envnn():
         self.current_pos = self.past_pos
 
         self.max_dist = np.sqrt(width**2+height**2)
-        self.nb_action = 15
+        self.nb_action = 42
 
         self.traj = []
         self.vitesse =[]
@@ -41,7 +41,7 @@ class MPR_envnn():
         #effectuer action
         next_cp = self.board.checkpoints[self.board.next_checkpoint]
         target_x, target_y, thrust = self.convert_action(action)
-        x,y,_,_,dist,angle = self.board.play(next_cp,thrust) #Point(target_x,target_y)
+        x,y,_,_,dist,angle = self.board.play(Point(target_x,target_y),thrust) #Point(target_x,target_y)
 
         #calcul pour l'état
         vitesse = self.compute_speed(x,y)
@@ -51,22 +51,9 @@ class MPR_envnn():
 
         max_distance = math.sqrt(WIDTH**2 + HEIGHT**2)
 
-        # Calcul de la progression vers le checkpoint
-        if hasattr(self, "last_dist"):
-            reward_progress = (self.last_dist - dist) * 5  # Encourage à se rapprocher
-        else:
-            reward_progress = 0
-        self.last_dist = dist
-
-        # Récompense d’alignement (plus l’angle est petit, mieux c’est)
-        reward_alignment = max(0, 1 - abs(angle) / 180) * 5
-
-        # Récompense vitesse brute (encourage à aller vite)
-        reward_speed = vitesse / 100  # Ajuste le facteur selon l'échelle de vitesse
-
         # Projette la vitesse dans la direction du checkpoint
         directional_speed = vitesse * math.cos(math.radians(angle))
-        reward_directional_speed = max(0, directional_speed / max_distance) * 3
+        reward_directional_speed = directional_speed / max_distance  # normalisé
 
         # Bonus fort quand un checkpoint est atteint
         reward_checkpoint = 1000 if self.next_cp_old != self.board.next_checkpoint else 0
@@ -83,17 +70,14 @@ class MPR_envnn():
                 reward = -1000  # échec
                 self.terminated = True
             else:
-                reward = 3000 
+                reward = 3000  # réussite
                 self.terminated = True
         else:
             reward = (
                 1.0 * reward_checkpoint +
-                reward_progress +
-                reward_alignment +
-                reward_speed +
-                reward_directional_speed +
-                reward_time_penalty +
-                reward_bad_angle
+                3.0 * reward_directional_speed +  # très important
+                1.0 * reward_time_penalty +
+                1.0 * reward_bad_angle
             )
 
         #stockage des infos
