@@ -32,7 +32,7 @@ import time
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 STATE_DIM = 4
-ACTION_DIM = 15
+ACTION_DIM = 42
 
 model = QNetwork(STATE_DIM,ACTION_DIM).to(DEVICE)
 
