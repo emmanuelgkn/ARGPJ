@@ -32,13 +32,14 @@ def plot_base_grid():
     target_x = (CIBLE[0] // GRID_SIZE) * GRID_SIZE
     target_y = (CIBLE[1] // GRID_SIZE) * GRID_SIZE
     ax.add_patch(plt.Rectangle((target_x, target_y), GRID_SIZE, GRID_SIZE, color='red', alpha=0.5))
-    plt.title("Heatmap des Q-values pour différentes distances")
+    plt.title("Valeur fixée: angle entre -180 et -135 et vitesse inférieure à 200")
     plt.xlabel("X")
     plt.ylabel("Y")
     return fig, ax
+speeds = [(0, "0 200"), (1, "200 300"), (2, "300 500"),(3, "500 1000")]
 
-fixed_angle = 4
-fixed_vitesse = 3
+fixed_angle = 0
+fixed_vitesse = 0
 
 color_grid = np.full((WIDTH // GRID_SIZE, HEIGHT // GRID_SIZE), np.nan)
 
