@@ -41,7 +41,7 @@ class Qagent:
             # cum_reward = 0
             state= self.env.reset()
             for j in range(20000):
-                
+                self.trace_etat[state] += 1
                 action = self.epsilon_greedy(state)
                 next_state,reward,terminated = self.env.step(action)
                 self.update_q_table(state,action,next_state,reward)
@@ -182,8 +182,8 @@ def test_hyperparams():
 
 if __name__ == "__main__":
     # test_hyperparams()
-    dir_name = "test9"
-    agent = Qagent(MPR_env_3(custom=False,nb_round=2, nb_cp=2), epsilon = .4, alpha=.1, gamma= .95 ,do_test=True, episodes= 20000)
+    dir_name = "test10"
+    agent = Qagent(MPR_env_3(custom=False,nb_round=2, nb_cp=2), epsilon = .4, alpha=.1, gamma= .95 ,do_test=True, episodes= 2000)
     with open(f"{GRAPH_PATH}/{dir_name}/training_params_{timestamp}.txt", "w") as f:
         f.write(f"Environment: {type(agent.env).__name__}\n")
         f.write(f"Training Parameters:\n")
@@ -228,11 +228,31 @@ if __name__ == "__main__":
     plt.legend(["Reward", "Reward lissée"])
     plt.grid()
     plt.savefig(f"{GRAPH_PATH}/{dir_name}/compare_rewards.png")
-    # agent.qtable = np.load("qtable_19-05.npy")
-    traj = agent.one_run(board=Board(custom=False, nb_cp=4, nb_round=3))
-    agent.env.show_traj()
-    plt.savefig(f"{GRAPH_PATH}/{dir_name}/traj_{timestamp}.png")
+
+    plt.figure(figsize=(15, 7))
+    plt.xlabel("Etats")
+    plt.ylabel("Nombre de fois visité")
+    plt.title("Nombre de fois visité par état")
+    plt.hist(range(agent.env.nb_etat), weights=agent.trace_etat, bins=agent.env.nb_etat)
+    plt.savefig(f"{GRAPH_PATH}/{dir_name}/trace_etat.png")
+    print(agent.trace_etat)
+    # agent.qtable = np.load("Graphiques/test9/qtable_20-05.npy")
+    # traj = agent.one_run(board=Board(custom=False, nb_cp=4, nb_round=3))
+    # agent.env.show_traj()
+    # nb_cp = []
+
+    # for i in range(1000):
+    #     agent.one_run(board=Board(custom=False, nb_cp=3, nb_round=1))
+    #     nb_cp.append(np.sum(agent.env.board.checkpoint_cp))
+    # print(np.mean(nb_cp))
+    # print(np.std(nb_cp))
+    # print(np.max(nb_cp))
+    # print(np.sum(np.where(np.array(nb_cp)>=3, 1,0)))
+    # print(np.sum(np.where(np.array(nb_cp)>=2, 1,0)))
+    # print(np.sum(np.where(np.array(nb_cp)>=1, 1,0)))
+    # plt.savefig(f"{GRAPH_PATH}/{dir_name}/traj_{timestamp}.png")
     # print(agent.env.rewa)
+
     # print(len(traj))
 
 
