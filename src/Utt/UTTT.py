@@ -1,8 +1,7 @@
-from jeu import Jeu
 import numpy as np
 import random
 
-class TTT(Jeu):
+class TTT():
     def __init__(self):
         self.board = [0 for _ in range(9)]
         self.winner = 0
@@ -114,7 +113,7 @@ class TTT(Jeu):
     
 
 
-class UTTT(Jeu):
+class UTTT():
     def __init__(self):
         self.boards = [TTT() for _ in range(9)]
         self.global_board = TTT()

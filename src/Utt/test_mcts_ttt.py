@@ -1,3 +1,10 @@
+import os
+import sys
+src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
+
 from mcts import MCTS
 from UTTT import TTT, UTTT
 import matplotlib.pyplot as plt
@@ -102,7 +109,7 @@ def tauxReussiteMctsTTT(niter=100):
 
 
 
-# Fonction qui permet de construire un graphique
+# Fonction qui permet de plot un graph
 def contructionGraph(fonction,niter=100):
     resmcts = []
     resdraw = []
@@ -226,11 +233,11 @@ if __name__ == "__main__":
     # print("TicTacToeMcts")
     # TicTacToe("mcts")
     # print("TicTacToeMcts")
-    # tauxReussiteMctsTTT(10)
+    # tauxReussiteMctsTTT(1)
     # print("ticTacToeUltimate")
     # ticTacToeUltimate("mcts")
     # print("ticTacToeUltimate")
-    # tauxReussiteMctsTTTU(1) 8.62s
-    # print(somme_n_premiers(100)) -> 5050
+    # tauxReussiteMctsTTTU(10) #8.62s
+    # print(somme_n_premiers(100)) -> 5050 heures le temps requis pour plot un graphe de UTTT
     # contructionGraph(tauxReussiteMctsTTTU,10)
     pass
