@@ -182,8 +182,8 @@ def test_hyperparams():
 
 if __name__ == "__main__":
     # test_hyperparams()
-    dir_name = "test8"
-    agent = Qagent(MPR_env(custom=False,nb_round=1, nb_cp=2), epsilon = .4, alpha=.1, gamma= .95 ,do_test=True, episodes= 20000)
+    dir_name = "test9"
+    agent = Qagent(MPR_env_3(custom=False,nb_round=2, nb_cp=2), epsilon = .4, alpha=.1, gamma= .95 ,do_test=True, episodes= 20000)
     with open(f"{GRAPH_PATH}/{dir_name}/training_params_{timestamp}.txt", "w") as f:
         f.write(f"Environment: {type(agent.env).__name__}\n")
         f.write(f"Training Parameters:\n")

@@ -7,22 +7,40 @@ HEIGHT = 9000
 cible = (8000, 4500)
 
 qtable = np.load('qtable_19-05_1.npy')
-discret = [9, 4, 4, 8]
+# discret = [9, 4, 4, 8]
+discret=[9,5,4]
 
-def discretized_state(angle, dist, vitesse, dir, discretisation=discret):
-    d0, d1, d2, d3 = discretisation
-    index = angle * d1 * d2 * d3 + dist * d2 * d3 + vitesse * d3 + dir
-    return int(index)
+# def discretized_state(angle, dist, vitesse, dir, discretisation=discret):
+#     d0, d1, d2, d3 = discretisation
+#     index = angle * d1 * d2 * d3 + dist * d2 * d3 + vitesse * d3 + dir
+#     return int(index)
 
-def undiscretize_index(index, discretisation=discret):
-    d0, d1, d2, d3 = discretisation
-    angle_idx = index // (d1 * d2 * d3)
-    reste = index % (d1 * d2 * d3)
-    dist_idx = reste // (d2 * d3)
-    reste %= (d2 * d3)
-    speed_idx = reste // d3
-    direction_idx = reste % d3
-    return (angle_idx, dist_idx, speed_idx, direction_idx)
+
+    
+def discretized_state(angle, dist, vitesse, discretisation=discret):
+    state = (angle,dist, vitesse )
+
+    index = angle*(discretisation[1] * discretisation[2]) + dist*discretisation[2] + vitesse
+    return index
+    
+
+def undiscretized_state(index, discretisation=discret):
+    d0, d1, d2 = discretisation
+    angle_idx = index // (d1 * d2)
+    reste = index % (d1 * d2)
+    dist_idx = reste // d2
+    vitesse_idx = reste % d2
+    return (angle_idx, dist_idx, vitesse_idx)
+# def undiscretize_index(index, discretisation=discret):
+#     d0, d1, d2, d3 = discretisation
+#     angle_idx = index // (d1 * d2 * d3)
+#     reste = index % (d1 * d2 * d3)
+#     dist_idx = reste // (d2 * d3)
+#     reste %= (d2 * d3)
+#     speed_idx = reste // d3
+#     direction_idx = reste % d3
+#     return (angle_idx, dist_idx, speed_idx, direction_idx)
+
 
 def plot_qtable_grid():
     grid_size = 500
@@ -120,8 +138,10 @@ name_bins = [(0, "v=0\nd-18"), (1, "v=0\nd=-9"), (2, "v=0\nd=0"), (3, "v=0\nd=9"
 # plt.xticks(range(len(name_bins)), [name[1] for name in name_bins])
 # plt.show()
 
-best_states = np.argsort(np.mean(qtable, axis=1))[-10:][::-1]
-for best_state in best_states:
-    print(f"State: {best_state}, Undiscretized: {undiscretize_index(best_state)}")
-print(undiscretize_index(best_state))
+# best_states = np.argsort(np.mean(qtable, axis=1))[-10:][::-1]
+# for best_state in best_states:
+#     print(f"State: {best_state}, Undiscretized: {undiscretized_state(best_state)}")
+# print(undiscretized_state(best_state))
 
+for i in range(60,110):
+    print(i,undiscretized_state(i))

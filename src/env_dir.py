@@ -204,7 +204,7 @@ class MPR_env():
 class MPR_env_light():
 
 
-    def __init__(self, discretisation = [4,4,3,4] ,nb_cp = 4,nb_round = 3,custom=False):
+    def __init__(self, discretisation = [4,4,3] ,nb_cp = 4,nb_round = 3,custom=False):
 
         self.board = Board(nb_cp, nb_round, custom)
         self.terminated = False
@@ -222,7 +222,8 @@ class MPR_env_light():
         #7 angles, 4 distances, 3 vitesses
         # self.nb_etat = 7*4*3
         # self.nb_etat = (self.discretisation[0]+2) * self.discretisation[1] * self.discretisation[2]
-        self.nb_etat = self.discretisation[0]* self.discretisation[1] * self.discretisation[2]*self.discretisation[3]
+        self.nb_etat = self.discretisation[0]* self.discretisation[1] * self.discretisation[2]
+        # self.nb_etat = self.discretisation[0]* self.discretisation[1] * self.discretisation[2]*self.discretisation[3]
 
         self.traj = []
         self.target = []
@@ -245,7 +246,7 @@ class MPR_env_light():
         self.old_dist = dist
         
         if self.board.next_checkpoint != self.next_cp_old:
-            reward = 1000
+            reward = 100
             self.next_cp_old = self.board.next_checkpoint
 
         self.old_dist = dist
@@ -303,21 +304,26 @@ class MPR_env_light():
         bins = [200,400]
         return np.digitize(vitesse,bins)
 
-    def discretized_direction(self, x, y):
-        x_past, y_past = self.past_pos
-        direction_vector = (x - x_past, y - y_past)
-        angle = math.degrees(math.atan2(direction_vector[1], direction_vector[0])) % 360
-        bins = [ 90, 180, 270]
-        # bins = [45, 90, 135, 180, 225, 270, 315]
-        return np.digitize(angle, bins)
+    # def discretized_direction(self, x, y):
+    #     x_past, y_past = self.past_pos
+    #     direction_vector = (x - x_past, y - y_past)
+    #     angle = math.degrees(math.atan2(direction_vector[1], direction_vector[0])) % 360
+    #     bins = [ 90, 180, 270]
+    #     # bins = [45, 90, 135, 180, 225, 270, 315]
+    #     return np.digitize(angle, bins)
 
 
+    # def discretized_state(self, angle, dist, x, y):
+    #     state = (self.discretized_angle(angle), self.discretized_distance(dist), self.discretized_speed(x,y), self.discretized_direction(x,y))
+    #     # print( state)
+    #     d0, d1, d2, d3 = self.discretisation
+    #     index = state[0]*d1*d2*d3 + state[1]*d2*d3 + state[2]*d3 + state[3]
+
+    #     return index
+    
     def discretized_state(self, angle, dist, x, y):
-        state = (self.discretized_angle(angle), self.discretized_distance(dist), self.discretized_speed(x,y), self.discretized_direction(x,y))
-        # print( state)
-        d0, d1, d2, d3 = self.discretisation
-        index = state[0]*d1*d2*d3 + state[1]*d2*d3 + state[2]*d3 + state[3]
-
+        state = (self.discretized_angle(angle), self.discretized_distance(dist), self.discretized_speed(x,y))
+        index = state[0]*(self.discretisation[1] * self.discretisation[2]) + state[1]*self.discretisation[2] + state[2]
         return index
     
     def undiscretize_index(self,index):
@@ -431,7 +437,8 @@ class MPR_env_3():
         self.target.append([x,y,target_x,target_y])
         vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
 
-        reward = (self.old_dist - dist)*0.05
+        reward =(self.old_dist - dist)*0.05
+
         self.old_dist = dist
         
         if self.board.next_checkpoint != self.next_cp_old:
@@ -442,11 +449,11 @@ class MPR_env_3():
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -100
+                reward = 0
                 self.terminated = True
             #arret fin de course
             else:
-                reward= 10000
+                reward= 1000
                 # self.show_traj()
                 self.terminated = True
 
