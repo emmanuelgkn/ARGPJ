@@ -1,6 +1,6 @@
 Environment: MPR_env_3
 Training Parameters:
-Episodes: 2000
+Episodes: 20000
 Max Steps: 10000
 Alpha (Learning Rate): 0.1
 Epsilon (Exploration Rate): 0.4
