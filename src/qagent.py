@@ -50,11 +50,11 @@ class Qagent:
                 if terminated: 
                     break
 
-            self.epsilon = max(0.05, self.epsilon * 0.999)
+            self.epsilon = max(0.05, self.epsilon * 0.998)
 
             if self.do_test and i%10 ==0:
-                if i%1000==0:
-                    self.env.show_traj()
+                # if i%1000==0:
+                    # self.env.show_traj()
                 nb_steps, cum_reward = self.test()
                 self.steps.append((i,nb_steps))
                 self.rewards.append((i,cum_reward))
@@ -65,7 +65,7 @@ class Qagent:
 
     def test(self):
         
-        state = self.env.reset(board = Board(custom=True, nb_cp=4, nb_round=1))
+        state = self.env.reset(board = Board(custom=True, nb_cp=2, nb_round=1))
         pas = 0
         cum_reward = 0
         for j in range(20000):
@@ -77,8 +77,9 @@ class Qagent:
             if terminated:
                 break
             pas += 1
-        # self.env.show_traj()
-        print(f"Test: {pas} pas, reward cumulée: {cum_reward}")
+        if cum_reward>10000 and     np.sum(self.env.board.checkpoint_cp)==0:
+            self.env.show_traj()
+        print(f"Test: {pas} pas, reward cumulée: {cum_reward}, nb_cp = {np.sum(self.env.board.checkpoint_cp)}")
         return pas, cum_reward
 
     def one_run(self, board =None):
@@ -122,13 +123,13 @@ class Qagent:
                 writer.writerow([i, step])
 
 
-    def get_policy(self, nb_etat):
+    def get_policy(self, nb_etat, filename):
         res = {}
         for i in range(nb_etat):
             action = np.argmax(self.qtable[i])
             res[i] = action
         
-        with open('policy_q_learning.txt', 'w') as f:
+        with open(filename, 'w') as f:
             f.write(str(res))
         return res
 
@@ -181,11 +182,23 @@ def test_hyperparams():
 
 if __name__ == "__main__":
     # test_hyperparams()
-    dir_name = "test4"
-    agent = Qagent(MPR_env_3(custom=False,nb_round=1, nb_cp=3), epsilon = .4, alpha=.1, gamma= .9 ,do_test=True, episodes= 20000)
+    dir_name = "test8"
+    agent = Qagent(MPR_env(custom=False,nb_round=1, nb_cp=2), epsilon = .4, alpha=.1, gamma= .95 ,do_test=True, episodes= 20000)
+    with open(f"{GRAPH_PATH}/{dir_name}/training_params_{timestamp}.txt", "w") as f:
+        f.write(f"Environment: {type(agent.env).__name__}\n")
+        f.write(f"Training Parameters:\n")
+        f.write(f"Episodes: {agent.episodes}\n")
+        f.write(f"Max Steps: {agent.max_steps}\n")
+        f.write(f"Alpha (Learning Rate): {agent.alpha}\n")
+        f.write(f"Epsilon (Exploration Rate): {agent.epsilon}\n")
+        f.write(f"Gamma (Discount Factor): {agent.gamma}\n")
+        f.write(f"Environment: {type(agent.env).__name__}\n")
+        f.write(f"Custom Environment: {agent.env.custom}\n")
+        f.write(f"Number of Checkpoints: {agent.env.board.nb_cp}\n")
+        f.write(f"Number of Rounds: {agent.env.board.nb_round}\n")
     q_values = agent.train()
-    agent.get_policy(agent.env.nb_etat)
-    np.save(f"qtable_{timestamp}.npy", agent.qtable)
+    agent.get_policy(agent.env.nb_etat, filename=f"{GRAPH_PATH}/{dir_name}/policy")
+    np.save(f"{GRAPH_PATH}/{dir_name}/qtable_{timestamp}.npy", agent.qtable)
     plt.matshow(agent.qtable, cmap = "viridis", aspect = "auto")
     plt.colorbar()
     plt.savefig(f"{GRAPH_PATH}/{dir_name}/qtable_{timestamp}")
@@ -216,8 +229,9 @@ if __name__ == "__main__":
     plt.grid()
     plt.savefig(f"{GRAPH_PATH}/{dir_name}/compare_rewards.png")
     # agent.qtable = np.load("qtable_19-05.npy")
-    # traj = agent.one_run(board=Board(custom=False, nb_cp=2, nb_round=1))
-    # agent.env.show_traj()
+    traj = agent.one_run(board=Board(custom=False, nb_cp=4, nb_round=3))
+    agent.env.show_traj()
+    plt.savefig(f"{GRAPH_PATH}/{dir_name}/traj_{timestamp}.png")
     # print(agent.env.rewa)
     # print(len(traj))
 

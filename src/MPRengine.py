@@ -126,18 +126,12 @@ class Board():
                     y = np.random.randint(HEIGHT)
                     cp_candidate = CheckPoint(x, y, i)
                     # Vérifie que tous les checkpoints existants sont à plus de 1000
-                    if all(cp_candidate.distance(existing_cp) > 2000 for existing_cp in self.checkpoints):
+                    if all(cp_candidate.distance(existing_cp) > 1000 for existing_cp in self.checkpoints):
                         self.checkpoints.append(cp_candidate)
                         break 
 
         self.next_checkpoint = 1 % nb_cp
-        first_cp_x, first_cp_y = self.checkpoints[0].getCoord()
 
-
-
-        # x2, y2 = self.checkpoints[(self.next_checkpoint+1)%nb_cp].getCoord()
-        # self.pod = Pod(first_cp_x, first_cp_y ,  0 )
-        # x, y = self.pod.getCoord()
 
         first_cp = self.checkpoints[0]
         second_cp = self.checkpoints[self.next_checkpoint]
@@ -175,7 +169,6 @@ class Board():
 
 
         return x, y, next_cp_x, next_cp_y, dist, angle
-
 
 
     def getInfos(self):

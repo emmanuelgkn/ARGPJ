@@ -1,0 +1,20 @@
+        reward = 0
+        if dist>self.old_dist:
+            reward = -1
+        self.old_dist = dist
+        
+        if self.board.next_checkpoint != self.next_cp_old:
+            reward = 1000
+            self.next_cp_old = self.board.next_checkpoint
+        self.old_dist = dist
+        #si la course est terminée
+        if self.board.terminated:
+            #arret a cause d'un timeout
+            if self.board.pod.timeout<0:
+                reward = -100
+                self.terminated = True
+            #arret fin de course
+            else:
+                reward= 10000
+                # self.show_traj()
+                self.terminated = True

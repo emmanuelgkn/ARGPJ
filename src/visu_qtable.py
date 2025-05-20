@@ -100,14 +100,28 @@ directions = [(0, "0 45"), (1, "45 90"), (2, "90 135"), (3, "135 180"), (4, "180
 #     plt.show()
 
 name_bins = [(0, "v=0\nd-18"), (1, "v=0\nd=-9"), (2, "v=0\nd=0"), (3, "v=0\nd=9"), (4, "v=0\nd=18"),(5,"v=50\nd=-18"), (6, "v=50\nd=-9"), (7, "v=50\nd=0"), (8, "v=50\nd=9"), (9, "v=50\nd=18"),(10,"v=100\nd=-18"), (11, "v=100\nd=-9"), (12, "v=100\nd=0"), (13, "v=100\nd=9"), (14, "v=100\nd=18")]
-for angle in angles:
-    for distance in distances:
-        for speed in speeds:
-            for direction in directions:
-                state = (angle[0], distance[0], speed[0], direction[0])
-                index = discretized_state(*state)
-                plt.figure(figsize=(12, 7))
-                plt.bar(range(len(qtable[index])), qtable[index])
-                plt.title(f"Angle in [{angle[1]}], Distance in [{distance[1]}], Speed in [{speed[1]}], Direction in [{direction[1]}]")
-                plt.xticks(range(len(name_bins)), [name[1] for name in name_bins], ha="right")
-                plt.show()
+# for angle in angles:
+#     for distance in distances:
+#         for speed in speeds:
+#             for direction in directions:
+#                 state = (angle[0], distance[0], speed[0], direction[0])
+#                 index = discretized_state(*state)
+#                 plt.figure(figsize=(12, 7))
+#                 plt.bar(range(len(qtable[index])), qtable[index])
+#                 plt.title(f"Angle in [{angle[1]}], Distance in [{distance[1]}], Speed in [{speed[1]}], Direction in [{direction[1]}]")
+#                 plt.xticks(range(len(name_bins)), [name[1] for name in name_bins])
+#                 plt.show()
+
+
+# plt.figsize=(15, 7)
+# sum_col = np.mean(qtable, axis=0)
+# plt.bar(range(len(sum_col)), sum_col)
+# plt.title("Somme des Q-values par état")
+# plt.xticks(range(len(name_bins)), [name[1] for name in name_bins])
+# plt.show()
+
+best_states = np.argsort(np.mean(qtable, axis=1))[-10:][::-1]
+for best_state in best_states:
+    print(f"State: {best_state}, Undiscretized: {undiscretize_index(best_state)}")
+print(undiscretize_index(best_state))
+

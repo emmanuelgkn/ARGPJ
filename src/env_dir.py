@@ -48,7 +48,10 @@ class MPR_env():
         self.target.append([x,y,target_x,target_y])
         vitesse = np.sqrt((x - self.past_pos[0])**2 + (y - self.past_pos[1])**2)
 
-        reward = (self.old_dist - dist)*0.05
+        # reward = (self.old_dist - dist)*0.05
+        reward = 0
+        if dist>self.old_dist:
+            reward = -1
         self.old_dist = dist
         
         if self.board.next_checkpoint != self.next_cp_old:
@@ -64,7 +67,7 @@ class MPR_env():
             #arret fin de course
             else:
                 reward= 10000
-                self.show_traj()
+                # self.show_traj()
                 self.terminated = True
 
         next_state =self.discretized_state(angle, dist, x,y)
@@ -96,7 +99,8 @@ class MPR_env():
 
     def discretized_angle(self, angle):
 
-        bins = [-135, -90,-45,-10,10,45,90,135]
+        # bins = [-135, -90,-45,-10,10,45,90,135]
+        bins = [-120,-90, -45,-7,7 ,45 , 90,120]
         res = np.digitize(angle, bins)
 
         return res
@@ -241,7 +245,7 @@ class MPR_env_light():
         self.old_dist = dist
         
         if self.board.next_checkpoint != self.next_cp_old:
-            reward = 10000
+            reward = 1000
             self.next_cp_old = self.board.next_checkpoint
 
         self.old_dist = dist
@@ -249,11 +253,11 @@ class MPR_env_light():
         if self.board.terminated:
             #arret a cause d'un timeout
             if self.board.pod.timeout<0:
-                reward = -100
+                # reward = -100
                 self.terminated = True
             #arret fin de course
             else:
-                reward= 1000
+                reward= 10000
                 self.terminated = True
 
 
