@@ -1,0 +1,11 @@
+Environment: MPR_env_3
+Training Parameters:
+Episodes: 2000
+Max Steps: 10000
+Alpha (Learning Rate): 0.1
+Epsilon (Exploration Rate): 0.4
+Gamma (Discount Factor): 0.95
+Environment: MPR_env_3
+Custom Environment: False
+Number of Checkpoints: 2
+Number of Rounds: 2
