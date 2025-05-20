@@ -85,11 +85,29 @@ color_grid = np.zeros((WIDTH // grid_size, HEIGHT // grid_size))
 # print(qtable)
 
 
-for dire in range(0,7):
-    state = (0,1,1,dire)
 
-    index = discretized_state(*state)
+angles = [(0, "-180 -135"), (1, "-135 -90"), (2, "-90 -45"), (3, "-45 -10"), (4, "-10 10"), (5, "10 45"), (6, "45 90"), (7, "90 135"), (8, "135 180")]
+distances = [(0, "0 1000"), (1, "1000 5000"), (2, "5000 15000")]
+speeds = [(0, "0 200"), (1, "200 300"), (2, "300 500")]
+directions = [(0, "0 45"), (1, "45 90"), (2, "90 135"), (3, "135 180"), (4, "180 225"), (5, "225 270"), (6, "270 315")]
+# for dire in range(0,7):
+#     state = (5,1,1\nd=ire)
 
-    plt.hist(qtable[index], bins = 15)
+#     index = discretized_state(*state)
 
-    plt.show()
+#     plt.hist(qtable[index], bins = 15)
+
+#     plt.show()
+
+name_bins = [(0, "v=0\nd-18"), (1, "v=0\nd=-9"), (2, "v=0\nd=0"), (3, "v=0\nd=9"), (4, "v=0\nd=18"),(5,"v=50\nd=-18"), (6, "v=50\nd=-9"), (7, "v=50\nd=0"), (8, "v=50\nd=9"), (9, "v=50\nd=18"),(10,"v=100\nd=-18"), (11, "v=100\nd=-9"), (12, "v=100\nd=0"), (13, "v=100\nd=9"), (14, "v=100\nd=18")]
+for angle in angles:
+    for distance in distances:
+        for speed in speeds:
+            for direction in directions:
+                state = (angle[0], distance[0], speed[0], direction[0])
+                index = discretized_state(*state)
+                plt.figure(figsize=(12, 7))
+                plt.bar(range(len(qtable[index])), qtable[index])
+                plt.title(f"Angle in [{angle[1]}], Distance in [{distance[1]}], Speed in [{speed[1]}], Direction in [{direction[1]}]")
+                plt.xticks(range(len(name_bins)), [name[1] for name in name_bins], ha="right")
+                plt.show()

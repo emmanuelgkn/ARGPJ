@@ -6,7 +6,7 @@ from datetime import datetime
 import csv
 import time
 from MPRengine import Board
-from env_dir import MPR_env_light, MPR_env
+from env_dir import MPR_env_light, MPR_env, MPR_env_3
 from env_thrust import MPR_env_thrust
 from config import GRAPH_PATH
 from datetime import datetime
@@ -53,7 +53,8 @@ class Qagent:
             self.epsilon = max(0.05, self.epsilon * 0.999)
 
             if self.do_test and i%10 ==0:
-
+                if i%1000==0:
+                    self.env.show_traj()
                 nb_steps, cum_reward = self.test()
                 self.steps.append((i,nb_steps))
                 self.rewards.append((i,cum_reward))
@@ -180,44 +181,45 @@ def test_hyperparams():
 
 if __name__ == "__main__":
     # test_hyperparams()
-    agent = Qagent(MPR_env(custom=False,nb_round=1, nb_cp=3), epsilon = .4, alpha=.1, gamma= .9 ,do_test=True, episodes= 20000)
-    # q_values = agent.train()
-    # agent.get_policy(agent.env.nb_etat)
-    # np.save(f"qtable_{timestamp}.npy", agent.qtable)
-    # plt.matshow(agent.qtable, cmap = "viridis", aspect = "auto")
-    # plt.colorbar()
-    # plt.savefig(f"{GRAPH_PATH}/qtable_{timestamp}")
+    dir_name = "test4"
+    agent = Qagent(MPR_env_3(custom=False,nb_round=1, nb_cp=3), epsilon = .4, alpha=.1, gamma= .9 ,do_test=True, episodes= 20000)
+    q_values = agent.train()
+    agent.get_policy(agent.env.nb_etat)
+    np.save(f"qtable_{timestamp}.npy", agent.qtable)
+    plt.matshow(agent.qtable, cmap = "viridis", aspect = "auto")
+    plt.colorbar()
+    plt.savefig(f"{GRAPH_PATH}/{dir_name}/qtable_{timestamp}")
 
-    # plt.figure(figsize=(15, 7))
-    # xs = [agent.steps[i][0] for i in range(len(agent.steps))]
-    # ys = [agent.steps[i][1] for i in range(len(agent.steps))]
-    # ys_smooth = np.convolve(ys, np.ones(10)/10, mode='valid')
-    # plt.xlabel("Episodes")
-    # plt.ylabel("Steps")
-    # plt.title("Steps par épisode en test")
-    # plt.plot(xs, ys)
-    # plt.plot(xs[9:], ys_smooth, color='red')
-    # plt.legend(["Steps", "Steps lissée"])
-    # plt.grid()
-    # plt.savefig(f"{GRAPH_PATH}/compare_steps.png")
+    plt.figure(figsize=(15, 7))
+    xs = [agent.steps[i][0] for i in range(len(agent.steps))]
+    ys = [agent.steps[i][1] for i in range(len(agent.steps))]
+    ys_smooth = np.convolve(ys, np.ones(10)/10, mode='valid')
+    plt.xlabel("Episodes")
+    plt.ylabel("Steps")
+    plt.title("Steps par épisode en test")
+    plt.plot(xs, ys)
+    plt.plot(xs[9:], ys_smooth, color='red')
+    plt.legend(["Steps", "Steps lissée"])
+    plt.grid()
+    plt.savefig(f"{GRAPH_PATH}/{dir_name}/compare_steps.png")
 
-    # plt.figure(figsize=(15, 7))
-    # xr = [agent.rewards[i][0] for i in range(len(agent.rewards))]
-    # yr = [agent.rewards[i][1] for i in range(len(agent.rewards))]
-    # y_smooth = np.convolve(yr, np.ones(10)/10, mode='valid')
-    # plt.xlabel("Episodes")
-    # plt.ylabel("Reward")
-    # plt.title("Reward cumulée par épisode en test")
-    # plt.plot(xr, yr)
-    # plt.plot(xr[9:], y_smooth, color='red')
-    # plt.legend(["Reward", "Reward lissée"])
-    # plt.grid()
-    # plt.savefig(f"{GRAPH_PATH}/compare_rewards.png")
-    agent.qtable = np.load("qtable_19-05.npy")
-    traj = agent.one_run(board=Board(custom=False, nb_cp=2, nb_round=1))
-    agent.env.show_traj()
-    print(agent.env.rewa)
-    print(len(traj))
+    plt.figure(figsize=(15, 7))
+    xr = [agent.rewards[i][0] for i in range(len(agent.rewards))]
+    yr = [agent.rewards[i][1] for i in range(len(agent.rewards))]
+    y_smooth = np.convolve(yr, np.ones(10)/10, mode='valid')
+    plt.xlabel("Episodes")
+    plt.ylabel("Reward")
+    plt.title("Reward cumulée par épisode en test")
+    plt.plot(xr, yr)
+    plt.plot(xr[9:], y_smooth, color='red')
+    plt.legend(["Reward", "Reward lissée"])
+    plt.grid()
+    plt.savefig(f"{GRAPH_PATH}/{dir_name}/compare_rewards.png")
+    # agent.qtable = np.load("qtable_19-05.npy")
+    # traj = agent.one_run(board=Board(custom=False, nb_cp=2, nb_round=1))
+    # agent.env.show_traj()
+    # print(agent.env.rewa)
+    # print(len(traj))
 
 
 
