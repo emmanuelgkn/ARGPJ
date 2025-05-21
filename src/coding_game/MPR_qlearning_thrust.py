@@ -3,11 +3,10 @@ import math
 import numpy as np
 import sys 
 
+#https://www.codingame.com/replay/840443750
 
 
-
-policy = {0: np.int64(2), 1: np.int64(1), 2: np.int64(1), 3: np.int64(0), 4: np.int64(2), 5: np.int64(1), 6: np.int64(0), 7: np.int64(1), 8: np.int64(1), 9: np.int64(0), 10: np.int64(2), 11: np.int64(0), 12: np.int64(2), 13: np.int64(2), 14: np.int64(1), 15: np.int64(2), 16: np.int64(2), 17: np.int64(0), 18: np.int64(2), 19: np.int64(2), 20: np.int64(2), 21: np.int64(2), 22: np.int64(2), 23: np.int64(2), 24: np.int64(1), 25: np.int64(1), 26: np.int64(1), 27: np.int64(2), 28: np.int64(2), 29: np.int64(2), 30: np.int64(1), 31: np.int64(2), 32: np.int64(2), 33: np.int64(2), 34: np.int64(2), 35: np.int64(2), 36: np.int64(2), 37: np.int64(0), 38: np.int64(1), 39: np.int64(1), 40: np.int64(1), 41: np.int64(1), 42: np.int64(0), 43: np.int64(2), 44: np.int64(2), 45: np.int64(1), 46: np.int64(1), 47: np.int64(0)}
-
+policy = {0: 0, 1: 2, 2: 1, 3: 2, 4: 0, 5: 1, 6: 1, 7: 1, 8: 0, 9: 2, 10: 1, 11: 0, 12: 2, 13: 0, 14: 0, 15: 2, 16: 2, 17: 2, 18: 2, 19: 2, 20: 2, 21: 2, 22: 2, 23: 2, 24: 2, 25: 1, 26: 0, 27: 1, 28: 2, 29: 2, 30: 2, 31: 2, 32: 2, 33: 0, 34: 2, 35: 2, 36: 2, 37: 2, 38: 2, 39: 2, 40: 1, 41: 1, 42: 2, 43: 1, 44: 2, 45: 1, 46: 2, 47: 0}
 discretisation= [4,4,3]
 nb_action=15
 max_dist = np.sqrt(16000**2+9000**2)

@@ -234,7 +234,7 @@ def main():
 
 
     trained_model = QNetworkdqn(3, 15).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-    trained_model.load_state_dict(torch.load('/home/jeanne/ARGPJ/weights_qagentdqn.pth'))
+    trained_model.load_state_dict(torch.load('weights_dqn_bs256_lr1e-05_nbeps50.pth'))
 
     agent = QagentDQN(MPR_envdqn(nb_cp=3, nb_round=1,custom=False), trained_model)
     agent.one_run()
